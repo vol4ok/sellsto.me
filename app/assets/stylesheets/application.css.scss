@@ -1,0 +1,81 @@
+/*= require_self */
+
+@charset "utf-8";
+@import "reset";
+@import "config";
+@import "helpers";
+
+body {
+	font-family: $body-font;
+	font-size: $font-size;
+	line-height: $line-height; 
+	background: url('bg2.png');
+}
+
+p, h1, h2, h3, h4, h5, h6 {
+	position: relative;
+}
+
+h1 {
+	font-family: $head-font;
+	font-size: 35px;
+	line-height: 2*$line-height;
+	margin-bottom: $line-height;
+}
+
+h2 {
+	font-family: $head-font;
+	font-size: 28px;
+	line-height: 2*$line-height;
+}
+
+h3 {
+	font-family: $head-font;
+	font-size: 21px;
+	font-style: italic;
+	line-height: $line-height;
+}
+
+h4 {
+	font-family: $head-font;
+	font-size: 18px;
+	line-height: $line-height;
+}
+
+h5 {
+	font-family: $head-font;
+	font-size: 16px;
+	line-height: $line-height;
+}
+
+h6 {
+	font-family: $head-font;
+	font-size: 14px;
+	line-height: $line-height;
+}
+
+a {
+  color: #000;
+  //text-decoration: underline;
+
+  &:visited {
+    color: #000;
+    //text-decoration: underline; 
+	}
+	
+  &:hover {
+		color: #fff; 
+		background-color: #000;
+    text-decoration: none; 
+	}
+	
+  &:active {
+    color: #000;
+    text-decoration: none; 
+	} 
+}
+
+article {
+	margin: 50px auto;
+	width: $layout-width;
+}

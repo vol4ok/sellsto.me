@@ -1,14 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>SellstoMe</title>
+  <title><%= yield(:title) %></title>
   <%= stylesheet_link_tag    "application" %>
   <%= javascript_include_tag "application" %>
+	<%= yield :head %>
   <%= csrf_meta_tags %>
 </head>
 <body>
 
-<%= yield %>
+	<article>
+		<%= yield %>
+	</article>
 
 </body>
 </html>

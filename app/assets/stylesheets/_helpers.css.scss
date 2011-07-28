@@ -1,0 +1,61 @@
+@function grid-width($n) {
+  @return $n * $col-width + ($n - 1) * $col-gutter;
+}
+
+@mixin border-radius($radius) {
+  -webkit-border-radius: $radius;
+  -moz-border-radius: $radius;
+	border-radius: $radius;
+}
+
+@mixin box-shadow($param) {
+	-webkit-box-shadow: $param;
+	-moz-box-shadow: $param;
+	-o-box-shadow: $param;
+	box-shadow: $param;
+}
+
+@mixin background-linear-gradient-2($p,$c1,$c2)
+{
+	background: -moz-linear-gradient($p,$c1,$c2);
+	background: -webkit-linear-gradient($p,$c1,$c2);
+	background: -o-linear-gradient($p,$c1,$c2);
+	background: -ms-linear-gradient($p,$c1,$c2);
+	background: linear-gradient($p,$c1,$c2);	
+}
+
+@mixin background-linear-gradient-3($p,$c1,$c2,$c3)
+{
+	background: -moz-linear-gradient($p,$c1,$c2,$c3);
+	background: -webkit-linear-gradient($p,$c1,$c2,$c3);
+	background: -o-linear-gradient($p,$c1,$c2,$c3);
+	background: -ms-linear-gradient($p,$c1,$c2,$c3);
+	background: linear-gradient($p,$c1,$c2,$c3);
+}
+
+@mixin background-linear-gradient-4($p,$c1,$c2,$c3,$c4)
+{
+	background: -moz-linear-gradient($p,$c1,$c2,$c3,$c4);
+	background: -webkit-linear-gradient($p,$c1,$c2,$c3,$c4);
+	background: -o-linear-gradient($p,$c1,$c2,$c3,$c4);
+	background: -ms-linear-gradient($p,$c1,$c2,$c3,$c4);
+	background: linear-gradient($p,$c1,$c2,$c3,$c4);	
+}
+
+@mixin user-select($param) {
+	-webkit-user-select: $param;
+	-moz-user-select: $param;
+	user-select: $param;
+}
+
+@mixin transition($param) {
+	-webkit-transition: $param;
+	-moz-transition: $param;
+	transition: $param;	
+}
+
+@mixin transform($param) {
+	-webkit-transform: $param;
+	-moz-transform: $param;
+	transform: $param;
+}
