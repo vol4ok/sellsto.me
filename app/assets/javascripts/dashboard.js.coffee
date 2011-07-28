@@ -39,7 +39,7 @@ $ () ->
 			
 	window.AdList = Backbone.Collection.extend
 		model: Ad
-		url: '/ads'
+		url: 'http://localhost:4000/ads'
 	
 	window.AdView = Backbone.View.extend
 		tagName: 'li'
