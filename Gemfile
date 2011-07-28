@@ -16,6 +16,8 @@ group :assets do
 end
 
 gem 'jquery-rails'
+gem "mongoid", "~> 2.0"
+gem "bson_ext", "~> 1.3"
 
 # Use unicorn as the web server
 # gem 'unicorn'
