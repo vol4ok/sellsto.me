@@ -116,7 +116,8 @@ $ () ->
 			val = @input.val()
 			return if val.length is 0
 			ad = body: val
-			ads.create(ad);
+			#ads.create(ad);
+			client.publish('/foo', ad)
 			@input.val('')
 			@renderCounter()
 			false
@@ -128,3 +129,7 @@ $ () ->
 	
 	window.ads = new AdList	
 	window.app = new AppView;
+	window.client = new Faye.Client('http://localhost:4000/bayeux')
+	sub = client.subscribe '/foo', (msg)->
+		console.log(msg)
+		ads.create(msg)
