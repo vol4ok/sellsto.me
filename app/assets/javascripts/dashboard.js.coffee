@@ -49,18 +49,19 @@ $ () ->
 			"click .edit-link" : "edit"
 			"dblclick .disp" : "edit"
 			"keypress .edit-input": "onKeyPress"
-			"blur .edit-input": "editComplete"
+			"focusout .edit-input": "editComplete"
 		initialize: ->
 			_.bindAll(@, 'render')
 			@model.bind('change', @render)
 			@model.view = @
+			@lock = false
 		render: ->
 			$(@el).html(@template(this.model.toJSON()))
 			@text = @$('.disp p')
 			@input = @$('.edit-input')
 			return @
 		clear: ->
-			@model.clear()
+			ads.remove(@model)
 			false
 		remove: ->
 			$el = $(@el)
@@ -75,9 +76,13 @@ $ () ->
 			@input.css(height: @text.height())
 			$(@el).addClass("editing")
 			@input.focus()
+			@edit = true
 		editComplete: ->
+			return unless @edit
+			@edit = false
 			@model.save(body: @input.val())
 			$(@el).removeClass("editing")
+			return false
 			
 	window.AppView = Backbone.View.extend
 		el: $("#ads")
@@ -116,8 +121,7 @@ $ () ->
 			val = @input.val()
 			return if val.length is 0
 			ad = body: val
-			#ads.create(ad);
-			client.publish('/foo', ad)
+			ads.create(ad);
 			@input.val('')
 			@renderCounter()
 			false
@@ -131,5 +135,8 @@ $ () ->
 	window.app = new AppView;
 	window.client = new Faye.Client('http://localhost:4000/bayeux')
 	sub = client.subscribe '/foo', (msg)->
-		console.log(msg)
-		ads.create(msg)
+		console.log 'message', msg
+		switch msg.action
+			when 'create' then ads.add(msg.ad) unless ads.get(msg.ad._id)
+			when 'update' then ad.set(msg.ad) if ad = ads.get(msg.ad._id)
+			when 'delete' then ad.clear() if ad = ads.get(msg._id)
