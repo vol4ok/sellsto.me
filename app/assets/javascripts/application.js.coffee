@@ -4,4 +4,4 @@
 #= require underscore
 #= require backbone
 #= require bayeux
-#= require_tree .
+#= require common
