@@ -8,6 +8,35 @@ AD_DELETE_R = 'ad:delete.remote'
 AD_API_URL = 'http://localhost:4000/ads'
 BAYEUX_URL = 'http://localhost:4000/bayeux'
 
+# helpers #
+window.relative_time = (date, date0 = new Date()) ->
+	date = new Date(date)
+	date1 = new Date(date0)
+	date1.setHours(0)
+	date1.setMinutes(0)
+	date1.setSeconds(0)
+	date1.setMilliseconds(0)
+	ds = parseInt((date0.getTime() - date.getTime()) / 1000)
+	ps = ds - parseInt((date0.getTime() - date1.getTime()) / 1000)
+	if ds < 60
+		return 'меньше минуты назад'
+	else if ds < 120
+		return 'около минуты назад'
+	else if ds < (60*60)
+		m = parseInt(ds/60)
+		return m + if m < 5 then ' минуты назад' else ' минут назад'
+	else if ds < (120*60)
+		return 'около часа назад';
+	else if ds < (24*60*60)
+		return "около #{parseInt(ds/3600)} часов назад"
+	else if ps < (24*60*60)
+		return 'вчера'
+	else if ps < (48*60*60)
+		return 'позавчера'
+	else
+		d = parseInt(ps/86400)+1
+		return d + if d < 5 then ' дня назад' else ' дней назад'
+
 $ () ->
 	_.templateSettings = interpolate: /\{\{(.+?)\}\}/g
 	
@@ -22,15 +51,16 @@ $ () ->
 			return false unless @bayeux
 			if _.isArray(channels)
 				for channel in channels
-					@bayeux.subscribe(channel, @_listen)
+					@bayeux.subscribe(channel, @_listen, @)
 			else
-				@bayeux.subscribe(channels, @_listen)
+				@bayeux.subscribe(channels, @_listen, @)
 			return true
 		_isValid: (message) ->
 			return true
 		_listen: (message) ->
 			return unless @_isValid(message)
-			@trigger("#{msg.class}:#{msg.action}.remote")
+			console.log "trigger: #{message.class}:#{message.action}.remote", message
+			@trigger("#{message.class}:#{message.action}.remote",message.data)
 
 	# Ad Class #
 	Ad = Backbone.Model.extend()
@@ -46,12 +76,19 @@ $ () ->
 			"focusout .edit-input": "update"
 			"keypress .edit-input": "onKeyPress"
 		initialize: () ->
-			_.bindAll(@, 'render')
 			@isEditing = false
+			@model.bind('change', @render, @)
+			@model.bind('destroy', @remove, @)
 		render: () ->
-			$(@el).html(@template(this.model.toJSON()))
-			@disp  = @$('.show p')
+			console.log 'AdView::render', @model
+			$(@el).html(@template(@model.toJSON()))
+			@text  = @$('.show p')
 			@input = @$('.edit-input')
+			return @
+		remove: () ->
+			el = $(@el)
+			el.slideUp ->	el.remove()
+			return @
 		edit: () ->
 			return if @isEditing
 			@input.css(width: @text.width())
@@ -59,15 +96,16 @@ $ () ->
 			$(@el).addClass("editing")
 			@input.focus()
 			@isEditing = true
+			return false
 		update: () ->
 			return unless @isEditing
+			$eh.trigger(AD_UPDATE_L, @model, body: @input.val())
+			$(@el).removeClass("editing")
 			@isEditing = false
-			ad = {}
-			$eh.trigger(AD_UPDATE_L, ad)
 		delete: () ->
-			ad = {}
-			$eh.trigger(AD_DELETE_L, ad)
-		onKeyPress: (e) -> @update() if e.which is 13; false
+			$eh.trigger(AD_DELETE_L, @model)
+			return false
+		onKeyPress: (e) -> if e.which is 13 then @update(); false else true
 
 	# AdList class #
 	AdList = Backbone.Collection.extend
@@ -81,19 +119,19 @@ $ () ->
 			"keyup .body"   : "renderCounter"
 			"keypress .body": "onKeyPress"
 		initialize: () ->
-			_.bindAll(@, 'render', 'renderAd')
 			@body    = @$('.body')
 			@list    = @$('.list')
 			@submit  = @$('.submit')
 			@counter = @$('.counter')
 		render: (ads) ->
+			console.log 'AdListView::render'
 			ads.each (ad) =>
-			view = new AdView(model: ad);
-			@list.prepend(view.render().el)
+				view = new AdView(model: ad);
+				@list.prepend(view.render().el)
 			return @
 		renderAd: (ad) ->
+			console.log 'AdListView::renderAd'
 			view = new AdView(model: ad);
-			# insert with slide-down effect
 			li = $(view.render().el).hide()
 			@list.prepend(li)
 			li.slideDown()
@@ -106,12 +144,16 @@ $ () ->
 			else
 				@submit.removeAttr('disabled')
 			return @
+		reset: ->
+			@body.val('')
+			@renderCounter()
 		create: ->
 			val = @body.val()
 			return if val.length is 0
 			$eh.trigger(AD_CREATE_L, body: val)
+			return false
 		onSubmit: () -> @create(); false
-		onKeyPress: (e) -> @create() if e.which is 13; true
+		onKeyPress: (e) -> if e.which is 13 then @create(); false else true
 		onKeyUp: (e) -> @renderCounter(); true
 
 	# AdListRouter class #
@@ -119,33 +161,41 @@ $ () ->
 		initialize: () ->
 			@adList = new AdList()
 			@adListView = new AdListView(el: $("#ad-list-view"))
+			@adList.bind('reset', @adListView.render, @adListView)
+			@adList.bind('add', @adListView.renderAd, @adListView)
 			@adList.fetch()
 			# register events
-			$eh.bind(AD_CREATE_L, @createLocal)
-			$eh.bind(AD_UPDATE_L, @updateLocal)
-			$eh.bind(AD_DELETE_L, @deleteLocal)
-			$eh.bind(AD_CREATE_R, @createRemote)
-			$eh.bind(AD_UPDATE_R, @updateRemote)
-			$eh.bind(AD_DELETE_R, @deleteRemote)
-		createLocal: (ad) ->
-			console.log 'createLocal', ad
-			#@adListView.renderAd(ad)
-		updateLocal: (ad) ->
-			console.log 'updateLocal', ad
-		deleteLocal: (ad) ->
-			console.log 'deleteLocal', ad
-		createRemote: (ad) ->
-			console.log 'createRemote', ad
-		updateRemote: (ad) ->
-			console.log 'updateRemote', ad
-		deleteRemote: (ad) ->
-			console.log 'deleteRemote', ad
+			$eh.bind(AD_CREATE_L, @createLocal, @)
+			$eh.bind(AD_UPDATE_L, @updateLocal, @)
+			$eh.bind(AD_DELETE_L, @deleteLocal, @)
+			$eh.bind(AD_CREATE_R, @createRemote, @)
+			$eh.bind(AD_UPDATE_R, @updateRemote, @)
+			$eh.bind(AD_DELETE_R, @deleteRemote, @)
+		createLocal: (data) ->
+			console.log 'createLocal', data
+			@adList.create(data)
+			@adListView.reset()
+		updateLocal: (model, data) ->
+			console.log 'updateLocal', model, data
+			model.save(data)
+		deleteLocal: (model) ->
+			console.log 'deleteLocal', model
+			model.destroy()
+		createRemote: (data) ->
+			console.log 'createRemote', data
+			@adList.add(data) unless @adList.get(data.id)
+		updateRemote: (data) ->
+			console.log 'updateRemote', data
+			ad.set(data) if ad = @adList.get(data.id)
+		deleteRemote: (id) ->
+			console.log 'deleteRemote', id
+			ad.destroy() if ad = @adList.get(id)
 
 	AppController = Backbone.Router.extend
 		initialize: ->
 			@adListRouter = new AdListRouter()
 	
 	window.$eh = new EventsHub(BAYEUX_URL)
-	$eh.subscribe('/foo')
+	$eh.subscribe(['/foo'])
 	window.$app = new AppController()
 	

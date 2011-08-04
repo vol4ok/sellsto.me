@@ -16,7 +16,7 @@
 			<textarea class="edit-input" name="body">{{body}}</textarea>
 		</div>
 		<%= link_to 'Edit', '#', :class => 'edit-link' %>
-		<%= link_to 'Destroy', '/ads/{{_id}}', method: :delete, :class => 'delete-link' %>
+		<%= link_to 'Destroy', '/ads/{{id}}', method: :delete, :class => 'delete-link' %>
 </script>
 
 <section class="dashboard">
@@ -25,13 +25,13 @@
 	</header>
 	
 	<div id="ad-list-view">
-		<div class="new-ad">
+		<div>
 			<!-- <div class="top-panel">
 				<ul>
 					<li><a href="#" id="upload-image-link">+Image</a></li>
 				</ul>
 			</div> -->
-			<div class="counter"></div>
+			<div class="counter">0</div>
 			<textarea class="body"></textarea>
 			<button class="submit" disabled>Add</button>
 		</div>
