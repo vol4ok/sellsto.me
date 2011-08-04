@@ -1,43 +1,40 @@
 <% content_for :title, "Dashboard" %>
 <% content_for :head do %>
-	<%= javascript_include_tag "http://localhost:4000/bayeux.js" %>
 	<%= stylesheet_link_tag "dashboard" %>
 <% end %>
 
-<script type="text/template" id="ad-template">
+<script type="text/template" id="ad-view">
 		<div class="top">
 			<a href="#" class="user">anonymous</a>
 			<time datetime="{{created_at}}" pubdate="true">{{relative_time(created_at)}}</time>
 		</div>
-		<div class="disp">
+		<div class="show">
 			<p>{{body}}</p>
 		</div>
 		<div class="edit">
 			<textarea class="edit-input" name="body">{{body}}</textarea>
 		</div>
 		<%= link_to 'Edit', '#', :class => 'edit-link' %>
-		<%= link_to 'Destroy', '/ads/{{_id}}', method: :delete, :class => 'destroy-link' %>
+		<%= link_to 'Destroy', '/ads/{{_id}}', method: :delete, :class => 'delete-link' %>
 </script>
 
-<section>
+<section class="dashboard">
 	<header>
 		<h1>Dashboard</h1>
 	</header>
 	
-	<div id="ads">
-		<div class="new-ad" id="new-ad">
-			<div class="top-panel">
+	<div id="ad-list-view">
+		<div class="new-ad">
+			<!-- <div class="top-panel">
 				<ul>
-					<li>
-						<a href="#" id="upload-image-link">+Image</a>
-					</li>
+					<li><a href="#" id="upload-image-link">+Image</a></li>
 				</ul>
-			</div>
-			<div id="counter"></div>
-			<textarea id="ad-body"></textarea>
-			<button class="button-white" id="submit" disabled>Add</button>
+			</div> -->
+			<div class="counter"></div>
+			<textarea class="body"></textarea>
+			<button class="submit" disabled>Add</button>
 		</div>
-		<ul id="ad-list">
+		<ul class="list">
 		</ul>
 	</div>
 	

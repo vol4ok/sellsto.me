@@ -1,142 +1,151 @@
-window.relative_time = (date, date0 = new Date()) ->
-	date = new Date(date)
-	date1 = new Date(date0)
-	date1.setHours(0)
-	date1.setMinutes(0)
-	date1.setSeconds(0)
-	date1.setMilliseconds(0)
-	ds = parseInt((date0.getTime() - date.getTime()) / 1000)
-	ps = ds - parseInt((date0.getTime() - date1.getTime()) / 1000)
-	if ds < 60
-		return 'меньше минуты назад'
-	else if ds < 120
-		return 'около минуты назад'
-	else if ds < (60*60)
-		m = parseInt(ds/60)
-		return m + if m < 5 then ' минуты назад' else ' минут назад'
-	else if ds < (120*60)
-		return 'около часа назад';
-	else if ds < (24*60*60)
-		return "около #{parseInt(ds/3600)} часов назад"
-	else if ps < (24*60*60)
-		return 'вчера'
-	else if ps < (48*60*60)
-		return 'позавчера'
-	else
-		d = parseInt(ps/86400)+1
-		return d + if d < 5 then ' дня назад' else ' дней назад'
-	
+# Definitions #
+AD_CREATE_L = 'ad:create.local'
+AD_UPDATE_L = 'ad:update.local'
+AD_DELETE_L = 'ad:delete.local'
+AD_CREATE_R = 'ad:create.remote'
+AD_UPDATE_R = 'ad:update.remote'
+AD_DELETE_R = 'ad:delete.remote'
+AD_API_URL = 'http://localhost:4000/ads'
+BAYEUX_URL = 'http://localhost:4000/bayeux'
+
 $ () ->
 	_.templateSettings = interpolate: /\{\{(.+?)\}\}/g
 	
-	window.Ad = Backbone.Model.extend
-		idAttribute: '_id'
-		initialize: ->
-			reltime = relative_time(@get('created_at'))
-		clear: ->
-			@destroy()
-			@view.remove()
-			
-	window.AdList = Backbone.Collection.extend
-		model: Ad
-		url: 'http://localhost:4000/ads'
-	
-	window.AdView = Backbone.View.extend
+	# EventHab Class #
+	EventsHub = (options) ->
+		@initialize.apply(@, arguments)
+		return
+	_.extend EventsHub.prototype, Backbone.Events,
+		initialize: (bayeuxUrl) ->
+			@bayeux = new Faye.Client(bayeuxUrl) if bayeuxUrl
+		subscribe: (channels) ->
+			return false unless @bayeux
+			if _.isArray(channels)
+				for channel in channels
+					@bayeux.subscribe(channel, @_listen)
+			else
+				@bayeux.subscribe(channels, @_listen)
+			return true
+		_isValid: (message) ->
+			return true
+		_listen: (message) ->
+			return unless @_isValid(message)
+			@trigger("#{msg.class}:#{msg.action}.remote")
+
+	# Ad Class #
+	Ad = Backbone.Model.extend()
+
+	# AdView Class #
+	AdView = Backbone.View.extend
 		tagName: 'li'
-		template: _.template($('#ad-template').html())
-		events: 
-			"click .destroy-link": "clear"
-			"click .edit-link" : "edit"
-			"dblclick .disp" : "edit"
+		template: _.template($('#ad-view').html())
+		events:
+			"click .delete-link"  : "delete"
+			"click .edit-link"    : "edit"
+			"dblclick .show"      : "edit"
+			"focusout .edit-input": "update"
 			"keypress .edit-input": "onKeyPress"
-			"focusout .edit-input": "editComplete"
-		initialize: ->
+		initialize: () ->
 			_.bindAll(@, 'render')
-			@model.bind('change', @render)
-			@model.view = @
-			@lock = false
-		render: ->
+			@isEditing = false
+		render: () ->
 			$(@el).html(@template(this.model.toJSON()))
-			@text = @$('.disp p')
+			@disp  = @$('.show p')
 			@input = @$('.edit-input')
-			return @
-		clear: ->
-			ads.remove(@model)
-			false
-		remove: ->
-			$el = $(@el)
-			$el.slideUp ->
-				$el.remove()
-		onKeyPress: (e) ->
-			if e.which is 13
-				@editComplete()
-				return false
-		edit: ->
+		edit: () ->
+			return if @isEditing
 			@input.css(width: @text.width())
 			@input.css(height: @text.height())
 			$(@el).addClass("editing")
 			@input.focus()
-			@edit = true
-		editComplete: ->
-			return unless @edit
-			@edit = false
-			@model.save(body: @input.val())
-			$(@el).removeClass("editing")
-			return false
-			
-	window.AppView = Backbone.View.extend
-		el: $("#ads")
+			@isEditing = true
+		update: () ->
+			return unless @isEditing
+			@isEditing = false
+			ad = {}
+			$eh.trigger(AD_UPDATE_L, ad)
+		delete: () ->
+			ad = {}
+			$eh.trigger(AD_DELETE_L, ad)
+		onKeyPress: (e) -> @update() if e.which is 13; false
+
+	# AdList class #
+	AdList = Backbone.Collection.extend
+		model: Ad
+		url: AD_API_URL
+
+	# AdListView class #
+	AdListView = Backbone.View.extend
 		events: 
-			"click #submit": "newAd"
-			"keyup #ad-body":  "renderCounter"
-			"keypress #ad-body":  "onKeyPress"
-		initialize: ->
-			_.bindAll(@, 'addOne', 'addAll')
-			@input = @$('#ad-body')
-			@list = @$('#ad-list')
-			@counter = @$('#counter')
-			@submit = @$('#submit')
-			ads.bind('add', @addOne)
-			ads.bind('reset', @addAll)
-			ads.fetch()
-			@renderCounter()
-		addOne: (ad) ->
-			view = new AdView(model: ad);
-			$li = $(view.render().el).hide()
-			@list.prepend($li)
-			$li.slideDown()
-		addAll: ->
+			"click .submit" : "onSubmit"
+			"keyup .body"   : "renderCounter"
+			"keypress .body": "onKeyPress"
+		initialize: () ->
+			_.bindAll(@, 'render', 'renderAd')
+			@body    = @$('.body')
+			@list    = @$('.list')
+			@submit  = @$('.submit')
+			@counter = @$('.counter')
+		render: (ads) ->
 			ads.each (ad) =>
-				view = new AdView(model: ad);
-				@list.prepend(view.render().el)
-		renderCounter: ->
-			len = @input.val().length
-			@counter.html(len)
+			view = new AdView(model: ad);
+			@list.prepend(view.render().el)
+			return @
+		renderAd: (ad) ->
+			view = new AdView(model: ad);
+			# insert with slide-down effect
+			li = $(view.render().el).hide()
+			@list.prepend(li)
+			li.slideDown()
+			return @
+		renderCounter: () ->
+			len = @body.val().length
+			@counter.text(len)
 			if len is 0
 				@submit.attr(disabled: true)
 			else
 				@submit.removeAttr('disabled')
 			return @
-		newAd: ->
-			val = @input.val()
+		create: ->
+			val = @body.val()
 			return if val.length is 0
-			ad = body: val
-			ads.create(ad);
-			@input.val('')
-			@renderCounter()
-			false
-		onKeyPress: (e) ->
-			if e.which is 13 # and e.ctrlKey is on
-				@newAd()
-				@input.blur()
-				return false
+			$eh.trigger(AD_CREATE_L, body: val)
+		onSubmit: () -> @create(); false
+		onKeyPress: (e) -> @create() if e.which is 13; true
+		onKeyUp: (e) -> @renderCounter(); true
+
+	# AdListRouter class #
+	AdListRouter = Backbone.Router.extend
+		initialize: () ->
+			@adList = new AdList()
+			@adListView = new AdListView(el: $("#ad-list-view"))
+			@adList.fetch()
+			# register events
+			$eh.bind(AD_CREATE_L, @createLocal)
+			$eh.bind(AD_UPDATE_L, @updateLocal)
+			$eh.bind(AD_DELETE_L, @deleteLocal)
+			$eh.bind(AD_CREATE_R, @createRemote)
+			$eh.bind(AD_UPDATE_R, @updateRemote)
+			$eh.bind(AD_DELETE_R, @deleteRemote)
+		createLocal: (ad) ->
+			console.log 'createLocal', ad
+			#@adListView.renderAd(ad)
+		updateLocal: (ad) ->
+			console.log 'updateLocal', ad
+		deleteLocal: (ad) ->
+			console.log 'deleteLocal', ad
+		createRemote: (ad) ->
+			console.log 'createRemote', ad
+		updateRemote: (ad) ->
+			console.log 'updateRemote', ad
+		deleteRemote: (ad) ->
+			console.log 'deleteRemote', ad
+
+	AppController = Backbone.Router.extend
+		initialize: ->
+			@adListRouter = new AdListRouter()
 	
-	window.ads = new AdList	
-	window.app = new AppView;
-	window.client = new Faye.Client('http://localhost:4000/bayeux')
-	sub = client.subscribe '/foo', (msg)->
-		console.log 'message', msg
-		switch msg.action
-			when 'create' then ads.add(msg.ad) unless ads.get(msg.ad._id)
-			when 'update' then ad.set(msg.ad) if ad = ads.get(msg.ad._id)
-			when 'delete' then ad.clear() if ad = ads.get(msg._id)
+	window.$eh = new EventsHub(BAYEUX_URL)
+	$eh.subscribe('/foo')
+	window.$app = new AppController()
+	

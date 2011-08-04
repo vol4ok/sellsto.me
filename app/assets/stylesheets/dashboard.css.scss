@@ -2,19 +2,18 @@
 @import "config";
 @import "helpers";
 
-section {
-	.top-panel {
-		li {
-			position: relative;
-			top: 4px;
-			float: left;
-			margin-left: 10px;
-			font-size: 11px;
-			&:first-child { margin-left: 0; }
-		}
-	}
+#ad-list-view {
 	
-	#counter {
+//	.top-panel li {
+//		position: relative;
+//		top: 4px;
+//		float: left;
+//		margin-left: 10px;
+//		font-size: 11px;
+//		&:first-child { margin-left: 0; }
+//	}
+	
+	.counter {
 		float: right;
 		text-align: right;
 		margin-bottom: 8px;
@@ -22,7 +21,7 @@ section {
 		color: #ddd;
 	}
 	
-	textarea#ad-body {
+	.body {
 		padding: 5px;
 		width: 100%;
 		height: 40px;
@@ -35,7 +34,7 @@ section {
 		}
 	}
 	
-	#submit {
+	.submit {
 		border: 1px solid #ddd;
 		font-size: 21px;
 		padding: 4px 16px;
@@ -53,54 +52,51 @@ section {
 		}
 	}
 	
-	ul#ad-list {
-		li {
-			position: relative;
-			overflow: hidden;
-			padding: 15px 5px;
-			width: 100%;
-			border-top: 1px solid white;
-			border-bottom: 1px solid #ddd;
-			a { font-size: 11px; }
-			&:first-child { border-top: none; }
-			&:last-child { border-bottom: none; }
-			
-			.user {
-				overflow: hidden;
-				font-size: 11px;
-				color: #777;
-			}
-			
-			time {
-				float: right;
-				text-align: right;
-				font-size: 11px;
-				color: #777;
-			}
-			
-			&.editing .disp, .edit { display: none; }
-			&.editing .edit { display: block !important; }
-			.edit {
-				margin-left: -5px;
-				.edit-input {
-					font-family: $body-font;
-					border: 1px solid #dedede;
-					font-size: 13px;
-					padding: 2px 0 2px 4px;
-					margin: 0;
-					line-height: $line-height;
-					overflow: hidden;
-					@include border-radius(4px);
-				}
-			}
+	.ad-list li {
+		position: relative;
+		overflow: hidden;
+		padding: 15px 5px;
+		width: 100%;
+		border-top: 1px solid white;
+		border-bottom: 1px solid #ddd;
+		a { font-size: 11px; }
+		&:first-child { border-top: none; }
+		&:last-child { border-bottom: none; }
 
-			.disp p {
+		.user {
+			overflow: hidden;
+			font-size: 11px;
+			color: #777;
+		}
+
+		time {
+			float: right;
+			text-align: right;
+			font-size: 11px;
+			color: #777;
+		}
+
+		&.editing .show, .edit { display: none; }
+		&.editing .edit { display: block !important; }
+		.edit {
+			margin-left: -5px;
+			.edit-input {
 				font-family: $body-font;
-				padding: 3px 0 9px 0px;
+				border: 1px solid #dedede;
 				font-size: 13px;
+				padding: 2px 0 2px 4px;
+				margin: 0;
 				line-height: $line-height;
+				overflow: hidden;
+				@include border-radius(4px);
 			}
 		}
+
+		.show p {
+			font-family: $body-font;
+			padding: 3px 0 9px 0px;
+			font-size: 13px;
+			line-height: $line-height;
+		}
 	}
-	
 }
