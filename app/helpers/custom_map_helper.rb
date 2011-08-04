@@ -1,0 +1,2 @@
+module CustomMapHelper
+end
