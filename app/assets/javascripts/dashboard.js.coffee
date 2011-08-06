@@ -46,6 +46,7 @@ $ () ->
 		return
 	_.extend EventsHub.prototype, Backbone.Events,
 		initialize: (bayeuxUrl) ->
+			@clientId = Math.round(Math.random()*10000)
 			@bayeux = new Faye.Client(bayeuxUrl) if bayeuxUrl
 		subscribe: (channels) ->
 			return false unless @bayeux
@@ -63,7 +64,8 @@ $ () ->
 			@trigger("#{message.class}:#{message.action}.remote",message.data)
 
 	# Ad Class #
-	Ad = Backbone.Model.extend()
+	Ad = Backbone.Model.extend
+		idAttribute: '_id',
 
 	# AdView Class #
 	AdView = Backbone.View.extend
@@ -91,17 +93,17 @@ $ () ->
 			return @
 		edit: () ->
 			return if @isEditing
+			@isEditing = true
 			@input.css(width: @text.width())
 			@input.css(height: @text.height())
 			$(@el).addClass("editing")
 			@input.focus()
-			@isEditing = true
 			return false
 		update: () ->
 			return unless @isEditing
+			@isEditing = false
 			$eh.trigger(AD_UPDATE_L, @model, body: @input.val())
 			$(@el).removeClass("editing")
-			@isEditing = false
 		delete: () ->
 			$eh.trigger(AD_DELETE_L, @model)
 			return false
@@ -183,10 +185,10 @@ $ () ->
 			model.destroy()
 		createRemote: (data) ->
 			console.log 'createRemote', data
-			@adList.add(data) unless @adList.get(data.id)
+			@adList.add(data) unless @adList.get(data._id)
 		updateRemote: (data) ->
 			console.log 'updateRemote', data
-			ad.set(data) if ad = @adList.get(data.id)
+			ad.set(data) if ad = @adList.get(data._id)
 		deleteRemote: (id) ->
 			console.log 'deleteRemote', id
 			ad.destroy() if ad = @adList.get(id)
