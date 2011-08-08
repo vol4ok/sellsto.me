@@ -6,3 +6,13 @@ tmp/
 .rvmrc
 *.DS_Store
 config/mongoid.yml
+/.idea/.generators
+/.idea/.name
+/.idea/.rakeTasks
+/.idea/encodings.xml
+/.idea/misc.xml
+/.idea/modules.xml
+/.idea/sellsto.me.iml
+/.idea/vcs.xml
+/.idea/workspace.xml
+/data
