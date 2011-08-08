@@ -5,6 +5,7 @@ AD_DELETE_L = 'ad:delete.local'
 AD_CREATE_R = 'ad:create.remote'
 AD_UPDATE_R = 'ad:update.remote'
 AD_DELETE_R = 'ad:delete.remote'
+AD_UPLOAD_L = 'ad:upload.local'
 AD_API_URL = 'http://localhost:4000/ads'
 BAYEUX_URL = 'http://localhost:4000/bayeux'
 
@@ -40,11 +41,11 @@ window.relative_time = (date, date0 = new Date()) ->
 $ () ->
 	_.templateSettings = interpolate: /\{\{(.+?)\}\}/g
 	
-	# EventHab Class #
-	EventsHub = (options) ->
+	# EventEmitter Class #
+	EventEmitter = (options) ->
 		@initialize.apply(@, arguments)
 		return
-	_.extend EventsHub.prototype, Backbone.Events,
+	_.extend EventEmitter.prototype, Backbone.Events,
 		initialize: (bayeuxUrl) ->
 			@clientId = Math.round(Math.random()*10000)
 			@bayeux = new Faye.Client(bayeuxUrl) if bayeuxUrl
@@ -57,15 +58,28 @@ $ () ->
 				@bayeux.subscribe(channels, @_listen, @)
 			return true
 		_isValid: (message) ->
+			if message.clientId and parseInt(message.clientId) is @clientId
+				console.warn 'filter message', message
+				return false
 			return true
 		_listen: (message) ->
 			return unless @_isValid(message)
 			console.log "trigger: #{message.class}:#{message.action}.remote", message
-			@trigger("#{message.class}:#{message.action}.remote",message.data)
+			@trigger("#{message.class}:#{message.action}.remote", message.data)
 
 	# Ad Class #
 	Ad = Backbone.Model.extend
-		idAttribute: '_id',
+		idAttribute: '_id'
+		sync: (method, model, options) ->
+			data =
+				class: 'ad'
+				method: method
+				clientId: $ee.clientId
+			if method is 'create' or method is 'update'
+				data.data = model.toJSON()
+			options.contentType = 'application/json'
+			options.data = JSON.stringify(data)
+			return Backbone.sync(method, model, options)
 
 	# AdView Class #
 	AdView = Backbone.View.extend
@@ -102,10 +116,10 @@ $ () ->
 		update: () ->
 			return unless @isEditing
 			@isEditing = false
-			$eh.trigger(AD_UPDATE_L, @model, body: @input.val())
+			$ee.trigger(AD_UPDATE_L, @model, body: @input.val())
 			$(@el).removeClass("editing")
 		delete: () ->
-			$eh.trigger(AD_DELETE_L, @model)
+			$ee.trigger(AD_DELETE_L, @model)
 			return false
 		onKeyPress: (e) -> if e.which is 13 then @update(); false else true
 
@@ -117,14 +131,16 @@ $ () ->
 	# AdListView class #
 	AdListView = Backbone.View.extend
 		events: 
-			"click .submit" : "onSubmit"
-			"keyup .body"   : "renderCounter"
-			"keypress .body": "onKeyPress"
+			"click .submit"     : "onSubmit"
+			"keyup .body"       : "renderCounter"
+			"keypress .body"    : "onKeyPress"
+			"change .file-input": "onFileSelect"
 		initialize: () ->
 			@body    = @$('.body')
 			@list    = @$('.list')
 			@submit  = @$('.submit')
 			@counter = @$('.counter')
+			@fileInput = @$('.file-input')
 		render: (ads) ->
 			console.log 'AdListView::render'
 			ads.each (ad) =>
@@ -152,11 +168,15 @@ $ () ->
 		create: ->
 			val = @body.val()
 			return if val.length is 0
-			$eh.trigger(AD_CREATE_L, body: val)
+			$ee.trigger(AD_CREATE_L, body: val)
 			return false
 		onSubmit: () -> @create(); false
 		onKeyPress: (e) -> if e.which is 13 then @create(); false else true
 		onKeyUp: (e) -> @renderCounter(); true
+		onFileSelect: ->
+			console.log @fileInput[0].files
+			$ee.trigger(AD_UPLOAD_L, @fileInput[0].files)
+			
 
 	# AdListRouter class #
 	AdListRouter = Backbone.Router.extend
@@ -167,12 +187,13 @@ $ () ->
 			@adList.bind('add', @adListView.renderAd, @adListView)
 			@adList.fetch()
 			# register events
-			$eh.bind(AD_CREATE_L, @createLocal, @)
-			$eh.bind(AD_UPDATE_L, @updateLocal, @)
-			$eh.bind(AD_DELETE_L, @deleteLocal, @)
-			$eh.bind(AD_CREATE_R, @createRemote, @)
-			$eh.bind(AD_UPDATE_R, @updateRemote, @)
-			$eh.bind(AD_DELETE_R, @deleteRemote, @)
+			$ee.bind(AD_CREATE_L, @createLocal, @)
+			$ee.bind(AD_UPDATE_L, @updateLocal, @)
+			$ee.bind(AD_DELETE_L, @deleteLocal, @)
+			$ee.bind(AD_CREATE_R, @createRemote, @)
+			$ee.bind(AD_UPDATE_R, @updateRemote, @)
+			$ee.bind(AD_DELETE_R, @deleteRemote, @)
+			$ee.bind(AD_UPLOAD_L, @filesUpload, @)
 		createLocal: (data) ->
 			console.log 'createLocal', data
 			@adList.create(data)
@@ -183,6 +204,7 @@ $ () ->
 		deleteLocal: (model) ->
 			console.log 'deleteLocal', model
 			model.destroy()
+			@adList.remove(model)
 		createRemote: (data) ->
 			console.log 'createRemote', data
 			@adList.add(data) unless @adList.get(data._id)
@@ -191,13 +213,29 @@ $ () ->
 			ad.set(data) if ad = @adList.get(data._id)
 		deleteRemote: (id) ->
 			console.log 'deleteRemote', id
-			ad.destroy() if ad = @adList.get(id)
+			if ad = @adList.get(id)
+				ad.trigger('destroy', ad, ad.collection)
+				@adList.remove(ad)
+		filesUpload: (files) ->
+			console.log 'filesUpload'
+			for file in files
+				console.log file
+				xhr = new XMLHttpRequest()                                
+				xhr.upload.onprogress = (e) -> console.log Math.round(e.loaded/e.total*100) if e.lengthComputable
+				# uri = "http://localhost:4000/ads/upload?#{$.param('filename':file.name)}"
+				uri = 'http://localhost:4000/ads/upload'
+				console.log uri
+				xhr.open("POST", uri, true)
+				# xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest")
+				# xhr.setRequestHeader("X-File-Name", encodeURIComponent(file.name))
+				xhr.setRequestHeader("Content-Type", "application/octet-stream")
+				xhr.send(file)
 
 	AppController = Backbone.Router.extend
 		initialize: ->
 			@adListRouter = new AdListRouter()
 	
-	window.$eh = new EventsHub(BAYEUX_URL)
-	$eh.subscribe(['/foo'])
+	window.$ee = new EventEmitter(BAYEUX_URL)
+	$ee.subscribe(['/foo'])
 	window.$app = new AppController()
 	
