@@ -5,6 +5,7 @@ AD_DELETE_L = 'ad:delete.local'
 AD_CREATE_R = 'ad:create.remote'
 AD_UPDATE_R = 'ad:update.remote'
 AD_DELETE_R = 'ad:delete.remote'
+AD_UPLOAD_L = 'ad:upload.local'
 AD_API_URL = 'http://localhost:4000/ads'
 BAYEUX_URL = 'http://localhost:4000/bayeux'
 
@@ -130,14 +131,16 @@ $ () ->
 	# AdListView class #
 	AdListView = Backbone.View.extend
 		events: 
-			"click .submit" : "onSubmit"
-			"keyup .body"   : "renderCounter"
-			"keypress .body": "onKeyPress"
+			"click .submit"     : "onSubmit"
+			"keyup .body"       : "renderCounter"
+			"keypress .body"    : "onKeyPress"
+			"change .file-input": "onFileSelect"
 		initialize: () ->
 			@body    = @$('.body')
 			@list    = @$('.list')
 			@submit  = @$('.submit')
 			@counter = @$('.counter')
+			@fileInput = @$('.file-input')
 		render: (ads) ->
 			console.log 'AdListView::render'
 			ads.each (ad) =>
@@ -170,6 +173,10 @@ $ () ->
 		onSubmit: () -> @create(); false
 		onKeyPress: (e) -> if e.which is 13 then @create(); false else true
 		onKeyUp: (e) -> @renderCounter(); true
+		onFileSelect: ->
+			console.log @fileInput[0].files
+			$ee.trigger(AD_UPLOAD_L, @fileInput[0].files)
+			
 
 	# AdListRouter class #
 	AdListRouter = Backbone.Router.extend
@@ -186,6 +193,7 @@ $ () ->
 			$ee.bind(AD_CREATE_R, @createRemote, @)
 			$ee.bind(AD_UPDATE_R, @updateRemote, @)
 			$ee.bind(AD_DELETE_R, @deleteRemote, @)
+			$ee.bind(AD_UPLOAD_L, @filesUpload, @)
 		createLocal: (data) ->
 			console.log 'createLocal', data
 			@adList.create(data)
@@ -208,6 +216,20 @@ $ () ->
 			if ad = @adList.get(id)
 				ad.trigger('destroy', ad, ad.collection)
 				@adList.remove(ad)
+		filesUpload: (files) ->
+			console.log 'filesUpload'
+			for file in files
+				console.log file
+				xhr = new XMLHttpRequest()                                
+				xhr.upload.onprogress = (e) -> console.log Math.round(e.loaded/e.total*100) if e.lengthComputable
+				# uri = "http://localhost:4000/ads/upload?#{$.param('filename':file.name)}"
+				uri = 'http://localhost:4000/ads/upload'
+				console.log uri
+				xhr.open("POST", uri, true)
+				# xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest")
+				# xhr.setRequestHeader("X-File-Name", encodeURIComponent(file.name))
+				xhr.setRequestHeader("Content-Type", "application/octet-stream")
+				xhr.send(file)
 
 	AppController = Backbone.Router.extend
 		initialize: ->
