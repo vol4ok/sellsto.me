@@ -7,6 +7,7 @@ AD_UPDATE_R = 'ad:update.remote'
 AD_DELETE_R = 'ad:delete.remote'
 AD_UPLOAD_L = 'ad:upload.local'
 AD_API_URL = 'http://localhost:4000/ads'
+AD_UPLOAD_URL = 'http://localhost:4000/ads/upload'
 BAYEUX_URL = 'http://localhost:4000/bayeux'
 
 # helpers #
@@ -96,7 +97,6 @@ $ () ->
 			@model.bind('change', @render, @)
 			@model.bind('destroy', @remove, @)
 		render: () ->
-			console.log 'AdView::render', @model
 			$(@el).html(@template(@model.toJSON()))
 			@text  = @$('.show p')
 			@input = @$('.edit-input')
@@ -134,22 +134,21 @@ $ () ->
 			"click .submit"     : "onSubmit"
 			"keyup .body"       : "renderCounter"
 			"keypress .body"    : "onKeyPress"
-			"change .file-input": "onFileSelect"
 		initialize: () ->
 			@body    = @$('.body')
 			@list    = @$('.list')
 			@submit  = @$('.submit')
 			@counter = @$('.counter')
-			@fileInput = @$('.file-input')
+		#TODO: rename to `renderAll`
 		render: (ads) ->
-			console.log 'AdListView::render'
 			ads.each (ad) =>
-				view = new AdView(model: ad);
+				view = new AdView(model: ad)
 				@list.prepend(view.render().el)
 			return @
+		#TODO: rename to `renderOne`
 		renderAd: (ad) ->
 			console.log 'AdListView::renderAd'
-			view = new AdView(model: ad);
+			view = new AdView(model: ad)
 			li = $(view.render().el).hide()
 			@list.prepend(li)
 			li.slideDown()
@@ -173,9 +172,103 @@ $ () ->
 		onSubmit: () -> @create(); false
 		onKeyPress: (e) -> if e.which is 13 then @create(); false else true
 		onKeyUp: (e) -> @renderCounter(); true
-		onFileSelect: ->
+			
+	Upload = Backbone.Model.extend
+		url: AD_UPLOAD_URL
+		initialize: (file) ->
+			_.bindAll(@, 'onStart', 'onStateChange', 'onProgress', 'onFinish', 'onAbort', 'onError')
+			@xhr = new XMLHttpRequest()                                
+			@xhr.onreadystatechange = @onStateChange
+			@xhr.onloadstart = @onStart
+			@xhr.onload = @onFinish
+			@xhr.onabort = @onAbort
+			@xhr.onerror = @onError
+			@xhr.upload.onprogress = @onProgress
+		start: ->
+			@xhr.open("POST", @url, true)
+			@xhr.setRequestHeader("Content-Type", "application/octet-stream")
+			console.log @xhr
+			@xhr.send(@get('file'))
+		abort: ->
+			console.log 'abort'
+			@xhr.abort()
+		onStateChange: (e) ->
+			console.log 'onStateChange', @xhr.readyState, @get('file').fileName
+		onStart: (e) ->
+			console.log 'onStart', @get('file').fileName
+			@trigger('start', @get('file'))
+		onProgress: (e) ->
+			if e.lengthComputable
+				#console.log 'progress',Math.round(e.loaded/e.total*100), e, @get('file').fileName
+				@trigger('progress', @get('file'), Math.round(e.loaded/e.total*100))
+		onFinish: (e) ->
+			console.log 'finish', @xhr.response, @get('file').fileName
+			@trigger('finish', @get('file'))
+		onAbort: (e) ->
+			console.log 'onAbort'
+		onError: (e) ->
+			console.log 'error', @xhr.readyState, @get('file').fileName
+			@trigger('error', @get('file'))
+		sync: -> return false # prevent default sync methods
+			
+	UploadList = Backbone.Collection.extend
+		model: Upload
+		initialize: ->
+		sync: -> return false # prevent default sync methods
+			
+	UploadView = Backbone.View.extend
+		tagName: 'li'
+		template: _.template($('#upload-view').html())
+		events:
+			"click .abort-link": "onAbort"
+		initialize: ->
+			@model.bind('start', @showProgress, @)
+			@model.bind('progress', @renderProgress, @)
+			@model.bind('finish', @renderFinish, @)
+		render: ->
+			$(@el).html(@template(@model.toJSON()))
+			@progress = @$('.progress')
+			return @
+		showProgress: (file) ->
+			@progress.text("0%")
+			@progress.show()
+			return @
+		renderProgress: (file, progress) ->
+			@progress.text("#{progress}%")
+			return @
+		renderFinish: (file) ->
+			@progress.hide()
+			return @
+		onAbort: () ->
+			console.log 'onAbort'
+			$ee.trigger('ad:upload:abort.local', @model)
+			
+	UploadListView = Backbone.View.extend
+		events: 
+			"change .file-input": "onSelect"
+		initialize: () ->
+			@fileInput = @$('.file-input')
+			@list = @$('.upload-list')
+		renderAll: (uploads) ->
+			uploads.each (upload) =>
+				view = new UploadView(model: upload)
+				li = @list.prepend(view.render().el).hide()
+				@list.prepend(li)
+				li.slideDown()
+				upload.start()
+			return @
+		renderNew: (upload) ->
+			return @renderAll(upload) if _.isArray(upload)
+			view = new UploadView(model: upload)
+			li = $(view.render().el).hide()
+			@list.prepend(li)
+			li.slideDown()
+			upload.start()
+			return @
+		onSelect: ->
 			console.log @fileInput[0].files
 			$ee.trigger(AD_UPLOAD_L, @fileInput[0].files)
+			
 			
 
 	# AdListRouter class #
@@ -185,6 +278,11 @@ $ () ->
 			@adListView = new AdListView(el: $("#ad-list-view"))
 			@adList.bind('reset', @adListView.render, @adListView)
 			@adList.bind('add', @adListView.renderAd, @adListView)
+			
+			@uploadList = new UploadList()
+			@uploadListView = new UploadListView(el: $("#upload-list-view"))
+			@uploadList.bind('add', @uploadListView.renderNew, @uploadListView)
+			
 			@adList.fetch()
 			# register events
 			$ee.bind(AD_CREATE_L, @createLocal, @)
@@ -205,7 +303,7 @@ $ () ->
 			console.log 'deleteLocal', model
 			model.destroy()
 			@adList.remove(model)
-		createRemote: (data) ->
+		createRemote: (data) -> 
 			console.log 'createRemote', data
 			@adList.add(data) unless @adList.get(data._id)
 		updateRemote: (data) ->
@@ -216,20 +314,13 @@ $ () ->
 			if ad = @adList.get(id)
 				ad.trigger('destroy', ad, ad.collection)
 				@adList.remove(ad)
-		filesUpload: (files) ->
+		filesUpload: (fileList) ->
 			console.log 'filesUpload'
-			for file in files
-				console.log file
-				xhr = new XMLHttpRequest()                                
-				xhr.upload.onprogress = (e) -> console.log Math.round(e.loaded/e.total*100) if e.lengthComputable
-				# uri = "http://localhost:4000/ads/upload?#{$.param('filename':file.name)}"
-				uri = 'http://localhost:4000/ads/upload'
-				console.log uri
-				xhr.open("POST", uri, true)
-				# xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest")
-				# xhr.setRequestHeader("X-File-Name", encodeURIComponent(file.name))
-				xhr.setRequestHeader("Content-Type", "application/octet-stream")
-				xhr.send(file)
+			files = []
+			for file in fileList
+				files.push({'file': file} )
+			console.log files
+			@uploadList.add(files)
 
 	AppController = Backbone.Router.extend
 		initialize: ->
