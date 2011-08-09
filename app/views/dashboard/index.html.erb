@@ -19,17 +19,19 @@
 		<%= link_to 'Destroy', '/ads/{{_id}}', method: :delete, :class => 'delete-link' %>
 </script>
 
+<script type="text/template" id="upload-view">
+		{{file.fileName}} {{file.fileSize}} <span style="displat:none;color:red;" class="progress">0%</span>
+</script>
+
 <section class="dashboard">
 	<header>
 		<h1>Dashboard</h1>
 	</header>
-	
 	<div id="ad-list-view">
 		<div>
-			<div class="top-panel">
-				<ul>
-					<li><input class="file-input" type="file" multiple></li>
-				</ul>
+			<div id="upload-list-view">
+				<input class="file-input" type="file" multiple>
+				<ul class="upload-list"></ul>
 			</div>
 			<div class="counter">0</div>
 			<textarea class="body"></textarea>
