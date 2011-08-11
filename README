@@ -38,3 +38,24 @@ DELETE /ads/:id
 *** Code Style
 $ — global vars
 obj can refs only to global and child obj
+use explicit return
+right:
+	foo = ->
+		...
+		return result
+wrong:
+	foo = ->
+		...
+		result
+
+use @ for treatment to the instance variables and methods
+right:
+	@foo
+wrong
+	this.foo
+
+in other ways use this
+right:
+	return this
+wrong:
+	return @

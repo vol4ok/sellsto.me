@@ -20,25 +20,27 @@
 </script>
 
 <script type="text/template" id="upload-view">
-		{{file.fileName}} {{file.fileSize}} <span style="displat:none;color:red;" class="progress">0%</span>
+		{{file.fileName}} {{file.fileSize}} 
+		<span style="displat:none;color:red;" class="progress">0%</span>
+		<a href="#" class="delete-link">remove</a>
 </script>
 
 <section class="dashboard">
 	<header>
 		<h1>Dashboard</h1>
 	</header>
-	<div id="ad-list-view">
-		<div>
-			<div id="upload-list-view">
-				<input class="file-input" type="file" multiple>
-				<ul class="upload-list"></ul>
-			</div>
-			<div class="counter">0</div>
-			<textarea class="body"></textarea>
-			<button class="submit" disabled>Add</button>
+	
+	<div id="ad-builder-view">
+		<div class="upload-list">
+			<input class="file-input" type="file" multiple>
+			<ul class="upload-list"></ul>
 		</div>
-		<ul class="list">
-		</ul>
+		<div class="counter">0</div>
+		<textarea class="body-input"></textarea>
+		<button class="submit-button" disabled>Add</button>
 	</div>
+	
+	<ul id="ad-list-view">
+	</ul>
 	
 </section>
