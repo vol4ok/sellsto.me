@@ -2,6 +2,20 @@
 #= require map/google/overlays
 
 namespace "sellstome.map", (() ->
+  # import section
+  googlemaps = google.maps
+  LatLng = googlemaps.LatLng
+  Marker = googlemaps.Marker
+  MapTypeId = googlemaps.MapTypeId
+  ZoomControlStyle = googlemaps.ZoomControlStyle
+  Map = googlemaps.Map
+  Circle = googlemaps.Circle
+  ControlPosition = googlemaps.ControlPosition
+  sellstomegooglemap = sellstome.googlemap
+  RadiusSelector = sellstomegooglemap.controls.RadiusSelector
+  Canvas = sellstome.googlemap.overlays.Canvas
+
+
   #Private members
   markers = new Array()
 
@@ -13,14 +27,14 @@ namespace "sellstome.map", (() ->
   #Public members
   return {
       initializeGoogleMap: () ->
-          latlngMap = new google.maps.LatLng -34.397, 150.644
+          latlngMap = new LatLng -34.397, 150.644
           myOptions =
               zoom: 8
               center: latlngMap
-              mapTypeId: google.maps.MapTypeId.TERRAIN
+              mapTypeId: MapTypeId.TERRAIN
               zoomControlOptions:
-                style: google.maps.ZoomControlStyle.SMALL
-          map = new google.maps.Map document.getElementById("map_canvas") , myOptions
+                style: ZoomControlStyle.SMALL
+          map = new Map document.getElementById("map_canvas") , myOptions
           window.googleMap = map
           circleOptions =
             strokeColor: "#FF0000"
@@ -31,11 +45,13 @@ namespace "sellstome.map", (() ->
             map: map
             center: latlngMap
             radius: 1700
-          circle = new google.maps.Circle circleOptions
+          circle = new Circle(circleOptions)
+
+          canvasLayer = new Canvas({map: map, position: latlngMap})
 
           # here we are adding our custom control
-          radiusSelectorControl = new sellstome.googlemap.controls.RadiusSelector circle
-          map.controls[google.maps.ControlPosition.RIGHT_CENTER].push radiusSelectorControl
+          radiusSelectorControl = new RadiusSelector circle
+          map.controls[ControlPosition.RIGHT_CENTER].push radiusSelectorControl
 
       loadMoreData: () ->
           clearMap()
@@ -46,8 +62,8 @@ namespace "sellstome.map", (() ->
                   for result in results
                       if i > 20
                           break
-                      marker = new google.maps.Marker
-                          position: new google.maps.LatLng(result.latitude, result.longitude)
+                      marker = new Marker
+                          position: new LatLng(result.latitude, result.longitude)
                           map: window.googleMap
                           title: "Hello World!"
                       markers.push marker

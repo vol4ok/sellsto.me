@@ -47,9 +47,51 @@ namespace "sellstome.googlemap.overlays", (() ->
     this.setMap map
     return
   return {
-
-    InfoWindow : InfoWindow
-
+    InfoWindow: InfoWindow
   }
 )()
 
+
+namespace "sellstome.googlemap.overlays", (() ->
+
+  Canvas = ( options ) ->
+    # dom element that holds window dom representation
+    this._container = null
+    this._options = options
+    # set map and invokes initialization of element
+    this.setMap options.map
+    return
+
+  _proto = Canvas.prototype = new google.maps.OverlayView()
+
+  #redefine functions that are called by Google Map API
+
+  _proto.onAdd = () ->
+    container = document.createElement "canvas"
+    this._container = container
+    panes = this.getPanes()
+    panes.overlayLayer.appendChild container
+    ctx = container.getContext("2d")
+    ctx.fillStyle = "rgb(200,0,0)"
+    ctx.fillRect 10, 10, 55, 50
+    return
+  _proto.draw = () ->
+    overlayProjection = this.getProjection()
+    container = this._container
+    offsetPoint = overlayProjection.fromLatLngToDivPixel this._options.position
+    jQuery(container).css
+      position: "absolute"
+      left: offsetPoint.x
+      top:  offsetPoint.y
+      height: "300px"
+      width: "300px"
+    return
+  _proto.onRemove = () ->
+    jQuery(_container).remove()
+    this._container = null
+    return
+
+  return {
+    Canvas: Canvas
+  }
+)()
