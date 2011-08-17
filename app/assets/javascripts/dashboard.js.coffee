@@ -7,6 +7,7 @@ $ () ->
 	_.templateSettings = interpolate: /\{\{(.+?)\}\}/g
 	
 	# initialize view templates
+	#TODO: think of a better way
 	AdView::template = _.template($('#ad-view').html())
 	UploadView::template = _.template($('#upload-view').html())
 	

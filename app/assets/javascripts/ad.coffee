@@ -19,7 +19,7 @@ class Ad extends Backbone.Model
 class AdView extends Backbone.View
 	
 	tagName: 'li'
-	# template: _.template($('#ad-view').html())
+	#template: _.template($('#ad-view').html())
 	
 	events:
 		"click .delete-link"  : "_onDelete"
@@ -123,16 +123,16 @@ class AdBuilderView extends Backbone.View
 		
 	renderUpload: (upload) ->
 		view = new UploadView(model: upload)
-		li = $(view.render().el).hide()
-		@uploadList.prepend(li)
-		li.slideDown()
+		@uploadList.prepend($(view.render().el))
 		upload.start()
 		return this
 		
 	reset: ->
+		@uploader.clear()
 		@bodyInput.val('')
+		@fileInput.val('')
 		@counter.text(0)
-		@uploadList.html('')
+		#@uploadList.html('')
 	
 	build: ->
 		throw "already build" if @buildLock
@@ -145,12 +145,14 @@ class AdBuilderView extends Backbone.View
 		
 	# private
 	
-	_buildComplete: (images) ->
+	_buildComplete: (responses) ->
 		body = @bodyInput.val()
 		@submit.removeAttr('disabled')
 		@fileInput.removeAttr('disabled')
 		@bodyInput.removeAttr('disabled')
 		delete @buildLock
+		images = []
+		images.push(res.name) for res in responses
 		$ee.trigger 'ad:build-complete.local',
 			'body': body
 			'images': images

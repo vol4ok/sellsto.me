@@ -23,6 +23,7 @@ class Upload extends Backbone.Model
 		return this
 		
 	destroy: ->
+		console.log 'Upload destroy'
 		@xhr.abort() if @xhr.readyState < 4
 		return super()
 		
@@ -77,6 +78,10 @@ class Uploader extends Backbone.Collection
 		console.log 'getResponses'
 		@_getResponses() if @activeCount is 0
 		return this
+		
+	clear: ->
+		@models[0].destroy() while @models.length isnt 0
+		return this
 			
 	# private
 
@@ -93,14 +98,16 @@ class Uploader extends Backbone.Collection
 		if @activeCount is 0
 			@trigger('finish', this) 
 			console.log 'complete'
-		@_getResponses()
+			@_getResponses()
 		return this
 		
 	_getResponses: ->
 		if @callbackList.length > 0
 			responses = @pluck('response')
 			console.log 'Complete getResponses!', responses
-			callback(responses) for callback in @callbackList
+			while @callbackList.length isnt 0	
+				callback = @callbackList.pop()
+				callback(responses)
 		return this
 			
 	
@@ -116,6 +123,7 @@ class UploadView extends Backbone.View
 		@model.bind('start', @_onStart, this)
 		@model.bind('progress', @_onProgress, this)
 		@model.bind('finish', @_onFinish, this)
+		@model.bind('destroy', @remove, this)
 		
 	render: ->
 		$(@el).html(@template(@model.toJSON()))
