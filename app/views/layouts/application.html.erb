@@ -6,15 +6,6 @@
   <%= javascript_include_tag "application" %>
 	<%= yield :head %>
   <%= csrf_meta_tags %>
-  <script type="text/javascript">
-      var _bugHerdAPIKey = '5a30af71-f1dc-4e5a-8e1f-8505a11aa765';
-      (function (d, t) {
-          var bh = d.createElement(t), s = d.getElementsByTagName(t)[0];
-          bh.type = 'text/javascript';
-          bh.src = "//www.bugherd.com/bugherd.js?s=" + (new Date()).getTime();
-          s.parentNode.insertBefore(bh, s);
-      })(document, 'script');
-  </script>
 </head>
 <body>
 
