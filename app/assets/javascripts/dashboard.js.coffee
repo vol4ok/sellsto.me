@@ -1,16 +1,12 @@
 #= require config
-#= require ad
+#= require common
 #= require uploader
+#= require ad
 #= require helpers
 
 $ () ->
 	_.templateSettings = interpolate: /\{\{(.+?)\}\}/g
-	
-	# initialize view templates
-	#TODO: think of a better way
-	AdView::template = _.template($('#ad-view').html())
-	UploadView::template = _.template($('#upload-view').html())
-	
+		
 	# EventEmitter Class #
 	EventEmitter = (options) ->
 		@initialize.apply(@, arguments)
@@ -39,7 +35,10 @@ $ () ->
 			@trigger("#{message.class}:#{message.action}.remote", message.data)		
 
 	# AdListRouter class #
-	AdListRouter = Backbone.Router.extend
+	class AdListRouter extends Backbone.Router
+		
+		{AdList, AdListView, AdBuilderView} = sellstome.ad
+		
 		initialize: () ->
 			@adList = new AdList()
 			@adListView = new AdListView(el: $("#ad-list-view"))

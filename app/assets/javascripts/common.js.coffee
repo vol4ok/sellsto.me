@@ -1,14 +1,9 @@
 # This file contains common  functions
 
-window.namespace = ( name , scopedCode ) ->
-  ns = name.split "."
-  len = ns.length
-  o = window
-  for i in [0..len - 1]
-    if i != len - 1
-      o = o[ns[i]] = o[ns[i]] || {};
-    else
-      if _.isUndefined(o[ns[i]]) or _.isNull(o[ns[i]])
-        o[ns[i]] = scopedCode
-      else
-        _.extend o[ns[i]], scopedCode
+@root = window
+
+@namespace = (target, name, block) ->
+  [target, name, block] = [(if typeof exports isnt 'undefined' then exports else window), arguments...] if arguments.length < 3
+  top    = target
+  target = target[item] or= {} for item in name.split '.'
+  block target, top
