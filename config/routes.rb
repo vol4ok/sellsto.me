@@ -11,6 +11,7 @@ SellstoMe::Application.routes.draw do
     end
   end
   resources :geolocation, :only => [:index]
+  resources :search
 
   # The priority is based upon order of creation:
   # first created -> highest priority.
