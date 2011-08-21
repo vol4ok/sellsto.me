@@ -1,8 +1,11 @@
+#= require lang
+#= require jquery
+
 # This file would be used for implementing sellstome Google Map overlays
 # We currently using v3 Google map javascript API
 # @author Zhugrov Aliaksandr
 
-namespace "sellstome.googlemap.controls", (() ->
+namespace "sellstome.map", (exports) ->
 
   RadiusSelector = ( circleOverlay ) ->
     container = document.createElement "div"
@@ -24,7 +27,4 @@ namespace "sellstome.googlemap.controls", (() ->
 
     return container
 
-  return {
-    RadiusSelector: RadiusSelector
-  }
-)()
+  exports.RadiusSelector = RadiusSelector

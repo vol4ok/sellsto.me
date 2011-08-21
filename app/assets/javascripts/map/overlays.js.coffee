@@ -1,8 +1,10 @@
+#= require lang
+#= require jquery
 # This file would be used for implementing sellstome Google Map overlays
 # We currently using v3 Google map javascript API
 # @author Zhugrov Aliaksandr
 
-namespace "sellstome.googlemap.overlays", (() ->
+namespace "sellstome.map", (exports) ->
 
   InfoWindow = ( options ) ->
     this._content = options.content
@@ -46,13 +48,11 @@ namespace "sellstome.googlemap.overlays", (() ->
     this._position = anchor.getPosition()
     this.setMap map
     return
-  return {
-    InfoWindow: InfoWindow
-  }
-)()
+
+  exports.InfoWindow = InfoWindow
 
 
-namespace "sellstome.googlemap.overlays", (() ->
+namespace "sellstome.map", (exports) ->
 
   Canvas = ( options ) ->
     # dom element that holds window dom representation
@@ -91,7 +91,4 @@ namespace "sellstome.googlemap.overlays", (() ->
     this._container = null
     return
 
-  return {
-    Canvas: Canvas
-  }
-)()
+  exports.Canvas = Canvas

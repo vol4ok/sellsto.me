@@ -1,7 +1,9 @@
-#= require map/google/controls
-#= require map/google/overlays
+#= require lang
+#= require map/controls
+#= require map/overlays
+#= require jquery
 
-namespace "sellstome.map", (() ->
+namespace "sellstome.map", (exports) ->
   # import section
   googlemaps = google.maps
   LatLng = googlemaps.LatLng
@@ -11,9 +13,9 @@ namespace "sellstome.map", (() ->
   Map = googlemaps.Map
   Circle = googlemaps.Circle
   ControlPosition = googlemaps.ControlPosition
-  sellstomegooglemap = sellstome.googlemap
-  RadiusSelector = sellstomegooglemap.controls.RadiusSelector
-  Canvas = sellstome.googlemap.overlays.Canvas
+  sellstomemap = sellstome.map
+  RadiusSelector = sellstomemap.RadiusSelector
+  Canvas = sellstomemap.Canvas
 
 
   #Private members
@@ -25,8 +27,7 @@ namespace "sellstome.map", (() ->
           markers.splice 0, markers.length
 
   #Public members
-  return {
-      initializeGoogleMap: () ->
+  initializeGoogleMap = () ->
           latlngMap = new LatLng -34.397, 150.644
           myOptions =
               zoom: 8
@@ -53,23 +54,24 @@ namespace "sellstome.map", (() ->
           radiusSelectorControl = new RadiusSelector circle
           map.controls[ControlPosition.RIGHT_CENTER].push radiusSelectorControl
 
-      loadMoreData: () ->
-          clearMap()
-          jQuery.ajax
-              url: "/map/search.json"
-              success: (results) ->
-                  i = 0
-                  for result in results
-                      if i > 20
-                          break
-                      marker = new Marker
-                          position: new LatLng(result.latitude, result.longitude)
-                          map: window.googleMap
-                          title: "Hello World!"
-                      markers.push marker
-                      i++
-  }
-)()
+  loadMoreData = () ->
+      clearMap()
+      jQuery.ajax
+          url: "/map/search.json"
+          success: (results) ->
+              i = 0
+              for result in results
+                  if i > 20
+                      break
+                  marker = new Marker
+                      position: new LatLng(result.latitude, result.longitude)
+                      map: window.googleMap
+                      title: "Hello World!"
+                  markers.push marker
+                  i++
+
+  exports.initializeGoogleMap = initializeGoogleMap
+  exports.loadMoreData = loadMoreData
 
 jQuery(document).ready () ->
     #Yes. I hate typing namespaces everywhere. I need to implement aliasing runtime first and them

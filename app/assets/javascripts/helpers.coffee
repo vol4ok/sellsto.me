@@ -1,3 +1,5 @@
+#todo zhugrov a - should also be refactored
+
 window.relative_time = (date, date0 = new Date()) ->
 	date = new Date(date)
 	date1 = new Date(date0)

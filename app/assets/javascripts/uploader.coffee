@@ -1,3 +1,7 @@
+#= require lang
+#= require backbone
+#= require underscore
+
 namespace 'sellstome.uploader', (exports) ->
 	
 	# events: start, progress, finish abort, error, state-change

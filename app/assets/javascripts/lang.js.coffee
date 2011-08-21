@@ -1,4 +1,5 @@
 # This file contains common  functions
+#todo zhugrov a - maybe it should be included by sprocket by default
 
 @root = window
 

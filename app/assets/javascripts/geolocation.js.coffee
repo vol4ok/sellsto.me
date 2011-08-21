@@ -1,6 +1,9 @@
-#= require map/geolocation/common
+#= require lang
+#= require map/common
+#= require map/geolocation
+#= require jquery
 
-namespace "sellstome.map.geolocation", (() ->
+namespace "sellstome.map", (exports) ->
   #Import section
   googlemaps = google.maps
   LatLng = googlemaps.LatLng
@@ -32,24 +35,27 @@ namespace "sellstome.map.geolocation", (() ->
       else
         marker.setCenter latlngMap
 
-  #Public members
-  return {
-    initializeGoogleMap: () ->
-          latlngMap = new LatLng -34.397, 150.644
-          mapOptions =
-              zoom: 8
-              center: latlngMap
-              mapTypeControlOptions:
-                mapTypeIds: [MapTypeId.ROADMAP]
-              mapTypeId: MapTypeId.ROADMAP
-              zoomControlOptions:
-                style: ZoomControlStyle.SMALL
-          googleMap = new Map document.getElementById("map_canvas") , mapOptions
-          request = new GeolocationRequest()
-          jQuery("[id=findPosition]").click () ->
-            request.getCurrentPosition getPositionCallback
-          return
-  }
-)()
+  getPositionErrorCallback = (error) ->
+    alert "Error occured while trying to determine your location. Message:" + error.message
+    return
 
-jQuery(document).ready sellstome.map.geolocation.initializeGoogleMap
+  #Public members
+  initializeGoogleMap = () ->
+      latlngMap = new LatLng -34.397, 150.644
+      mapOptions =
+          zoom: 8
+          center: latlngMap
+          mapTypeControlOptions:
+            mapTypeIds: [MapTypeId.ROADMAP]
+          mapTypeId: MapTypeId.ROADMAP
+          zoomControlOptions:
+            style: ZoomControlStyle.SMALL
+      googleMap = new Map document.getElementById("map_canvas") , mapOptions
+      request = new GeolocationRequest()
+      jQuery("[id=findPosition]").click () ->
+        request.getCurrentPosition getPositionCallback, getPositionErrorCallback
+      return
+
+  exports.initializeGoogleMap = initializeGoogleMap
+
+jQuery(document).ready sellstome.map.initializeGoogleMap
