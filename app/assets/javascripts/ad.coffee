@@ -32,9 +32,13 @@ namespace 'sellstome.ad', (exports) ->
 		tagName: 'li'
 
 		template: (data) -> 
-			
 			Object.getPrototypeOf(this).template = _.template($('#ad-view').html())
 			@template(data)
+			
+		imageTemplate: (data) -> 
+			Object.getPrototypeOf(this).imageTemplate = 
+				_.template($('#ad-view-image').html())
+			@imageTemplate(data)
 	
 		events:
 			"click .delete-link"  : "_onDelete"
@@ -49,9 +53,17 @@ namespace 'sellstome.ad', (exports) ->
 			@model.bind('destroy', @remove, this)
 		
 		render: ->
-			$(@el).html(@template(@model.toJSON()))
+			data = @model.toJSON()
+			#console.log data
+			$(@el).html(@template(data))
 			@text  = @$('.show p')
 			@input = @$('.edit-input')
+			@imageList = @$('.image-list')
+			console.log @imageList
+			if data.images?
+				for img in data.images
+					console.log img.name
+					@imageList.append(@imageTemplate(img))
 			return this
 		
 		remove: ->

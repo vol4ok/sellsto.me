@@ -3,6 +3,9 @@
 	<%= javascript_include_tag "dashboard" %>
 	<%= stylesheet_link_tag "dashboard" %>
 <% end %>
+<script type="text/template" id="ad-view-image">
+	<a href="http://localhost:4000/m_{{name}}.jpeg"><img src="http://localhost:4000/t_{{name}}.jpeg" alt=""></a>
+</script>
 
 <script type="text/template" id="ad-view">
 		<div class="top">
@@ -10,6 +13,7 @@
 			<time datetime="{{created_at}}" pubdate="true">{{relative_time(created_at)}}</time>
 		</div>
 		<div class="show">
+			<div class="image-list"></div>
 			<p>{{body}}</p>
 		</div>
 		<div class="edit">
