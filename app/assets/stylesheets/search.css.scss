@@ -1,3 +1,47 @@
-// Place all the styles related to the Search controller here.
-// They will automatically be included in application.css.
-// You can use Sass (SCSS) here: http://sass-lang.com/
+article {
+	background: none !important;
+}
+#map {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	z-index: -100;
+}
+
+.search-bar {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 40px;
+	background: #222;
+	border-bottom: 1px solid #555;
+	opacity: 0.8;
+	.logo {
+		position: absolute;
+		top: 8px;
+		left: 10px;
+		h1 {
+			font-family: georgia;
+			font-style: italic;
+			font-size: 24px;
+			line-height: 24px;
+			color: white;
+			a { color: white; }
+		}
+	}
+	#query-view {
+		margin: 10px auto;
+		width: 300px;
+		label {
+			color: white;
+		}
+		.query {
+			width: 250px;
+			height: 20px;
+		}
+	}
+}
+

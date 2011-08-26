@@ -1,11 +1,27 @@
 <% content_for :title, "Search - Sellstome" %>
+
 <% content_for :head do %>
+	<meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+	<%= javascript_include_tag "http://maps.google.com/maps/api/js?sensor=false&key=ABQIAAAAYUB6q4UJksDvp1TvGGHG_BQNYqpsCpiTg7NWK5aiP4T3BBIq-RRZOwE9ta7QktesY-NgAnSC2S6aiw" %>
 	<%= javascript_include_tag "search" %>
 	<%= stylesheet_link_tag "search" %>
 <% end %>
-<section class="search">
-	<header>
-		<h1>Search</h1>
-	</header>
-    <input name="search" type="text"/>
+
+<section id="map"></section>
+<section class="search-bar">
+	<div class="logo">
+		<h1>
+			<%= link_to_unless_current 'Sellsto.me', '/' %>
+		</h1>
+	</div>
+	<div id="query-view">
+		<label for="query">Search</label>
+		<input type="search" class="query" name="query">
+	</div>
+</section>
+
+<section class="result-view">
+	<div class="slide-button"></div>
+	<ul class="result-list">
+	</ul>
 </section>
