@@ -79,3 +79,8 @@ article {
 	margin: 50px auto;
 	width: $layout-width;
 }
+
+ul, menu, dir {
+    display: block;
+    list-style-type: disc;
+}
