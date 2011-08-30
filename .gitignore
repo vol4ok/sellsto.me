@@ -16,3 +16,4 @@ config/mongoid.yml
 /.idea/vcs.xml
 /.idea/workspace.xml
 /data
+/.idea/projectCodeStyle.xml
