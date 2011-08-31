@@ -1,19 +1,29 @@
 require 'mongo'
 
 task :import_test_search_data do
+  #contain rectangular bounds for the Minsk City
+  TOP_LATITUDE = 53.97183955821782
+  BOTTOM_LATITUDE = 53.83470154834172
+  LEFT_LONGITUDE = 27.4163818359375
+  RIGHT_LONGITUDE = 27.684860229492188
+
   db = Mongo::Connection.new.db("sells2me_api_dev")
   db.drop_collection("test_search_data")
   search_data = db.collection("test_search_data")
-  doc = {
-    "body" => "Hi this is first imported data peace",
-    "price" => 300,
-    "location" => {
-        "latitude"  => 56.3,
-        "longitude" => 35
-    },
-    "attachments" => "http://local.sellstome.com/image.jpg",
-    "created_at" => Time.current,
-    "updated_at" => Time.current
-  }
-  search_data.insert(doc)
+  for i in 1..10000
+    #User add sample data
+    doc = {
+      "body" => "user add with uniform distribution no. #{i}",
+      "price" => rand(1000),
+      "location" => {
+          "latitude"  => BOTTOM_LATITUDE + rand() * (TOP_LATITUDE - BOTTOM_LATITUDE),
+          "longitude" => LEFT_LONGITUDE + rand() * (RIGHT_LONGITUDE - LEFT_LONGITUDE)
+      },
+      #todo zhugrov a - replace with more correct data
+      "attachments" => "http://sellstome.com:3000/image.jpg",
+      "created_at" => Time.current,
+      "updated_at" => Time.current
+    }
+    search_data.insert(doc)
+  end
 end
