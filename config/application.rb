@@ -50,5 +50,8 @@ module SellstoMe
     
     # Version of your assets, change this if you want to expire all your assets
     config.assets.version = '1.0'
+    
+    config.assets.precompile += ['dashboard.css', 'search.css', 'map.css', 
+      'dashboard.js', 'search.js', 'map.js']
   end
 end
