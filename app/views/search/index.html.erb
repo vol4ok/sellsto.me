@@ -8,6 +8,9 @@
 <% end %>
 
 <section id="map"></section>
+<section id="blog"></section>
+<section id="micro"></section>
+
 <section class="search-bar">
 	<div class="logo">
 		<h1>
@@ -18,14 +21,16 @@
 		<label for="query">Search</label>
 		<input type="search" class="query" name="query">
 	</div>
+	<section id="controlPanel" class="controls">
+	  <ul id="changeViewTab" class="tab">
+	    <li id="mapView"        class="tabItem"><a>Map</a></li>
+	    <li id="blogView"       class="tabItem"><a href="#!/blog">Blog</a></li>
+	    <li id="microblogView"  class="tabItem"><a href="#!/micro">Microblog</a></li>
+	  </ul>
+	</section>
 </section>
-<section id="controlPanel" class="controls">
-  <ul id="changeViewTab" class="tab">
-    <li id="mapView"        class="tabItem">MAP</li>
-    <li id="blogView"       class="tabItem">BLOG</li>
-    <li id="microblogView"  class="tabItem">MICROBLOG</li>
-  </ul>
-</section>
+
+
 
 <section class="result-view">
 	<div class="slide-button"></div>

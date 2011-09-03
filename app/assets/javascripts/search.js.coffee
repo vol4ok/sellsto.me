@@ -9,8 +9,9 @@
 namespace "sellstome.search", (exports) ->
 
 	{LatLng, Marker, MapTypeId, ZoomControlStyle, 
-		Map, Circle, ControlPosition} = google.maps
+		Map, Circle, ControlPosition, OverlayView} = google.maps
 	GeolocationRequest = sellstome.geolocation.GeolocationRequest
+
 	#module constant
 	TAB_MAP_VIEW = "mapView"
 	TAB_BLOG_VIEW = "blogView"
@@ -23,7 +24,8 @@ namespace "sellstome.search", (exports) ->
 	initialize = () ->
 		new AppController()
 		return
-
+		
+	#TODO: we need use Router here instead of Controller, for handling url
 	class AppController extends Backbone.Controller
 		tabControl: null
 		mapView: null
@@ -81,7 +83,7 @@ namespace "sellstome.search", (exports) ->
 
 		render: () ->
 			request = new GeolocationRequest()
-			positionMap = (position) ->
+			positionMap = (position) =>
 				mapCenterPosition = new LatLng(position.coords.latitude, position.coords.longitude)
 				options =
 					zoom: 12
@@ -89,14 +91,13 @@ namespace "sellstome.search", (exports) ->
 					mapTypeId: MapTypeId.ROADMAP
 					disableDefaultUI: true
 				@map = new Map(@el, options)
-			positionMap = _.bind(positionMap, this)
-			errorCallback = (error) ->
+			
+			errorCallback = (error) =>
 				options =
 					zoom: 12
 					mapTypeId: MapTypeId.ROADMAP
 					disableDefaultUI: true
 				@map = new Map(@el, options)
-			errorCallback = _.bind(errorCallback, this)
 			request.getCurrentPosition(positionMap, errorCallback)
 			return
 
