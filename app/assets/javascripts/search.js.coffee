@@ -1,4 +1,5 @@
 #= require lang
+#= require sellstome
 #= require map/controls
 #= require map/overlays
 #= require map/geolocation
@@ -11,11 +12,13 @@ namespace "sellstome.search", (exports) ->
 	{LatLng, Marker, MapTypeId, ZoomControlStyle, 
 		Map, Circle, ControlPosition, OverlayView} = google.maps
 	GeolocationRequest = sellstome.geolocation.GeolocationRequest
+	expandApiURL = sellstome.common.expandApiURL
 
 	#module constant
 	TAB_MAP_VIEW = "mapView"
 	TAB_BLOG_VIEW = "blogView"
 	TAB_MICROBLOG_VIEW = "microblogView"
+	SEARCH_URL = expandApiURL("/search")
 
 	#system events
 	TAB_SWITCH_L = "tab:switch.local";
@@ -24,8 +27,13 @@ namespace "sellstome.search", (exports) ->
 	initialize = () ->
 		new AppController()
 		return
-		
-	#TODO: we need use Router here instead of Controller, for handling url
+
+	######################################################
+	#                                                    #
+	#                  CONTROLLERS                       #
+	#                                                    #
+	######################################################
+
 	class AppController extends Backbone.Controller
 		tabControl: null
 		mapView: null
@@ -59,8 +67,28 @@ namespace "sellstome.search", (exports) ->
 			return
 
 
-  # Handle event binding for the view operations
-  # fire event tab selected for all interested parties
+	######################################################
+	#                                                    #
+	#                    MODELS                          #
+	#                                                    #
+	######################################################
+
+
+	class SearchResult extends Backbone.Model
+		idAttribute: "_id"
+
+	class SearchList extends Backbone.Collection
+		model: SearchResult
+		url: SEARCH_URL
+
+	######################################################
+	#                                                    #
+	#                    VIEWS                           #
+	#                                                    #
+	######################################################
+
+	# Handle event binding for the view operations
+	# fire event tab selected for all interested parties
 	class TabView extends Backbone.View
 		initialize: () ->
 			return
@@ -95,6 +123,7 @@ namespace "sellstome.search", (exports) ->
 			errorCallback = (error) =>
 				options =
 					zoom: 12
+					center: new LatLng( 53.90, 27.55 )
 					mapTypeId: MapTypeId.ROADMAP
 					disableDefaultUI: true
 				@map = new Map(@el, options)
