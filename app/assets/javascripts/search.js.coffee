@@ -35,10 +35,15 @@ namespace "sellstome.search", (exports) ->
 	######################################################
 
 	class AppController extends Backbone.Controller
+		# @type {Backbone.View}
 		tabControl: null
+		# @type {Backbone.View}
 		mapView: null
+		# @type {Backbone.View}
 		blogView: null
+		# @type {Backbone.View}
 		microblogView: null
+		# @type {Backbone.Controller}
 		searchController: null
 
 		initialize: () ->
@@ -46,7 +51,7 @@ namespace "sellstome.search", (exports) ->
 			@tabControl.bind TAB_SWITCH_L , @_changeView, this
 			@mapView = new MapView({el: jQuery("[id=map]").get(0)})
 			@mapView.render()
-			@searchController = new SearchController()
+			@searchController = new SearchController(mapView: @mapView)
 			return this
 
 		_changeView: ( choosenTab ) ->
@@ -55,16 +60,27 @@ namespace "sellstome.search", (exports) ->
 
 	#Responsible for handling a search operation
 	class SearchController extends Backbone.Controller
+		# @type {Backbone.View}
 		searchControl: null
+		# @type {Backbone.Collection}
+		searchResults: null
+		# @type {Backbone.View}
+		mapView: null
 
-		initialize: () ->
+		# @constructor
+		# @param options {object} set of initial params
+		initialize: ( options ) ->
 			@searchControl = new SearchView({el: jQuery("[id=query-view]").get(0)})
 			@searchControl.bind SEARCH_SEARCH_L, @_onSearch, this
-			return
+			@searchResults = new SearchResultList()
+			@mapView = options.mapView
+			@searchResults.bind "add" , @mapView.renderSearchResult, @mapView
+			@searchResults.bind "reset" , @mapView.renderSearchResults, @mapView
+			return this
 
 		_onSearch: (query) ->
-			alert "Sorry, but this featuew is not implemented yet"
-			return
+			@searchResults.fetch()
+			return this
 
 
 	######################################################
@@ -77,7 +93,7 @@ namespace "sellstome.search", (exports) ->
 	class SearchResult extends Backbone.Model
 		idAttribute: "_id"
 
-	class SearchList extends Backbone.Collection
+	class SearchResultList extends Backbone.Collection
 		model: SearchResult
 		url: SEARCH_URL
 
@@ -101,13 +117,17 @@ namespace "sellstome.search", (exports) ->
 			@trigger TAB_SWITCH_L, choosenTab
 			return
 
+
 	#initialize map view
 	class MapView extends Backbone.View
-		#Map reference
+		#@type {google.map.Map}
 		map: null
+		#@type {array}
+		searchResults: null
 
 		initialize: () ->
-			return
+			@searchResults = new Array()
+			return this
 
 		render: () ->
 			request = new GeolocationRequest()
@@ -128,7 +148,30 @@ namespace "sellstome.search", (exports) ->
 					disableDefaultUI: true
 				@map = new Map(@el, options)
 			request.getCurrentPosition(positionMap, errorCallback)
-			return
+			return this
+
+		# Renders the list of search results on map
+		renderSearchResults: ( searchList ) ->
+			#remove all old elements from map
+			while @searchResults.length != 0
+				oldSearchResultView = @searchResults.pop()
+				oldSearchResultView.remove()
+
+			searchList.each (searchResult) =>
+				searchResultView = new SearchResultView({ model: searchResult, map: @map })
+				searchResultView.render()
+				@searchResults.push searchResultView
+				return
+			return this
+
+		#Render single search result
+		renderSearchResult: ( searchResult ) ->
+			searchResultView = new SearchResultView({ model: searchResult, map: @map })
+			searchResultView.render()
+			@searchResults.push searchResultView
+			return this
+
+
 
 	class SearchView extends Backbone.View
 		events:
@@ -144,6 +187,28 @@ namespace "sellstome.search", (exports) ->
 			else
 				true
 			return
+
+	class SearchResultView extends Backbone.DomlessView
+			#@type {google.map.Map} reference to Google Map
+			map: null
+			#@type {google.map.Marker}
+			marker: null
+			# @constructor
+			initialize: () ->
+				@map = @options.map
+				return
+			#render marker on Google Map
+			render: () ->
+				_location = @model.get("location")
+				@marker = new Marker
+					position: new LatLng(_location.latitude , _location.longitude)
+					map: @map
+					title: @model.get("price").toString()
+				return
+
+			remove: () ->
+				@marker.setMap null
+				return
 
 	exports.initialize = initialize
 
