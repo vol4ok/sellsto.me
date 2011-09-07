@@ -10,7 +10,9 @@
 <script type="text/template" id="ad-view">
 		<div class="top">
 			<a href="#" class="user">anonymous</a>
-			<time datetime="{{created_at}}" pubdate="true">{{relative_time(created_at)}}</time>
+			<time datetime="{{created_at}}" pubdate="true">
+				{{sellstome.helpers.relative_time(created_at)}}
+			</time>
 		</div>
 		<div class="show">
 			<div class="image-list"></div>
