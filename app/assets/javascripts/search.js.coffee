@@ -6,13 +6,16 @@
 #= require jquery
 #= require backbone
 #= require backbone_ext
+#= require canvas/generators
 
 namespace "sellstome.search", (exports) ->
 
 	{LatLng, Marker, MapTypeId, ZoomControlStyle, 
 		Map, Circle, ControlPosition, OverlayView} = google.maps
-	GeolocationRequest = sellstome.geolocation.GeolocationRequest
-	expandApiURL = sellstome.common.expandApiURL
+	{GeolocationRequest} = sellstome.geolocation
+	{expandApiURL} = sellstome.common
+	{generateCircle,generateRect,generatePriceBubble} = sellstome.generators
+	{rand} = sellstome.helpers
 
 	#module constant
 	TAB_MAP_VIEW = "mapView"
@@ -131,6 +134,7 @@ namespace "sellstome.search", (exports) ->
 
 		render: () ->
 			request = new GeolocationRequest()
+			
 			positionMap = (position) =>
 				mapCenterPosition = new LatLng(position.coords.latitude, position.coords.longitude)
 				options =
@@ -147,6 +151,7 @@ namespace "sellstome.search", (exports) ->
 					mapTypeId: MapTypeId.ROADMAP
 					disableDefaultUI: true
 				@map = new Map(@el, options)
+				
 			request.getCurrentPosition(positionMap, errorCallback)
 			return this
 
