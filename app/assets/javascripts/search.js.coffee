@@ -44,14 +44,16 @@ namespace "sellstome.search", (exports) ->
 		# @type {Backbone.View}
 		microblogView: null
 		# @type {Backbone.Controller}
-		searchController: null
+		searchRouter: null
 
 		initialize: () ->
 			@tabControl = new TabView({el: jQuery("[id=changeViewTab]").get(0)})
 			@tabControl.bind TAB_SWITCH_L , @_changeView, this
 			@mapView = new MapView({el: jQuery("[id=map]").get(0)})
 			@mapView.render()
-			@searchController = new SearchController(mapView: @mapView)
+			@searchRouter = new SearchRouter(mapView: @mapView)
+			# Initialize routing system.
+			Backbone.history.start({pushState: true})
 			return this
 
 		_changeView: ( choosenTab ) ->
@@ -59,13 +61,17 @@ namespace "sellstome.search", (exports) ->
 			return this
 
 	#Responsible for handling a search operation
-	class SearchController extends Backbone.Controller
+	class SearchRouter extends Backbone.Router
 		# @type {Backbone.View}
 		searchControl: null
 		# @type {Backbone.Collection}
 		searchResults: null
 		# @type {Backbone.View}
 		mapView: null
+
+		routes:
+			"search/:query": "_onSearch"
+			"search/:query/:page": "_onSearch"
 
 		# @constructor
 		# @param options {object} set of initial params

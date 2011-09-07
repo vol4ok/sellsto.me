@@ -8,8 +8,8 @@ task :import_test_search_data do
   RIGHT_LONGITUDE = 27.684860229492188
 
   db = Mongo::Connection.new.db("sells2me_api_dev")
-  db.drop_collection("test_search_data")
-  search_data = db.collection("test_search_data")
+  db.drop_collection("test_search_datas")
+  search_data = db.collection("test_search_datas")
   for i in 1..10000
     #User add sample data
     doc = {
