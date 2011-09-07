@@ -1,6 +1,4 @@
 #= require lang
-#= require jquery
-#= require canvas/shapes
 #= require helpers
 
 namespace "sellstome.generators", (exports) ->

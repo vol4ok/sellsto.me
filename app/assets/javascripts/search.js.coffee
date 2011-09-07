@@ -26,6 +26,8 @@ namespace "sellstome.search", (exports) ->
 	#system events
 	TAB_SWITCH_L = "tab:switch.local";
 	SEARCH_SEARCH_L = "search:search.local";
+	
+	root.$cache ?= {}
 
 	initialize = () ->
 		new AppController()
@@ -208,13 +210,54 @@ namespace "sellstome.search", (exports) ->
 			initialize: () ->
 				@map = @options.map
 				return
+				
+			generatePriceMarkers: (price) ->
+				unless $cache[price]?
+					$cache[price] = {}
+					bubble = generatePriceBubble("$#{price}",
+						'rgba(0,200,0,0.6)', 
+						'rgba(0,120,0,0.6)')
+					$cache[price][0] = new google.maps.MarkerImage(
+						bubble.image,
+						new google.maps.Size(bubble.width,bubble.height),
+						new google.maps.Point(0,0),
+						new google.maps.Point(bubble.anchorX,bubble.anchorY))
+					$cache[price]['shape'] = bubble.shape
+					bubble = generatePriceBubble("$#{price}",
+						'rgba(245,50,50,0.9)', 
+						'rgba(120,20,20,0.9)')
+					$cache[price][1] = new google.maps.MarkerImage(
+						bubble.image,
+						new google.maps.Size(bubble.width,bubble.height),
+						new google.maps.Point(0,0),
+						new google.maps.Point(bubble.anchorX,bubble.anchorY))
+				return $cache[price]
+			
 			#render marker on Google Map
 			render: () ->
 				_location = @model.get("location")
+				price = @model.get("price").toString()
+				
+				merkerData = @generatePriceMarkers(price)
+				
 				@marker = new Marker
 					position: new LatLng(_location.latitude , _location.longitude)
 					map: @map
-					title: @model.get("price").toString()
+					icon: merkerData[0]
+					shape: merkerData['shape']
+					title: price
+					
+				google.maps.event.addListener @marker, 'mouseover', (( (p) ->
+						return (e) -> 
+							@setZIndex(100)
+							@setIcon(merkerData[1])
+					)(price))
+				google.maps.event.addListener @marker, 'mouseout', (( (p) ->
+						return (e) -> 
+							@setZIndex(1)
+							@setIcon(merkerData[0])
+					)(price))
+					
 				return
 
 			remove: () ->
