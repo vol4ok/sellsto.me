@@ -1,6 +1,6 @@
-#= require sellstome
+#= require module/sellstome
 
-expandApiURL = sellstome.common.expandApiURL
+{expandApiURL} = sellstome.common
 
 @AD_CREATE_L =        'ad:create.local'
 @AD_UPDATE_L =        'ad:update.local'

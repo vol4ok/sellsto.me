@@ -1,9 +1,9 @@
 #= require lang
 #= require jquery
 #= require backbone
-#= require uploader
 #= require underscore
 #= require json2
+#= require module/uploader
 
 namespace 'sellstome.ad', (exports) ->
 	console.log 'Uploader', Uploader

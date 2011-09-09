@@ -1,10 +1,10 @@
-#= require config
-#= require uploader
 #= require underscore
-#= require ad
-#= require helpers
 #= require bayeux
 #= require backbone
+#= require config
+#= require module/uploader
+#= require module/ad
+#= require module/helpers
 
 $ () ->
 	_.templateSettings = interpolate: /\{\{(.+?)\}\}/g

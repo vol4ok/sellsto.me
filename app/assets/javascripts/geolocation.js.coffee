@@ -1,7 +1,7 @@
 #= require lang
-#= require map/common
-#= require map/geolocation
 #= require jquery
+#= require module/map/common
+#= require module/map/geolocation
 
 namespace "sellstome.map", (exports) ->
   #Import section

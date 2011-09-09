@@ -1,6 +1,6 @@
 #= require lang
 #= require underscore
-#= require helpers
+#= require module/helpers
 
 namespace "sellstome.generators", (exports) ->
 	
@@ -94,26 +94,25 @@ namespace "sellstome.generators", (exports) ->
 		ctx.textBaseline = "top"
 		ctx.fillText(text, 0, 0) 
 		w = ctx.measureText(text).width
+		# measure text height
 		data = ctx.getImageData(0, 0, w, canvas.height).data
 		state = i = h = h1 = h2 = 0
-		# measure text height
 		while state < 2 and i < canvas.height
 			if state is 0
 				for j in [0...w]
-					if data[w*i*4+j*4+3] isnt 0
+					if data[w*i*4 + j*4 + 3] isnt 0
 						h1 = i
 						state++
 						break
 			else
 				for j in [0...w]
-					if data[w*i*4+j*4+3] isnt 0
+					if data[w*i*4 + j*4 + 3] isnt 0
 						break
-					else if j is w-1
+					else if j is w - 1
 						h2 = i
 						state++
 						break
 			i++
-		console.log h, h1, h2, state
 		w += 2*cfg.paddingX
 		h = h2 - h1 + 2*cfg.paddingY
 		tailH = Math.round(h*0.4)

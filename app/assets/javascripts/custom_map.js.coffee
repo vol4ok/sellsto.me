@@ -1,6 +1,6 @@
 #= require lang
-#= require map/common
 #= require jquery
+#= require module/map/common
 
 namespace "sellstome.map", (exports) ->
   #Import section

@@ -1,5 +1,5 @@
-#=require backbone
-#=require underscore
+#= require backbone
+#= require underscore
 # @param {Object} - hash of options passed to constructor
 # @constructor
 Backbone.Controller = (options)->

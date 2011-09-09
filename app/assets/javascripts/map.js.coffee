@@ -1,7 +1,7 @@
 #= require lang
-#= require map/controls
-#= require map/overlays
 #= require jquery
+#= require module/map/controls
+#= require module/map/overlays
 
 namespace "sellstome.map", (exports) ->
   # import section

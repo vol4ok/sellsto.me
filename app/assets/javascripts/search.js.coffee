@@ -1,12 +1,12 @@
 #= require lang
-#= require sellstome
-#= require map/controls
-#= require map/overlays
-#= require map/geolocation
 #= require jquery
 #= require backbone
 #= require backbone_ext
-#= require canvas/generators
+#= require module/sellstome
+#= require module/generators
+#= require module/map/overlays
+#= require module/map/geolocation
+#= require module/map/controls
 
 namespace "sellstome.search", (exports) ->
 
@@ -304,6 +304,7 @@ namespace "sellstome.search", (exports) ->
 					map: @map
 					icon: markerData[0]
 					shape: markerData['shape']
+					#draggable: true
 					#title: price
 					
 				google.maps.event.addListener @marker, 'mouseover', (( (p) ->
