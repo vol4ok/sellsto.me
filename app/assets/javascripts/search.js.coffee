@@ -214,48 +214,107 @@ namespace "sellstome.search", (exports) ->
 			generatePriceMarkers: (price) ->
 				unless $cache[price]?
 					$cache[price] = {}
-					bubble = generatePriceBubble("$#{price}",
-						'rgba(0,200,0,0.6)', 
-						'rgba(0,120,0,0.6)')
+					bubble = generatePriceBubble("$#{price}",{
+						font: 'bold 14px Arial'
+						color: '#444'
+						fillStyle: 'rgba(0,200,0,0.6)'
+						strokeStyle: 'rgba(0,120,0,0.6)'
+					})
 					$cache[price][0] = new google.maps.MarkerImage(
 						bubble.image,
 						new google.maps.Size(bubble.width,bubble.height),
 						new google.maps.Point(0,0),
 						new google.maps.Point(bubble.anchorX,bubble.anchorY))
 					$cache[price]['shape'] = bubble.shape
-					bubble = generatePriceBubble("$#{price}",
-						'rgba(245,50,50,0.9)', 
-						'rgba(120,20,20,0.9)')
+					
+					bubble = generatePriceBubble("$#{price}",{
+						font: 'bold 14px Arial'
+						color: '#444'
+						fillStyle: 'rgba(245,50,50,0.9)'
+						strokeStyle: 'rgba(120,20,20,0.9)'
+					})
 					$cache[price][1] = new google.maps.MarkerImage(
 						bubble.image,
 						new google.maps.Size(bubble.width,bubble.height),
 						new google.maps.Point(0,0),
 						new google.maps.Point(bubble.anchorX,bubble.anchorY))
 				return $cache[price]
+				
+			generateCircleMarkers: () ->
+				unless $cache['circle']?
+					$cache['circle'] = {}
+					bubble = generateCircle(5, {
+						fillStyle: 'rgba(0,200,0,0.6)'
+						strokeStyle: 'rgba(0,120,0,0.6)'
+					})
+					$cache['circle'][0] = new google.maps.MarkerImage(
+						bubble.image,
+						new google.maps.Size(bubble.width,bubble.height),
+						new google.maps.Point(0,0),
+						new google.maps.Point(bubble.anchorX,bubble.anchorY))
+					$cache['circle']['shape'] = bubble.shape
+
+					bubble = generateCircle(5, {
+						fillStyle: 'rgba(245,50,50,0.9)'
+						strokeStyle: 'rgba(120,20,20,0.9)'
+					})
+					$cache['circle'][1] = new google.maps.MarkerImage(
+						bubble.image,
+						new google.maps.Size(bubble.width,bubble.height),
+						new google.maps.Point(0,0),
+						new google.maps.Point(bubble.anchorX,bubble.anchorY))
+				return $cache['circle']
+				
+			generateRectMarkers: () ->
+				unless $cache['rect']?
+					$cache['rect'] = {}
+					bubble = generateRect(10,10, {
+						fillStyle: 'rgba(0,200,0,0.6)'
+						strokeStyle: 'rgba(0,120,0,0.6)'
+						borderRadius: 3
+					})
+					$cache['rect'][0] = new google.maps.MarkerImage(
+						bubble.image,
+						new google.maps.Size(bubble.width,bubble.height),
+						new google.maps.Point(0,0),
+						new google.maps.Point(bubble.anchorX,bubble.anchorY))
+					$cache['rect']['shape'] = bubble.shape
+
+					bubble = generateRect(10,10, {
+						fillStyle: 'rgba(245,50,50,0.9)'
+						strokeStyle: 'rgba(120,20,20,0.9)'
+						borderRadius: 3
+					})
+					$cache['rect'][1] = new google.maps.MarkerImage(
+						bubble.image,
+						new google.maps.Size(bubble.width,bubble.height),
+						new google.maps.Point(0,0),
+						new google.maps.Point(bubble.anchorX,bubble.anchorY))
+				return $cache['rect']
 			
 			#render marker on Google Map
 			render: () ->
 				_location = @model.get("location")
 				price = @model.get("price").toString()
 				
-				merkerData = @generatePriceMarkers(price)
+				markerData = @generatePriceMarkers(price)
 				
 				@marker = new Marker
 					position: new LatLng(_location.latitude , _location.longitude)
 					map: @map
-					icon: merkerData[0]
-					shape: merkerData['shape']
-					title: price
+					icon: markerData[0]
+					shape: markerData['shape']
+					#title: price
 					
 				google.maps.event.addListener @marker, 'mouseover', (( (p) ->
 						return (e) -> 
 							@setZIndex(100)
-							@setIcon(merkerData[1])
+							@setIcon(markerData[1])
 					)(price))
 				google.maps.event.addListener @marker, 'mouseout', (( (p) ->
 						return (e) -> 
 							@setZIndex(1)
-							@setIcon(merkerData[0])
+							@setIcon(markerData[0])
 					)(price))
 					
 				return

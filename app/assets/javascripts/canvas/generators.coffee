@@ -1,9 +1,13 @@
 #= require lang
+#= require underscore
 #= require helpers
 
 namespace "sellstome.generators", (exports) ->
 	
-	roundRect = (ctx,x,y,w,h,r,fill,stroke) ->
+	DEFAULT_CANVAS_WIDTH  = 300
+	DEFAULT_CANVAS_HEIGHT = 150
+	
+	roundRect = (ctx, x, y, w, h, r, fill, stroke) ->
 		if r > 0
 			ctx.beginPath()
 			ctx.moveTo(x + r, y)
@@ -21,71 +25,133 @@ namespace "sellstome.generators", (exports) ->
 		ctx.fill() if fill
 		ctx.stroke() if stroke
 	
-	exports.generateCircle = (r,fillColor = true,strokeColor = null) ->
+	exports.generateCircle = (r, options) ->
+		cfg = 
+			fillStyle: 'white'
+			strokeStyle: null
+		_.extend(cfg, options)
+		s = if cfg.strokeStyle? then 1 else 0
 		canvas = document.createElement('canvas')
-		canvas.width = 2*r
-		canvas.height = 2*r
+		canvas.width = 2*r+2*s
+		canvas.height = 2*r+2*s
 		ctx = canvas.getContext('2d')
-		ctx.fillStyle = fillColor if typeof fillColor is 'string'
-		ctx.strokeStyle = strokeColor if typeof strokeColor is 'string'
-		ctx.arc(r,r,r,0,2*Math.PI, yes)
-		ctx.fill() if fillColor?
-		ctx.stroke() if strokeColor?
-		return canvas.toDataURL("image/png")
+		ctx.fillStyle = cfg.fillStyle if cfg.fillStyle?
+		ctx.strokeStyle = cfg.strokeStyle if cfg.strokeStyle?
+		ctx.arc(r+s ,r+s ,r , 0, 2*Math.PI, yes)
+		ctx.fill() if cfg.fillStyle?
+		ctx.stroke() if cfg.strokeStyle?
+		return {
+			width: canvas.width
+			height: canvas.height
+			anchorX: r+s
+			anchorY: r+s
+			shape: 
+				coords: [r+s,r+s,r+s]
+				type: 'circle'
+			image: canvas.toDataURL("image/png") 
+		}
 		
-	exports.generateRect = (w, h, r = 0, fillColor = true,strokeColor = null) ->
+	exports.generateRect = (w, h, options) ->
+		cfg = 
+			fillStyle: 'white'
+			strokeStyle: null
+			borderRadius: 0
+		_.extend(cfg, options)
+		s = if cfg.strokeStyle? then 1 else 0
 		canvas = document.createElement('canvas')
-		canvas.width = w
-		canvas.height = h
+		canvas.width = w + 2*s
+		canvas.height = h + 2*s
 		ctx = canvas.getContext('2d')
-		ctx.fillStyle = fillColor if typeof fillColor is 'string'
-		ctx.strokeStyle = strokeColor if typeof strokeColor is 'string'
-		roundRect(ctx, 0,0,w,h,r,fillColor?,strokeColor?)
-		return canvas.toDataURL("image/png")
+		ctx.fillStyle = cfg.fillStyle if cfg.fillStyle?
+		ctx.strokeStyle = cfg.strokeStyle if cfg.strokeStyle?
+		roundRect(ctx, s, s, w, h, cfg.borderRadius, 
+		          cfg.fillStyle?,cfg.strokeStyle?)
+		return {
+			width: canvas.width
+			height: canvas.height
+			anchorX: Math.round(canvas.width/2)
+			anchorY: Math.round(canvas.height/2)
+			shape: 
+				coords: [s, s, w + 2*s, h + 2*s]
+				type: 'rect'
+			image: canvas.toDataURL("image/png") 
+		}
 		
-	exports.generatePriceBubble = (price,fillColor = true, strokeColor = null) ->
+	exports.generatePriceBubble = (text, options) ->
+		cfg = 
+			font: '14px Georgia'
+			color: 'black'
+			fillStyle: 'white'
+			strokeStyle: null
+			paddingX: 5
+			paddingY: 3
+		_.extend(cfg, options)
 		canvas = document.createElement('canvas')
+		canvas.width  = DEFAULT_CANVAS_WIDTH
+		canvas.height = DEFAULT_CANVAS_HEIGHT
 		ctx = canvas.getContext('2d')
-		ctx.font = '14px Georgia'
+		ctx.font = cfg.font
 		ctx.textBaseline = "top"
-		w = ctx.measureText(price).width + 6
-		canvas.width = w
-		canvas.height = 24
-		h = 18
+		ctx.fillText(text, 0, 0) 
+		w = ctx.measureText(text).width
+		data = ctx.getImageData(0, 0, w, canvas.height).data
+		state = i = h = h1 = h2 = 0
+		# measure text height
+		while state < 2 and i < canvas.height
+			if state is 0
+				for j in [0...w]
+					if data[w*i*4+j*4+3] isnt 0
+						h1 = i
+						state++
+						break
+			else
+				for j in [0...w]
+					if data[w*i*4+j*4+3] isnt 0
+						break
+					else if j is w-1
+						h2 = i
+						state++
+						break
+			i++
+		console.log h, h1, h2, state
+		w += 2*cfg.paddingX
+		h = h2 - h1 + 2*cfg.paddingY
+		tailH = Math.round(h*0.4)
+		tailW = Math.round(tailH/3)
 		x = y = 0
-		r = 4
-		ax = x + w/2
-		ay = y + h + 6
-		shape = 
-			coords: [0,0,w,h]
-			type: 'rect'
-		ctx.font = '14px Georgia'
+		r = Math.round(h/5)
+		canvas.width = w
+		canvas.height = h + tailH
+		# width setting resets the context, therefore define it again
+		ctx.font = cfg.font
 		ctx.textBaseline = "top"
-		ctx.fillStyle = fillColor if typeof fillColor is 'string'
-		ctx.strokeStyle = strokeColor if typeof strokeColor is 'string'
+		ctx.fillStyle = cfg.fillStyle if cfg.fillStyle?
+		ctx.strokeStyle = cfg.strokeStyle if cfg.strokeStyle?
 		ctx.beginPath()
 		ctx.moveTo(x + r, y)
 		ctx.lineTo(x + w - r, y)
 		ctx.quadraticCurveTo(x + w, y, x + w, y + r)
 		ctx.lineTo(x + w, y + h - r)
 		ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h)
-		ctx.lineTo(x + w/2 + 2, y + h)
-		ctx.lineTo(x + w/2, y + h + 6)
-		ctx.lineTo(x + w/2 - 2, y + h)
+		ctx.lineTo(x + w/2 + tailW, y + h)
+		ctx.lineTo(x + w/2, y + h + tailH)
+		ctx.lineTo(x + w/2 - tailW, y + h)
 		ctx.lineTo(x + r, y + h)
 		ctx.quadraticCurveTo(x, y + h, x, y + h - r)
 		ctx.lineTo(x, y + r)
 		ctx.quadraticCurveTo(x, y, x + r, y)
 		ctx.closePath()
-		ctx.fill() if fillColor?
-		ctx.stroke() if strokeColor?
-		ctx.fillStyle = '#444'
-		ctx.fillText(price, 3, 0)
+		ctx.fill() if cfg.fillStyle?
+		ctx.stroke() if cfg.strokeStyle?
+		ctx.fillStyle = cfg.color
+		ctx.fillText(text, cfg.paddingX, cfg.paddingY-h1)
 		return {
 			width: canvas.width
 			height: canvas.height
-			anchorX: ax
-			anchorY: ay
-			shape: shape
+			anchorX: Math.round(w/2)
+			anchorY: Math.round(h + tailH)
+			shape: 
+				coords: [0, 0, w, h]
+				type: 'rect'
 			image: canvas.toDataURL("image/png") 
 		}
