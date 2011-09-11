@@ -21,7 +21,7 @@ Backbone.DomlessView = (options) ->
 #List of simple view options to be merged as properties.
 viewOptions = ['model', 'collection', 'id', 'attributes'];
 
-_.extend( Backbone.DomlessView.prototype, {
+_.extend( Backbone.DomlessView.prototype, Backbone.Events, {
 
 		initialize: ( options ) -> {}
 

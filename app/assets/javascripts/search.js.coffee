@@ -12,8 +12,10 @@ namespace "sellstome.search", (exports) ->
 
 	{LatLng, Marker, MapTypeId, ZoomControlStyle, 
 		Map, Circle, ControlPosition, OverlayView} = google.maps
+	GoogleEventHub = google.maps.event
 	{GeolocationRequest} = sellstome.geolocation
 	{expandApiURL} = sellstome.common
+	{AdInfo}=sellstome.map
 	{generateCircle,generateRect,generatePriceBubble} = sellstome.generators
 	{rand} = sellstome.helpers
 
@@ -26,6 +28,7 @@ namespace "sellstome.search", (exports) ->
 	#system events
 	TAB_SWITCH_L = "tab:switch.local";
 	SEARCH_SEARCH_L = "search:search.local";
+	MAP_SHOW_DETAILS_L = "map:showDetails.local";
 	
 	root.$cache ?= {}
 
@@ -131,10 +134,12 @@ namespace "sellstome.search", (exports) ->
 
 	#initialize map view
 	class MapView extends Backbone.View
-		#@type {google.map.Map}
+		###@type {google.map.Map}###
 		map: null
-		#@type {array}
+		###@type {array}###
 		searchResults: null
+		###@type {sellstome.search.SearchResultView}###
+		expandedSearchResult: null
 
 		initialize: () ->
 			@searchResults = new Array()
@@ -172,6 +177,7 @@ namespace "sellstome.search", (exports) ->
 
 			searchList.each (searchResult) =>
 				searchResultView = new SearchResultView({ model: searchResult, map: @map })
+				searchResultView.bind(MAP_SHOW_DETAILS_L, @renderAdInfo, this)
 				searchResultView.render()
 				@searchResults.push searchResultView
 				return
@@ -184,7 +190,19 @@ namespace "sellstome.search", (exports) ->
 			@searchResults.push searchResultView
 			return this
 
-
+		###
+		#Renders dialog with ad descriptions.
+		#Ensures that only one dialog is opened on map.
+		#@param {sellstome.search.SearchResultView}
+		###
+		renderAdInfo: (searchResultView) ->
+			@expandedSearchResult.closeAdInfo() if not _.isNull( @expandedSearchResult )
+			if searchResultView != @expandedSearchResult
+				searchResultView.openAdInfo()
+				@expandedSearchResult = searchResultView
+			else
+				@expandedSearchResult = null
+			return this
 
 	class SearchView extends Backbone.View
 		events:
@@ -202,10 +220,14 @@ namespace "sellstome.search", (exports) ->
 			return
 
 	class SearchResultView extends Backbone.DomlessView
-			#@type {google.map.Map} reference to Google Map
+			###@type {google.map.Map} reference to Google Map ###
 			map: null
-			#@type {google.map.Marker}
+			###@type {google.map.Marker} ###
 			marker: null
+			###@type {sellstome.map.AdInfo} ###
+			adInfo: null
+
+
 			# @constructor
 			initialize: () ->
 				@map = @options.map
@@ -264,7 +286,7 @@ namespace "sellstome.search", (exports) ->
 						new google.maps.Point(0,0),
 						new google.maps.Point(bubble.anchorX,bubble.anchorY))
 				return $cache['circle']
-				
+
 			generateRectMarkers: () ->
 				unless $cache['rect']?
 					$cache['rect'] = {}
@@ -291,38 +313,57 @@ namespace "sellstome.search", (exports) ->
 						new google.maps.Point(0,0),
 						new google.maps.Point(bubble.anchorX,bubble.anchorY))
 				return $cache['rect']
-			
-			#render marker on Google Map
+
+			### Render marker on Google Map ###
 			render: () ->
-				_location = @model.get("location")
-				price = @model.get("price").toString()
-				
+				location = @model.get('location')
+				price = @model.get('price').toString()
+
 				markerData = @generatePriceMarkers(price)
-				
+
 				@marker = new Marker
-					position: new LatLng(_location.latitude , _location.longitude)
+					position: new LatLng(location.latitude , location.longitude)
 					map: @map
 					icon: markerData[0]
 					shape: markerData['shape']
 					#draggable: true
 					#title: price
-					
-				google.maps.event.addListener @marker, 'mouseover', (( (p) ->
-						return (e) -> 
-							@setZIndex(100)
-							@setIcon(markerData[1])
-					)(price))
-				google.maps.event.addListener @marker, 'mouseout', (( (p) ->
-						return (e) -> 
-							@setZIndex(1)
-							@setIcon(markerData[0])
-					)(price))
-					
-				return
 
+				GoogleEventHub.addListener( @marker, 'mouseover', (e) =>
+					@marker.setZIndex(100)
+					@marker.setIcon(markerData[1])
+				)
+
+				GoogleEventHub.addListener( @marker, 'mouseout', (e) =>
+					@marker.setZIndex(1)
+					@marker.setIcon(markerData[0])
+				)
+
+				GoogleEventHub.addListener( @marker, 'click', (e) =>
+					@trigger(MAP_SHOW_DETAILS_L, this)
+				)
+
+				return this
+
+			openAdInfo: () ->
+				@addInfo = new AdInfo
+					anchor:       @marker
+					description:  @model.get('body')
+					map:          @map
+				return this
+
+			###Closes add info dialog ###
+			closeAdInfo: () ->
+				@addInfo.removeFromMap() if not _.isNull( @addInfo )
+				return this
+
+			### Remove marker from google map ###
 			remove: () ->
 				@marker.setMap null
-				return
+				# remove all referenced to this object
+				GoogleEventHub.clearInstanceListeners(@marker)
+				delete @marker
+				return this
 
 	exports.initialize = initialize
 
