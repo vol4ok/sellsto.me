@@ -1,15 +1,17 @@
 /*= require_self */
 
-@charset "utf-8";
-@import "reset";
-@import "config";
-@import "helpers";
+@import "common/reset";
+@import "common/config";
+@import "common/helpers";
+@import "common/titillium-font";
+@import "common/pictos-font";
 
 body {
 	font-family: $body-font;
 	font-size: $font-size;
+	font-weight: 300;
 	line-height: $line-height; 
-	background: url('bg2.png');
+	#background: url('bg2.png');
 }
 
 p, h1, h2, h3, h4, h5, h6 {
@@ -17,7 +19,7 @@ p, h1, h2, h3, h4, h5, h6 {
 }
 
 h1 {
-	font-family: $head-font;
+	font-family: Titillium;
 	font-size: 35px;
 	line-height: 2*$line-height;
 	margin-bottom: $line-height;
@@ -57,30 +59,91 @@ h6 {
 a {
   color: #000;
   //text-decoration: underline;
-
   &:visited {
     color: #000;
     //text-decoration: underline; 
 	}
-	
   &:hover {
 		color: #fff; 
 		background-color: #000;
     text-decoration: none; 
 	}
-	
   &:active {
     color: #000;
     text-decoration: none; 
 	} 
 }
 
-article {
-	margin: 50px auto;
-	width: $layout-width;
+/* Elements */
+
+.menu-ico {
+	color: $color-2;
+	font-size: 36px;
+	line-height: 36px;
+	font-family: Pictos;
+	text-align: center;
+	text-shadow: 0px 1px 0px rgba(255,255,255,0.5);
 }
 
-ul, menu, dir {
-    display: block;
-    list-style-type: disc;
+.selected {
+	color: white;
+	background: $color-4;
+	border-right: 1px solid $color-3;
+	border-left: 1px solid $color-3;
+	text-shadow: none;
 }
+
+#toolbar {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: $toolbar-height;
+	min-width: 850px;
+	color: $color-2;
+	background: $color-1;
+	border-bottom: 1px solid $color-3;
+	h1 {
+		float: left;
+		margin: 14px 14px;
+	}
+	ul {
+		float:left;
+		margin-left: 100px;
+		height: 100%;
+	}
+	li {
+		float: left;
+		width: $toolbar-height;
+		height: 100%;
+		cursor: pointer;
+	}
+	.search {
+		float: right;
+		input {
+			resize: none;
+			vertical-align: top;
+			margin: 16px 14px 0;
+			width: 200px;
+			color: $color-2;
+			font-family: $body-font;
+			font-size: 16px;
+			padding: 8px;
+			border: 1px solid $color-3;
+			@include border-radius(4px);
+			@include box-shadow-2(inset 0 3px 5px rgba(0,0,0,0.15), 
+			                      0px 1px 0px rgba(255,255,255,0.5) );
+		}
+	}
+}
+
+#map {
+	position: absolute;
+	top: $toolbar-height;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	min-width: 850px;
+	z-index: -100;
+}
+

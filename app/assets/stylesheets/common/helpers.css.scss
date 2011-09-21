@@ -15,6 +15,13 @@
 	box-shadow: $param;
 }
 
+@mixin box-shadow-2($param-1, $param-2) {
+	-webkit-box-shadow: $param-1, $param-2;
+	-moz-box-shadow: $param-1, $param-2;
+	-o-box-shadow: $param-1, $param-2;
+	box-shadow: $param-1, $param-2;
+}
+
 @mixin background-linear-gradient-2($p,$c1,$c2)
 {
 	background: -moz-linear-gradient($p,$c1,$c2);
@@ -58,4 +65,10 @@
 	-webkit-transform: $param;
 	-moz-transform: $param;
 	transform: $param;
+}
+
+@mixin box-sizing($param) {
+	-webkit-box-sizing: $param;
+	-moz-box-sizing: $param;
+	box-sizing: $param
 }

@@ -1,20 +1,8 @@
 SellstoMe::Application.routes.draw do
   
   root :to => 'dashboard#index'
-
-  resources :custom_map, :only => [:index]
-  resources :map, :only => [:index] do
-    # Yes. I know that it violated rest. But I don't think that it worth to spend time and
-    # refactor this code.
-    collection do
-      get :search
-    end
-  end
-  resources :geolocation, :only => [:index]
-  resources :search, :only => [:index]
-  match "/search/:query"       => "search#index"
-  match "/search/:query/:page" => "search#index"
-
+  match "/search"       => "search#index"
+  
   # The priority is based upon order of creation:
   # first created -> highest priority.
 

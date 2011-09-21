@@ -24,7 +24,8 @@ textarea {
   padding: 0; 
 }
 
-article, aside, footer, header, nav, section, figure, hgroup, menu {
+article, aside, details, footer, header, nav,
+section, figure, figcaption, hgroup, menu {
   display: block; 
 }
 
@@ -53,10 +54,12 @@ table {
   height: auto; }
 
 :focus {
-  outline: 0; }
+  outline: 0; 
+}
 
 blockquote, q {
-  quotes: "\00ab" "\00bb"; }
+  quotes: "\00ab" "\00bb"; 
+}
 
 input {
   margin: 0; 
@@ -123,10 +126,6 @@ blockquote {
 
 hr {
   border: none;
-  background: #dddddd;
+  background: #ddd;
   width: 100%; 
-}
-
-article, aside, header, hgroup, nav, figure, section, footer {
-  display: block; 
 }

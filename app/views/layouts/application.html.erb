@@ -2,15 +2,12 @@
 <html>
 <head>
   <title><%= yield(:title) %></title>
-  <%= stylesheet_link_tag    "application" %>
+	<meta charset="utf-8">
+  <%= stylesheet_link_tag "application" %>
   <%= yield :head %>
   <%= csrf_meta_tags %>
 </head>
 <body>
-
-	<article>
-		<%= yield %>
-	</article>
-
+	<%= yield %>
 </body>
 </html>

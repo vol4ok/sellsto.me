@@ -1,4 +1,4 @@
-<% content_for :title, "Search - Sellstome" %>
+<% content_for :title, "Search" %>
 
 <% content_for :head do %>
 	<meta name="viewport" content="initial-scale=1.0, user-scalable=no">
@@ -7,33 +7,21 @@
 	<%= stylesheet_link_tag "search" %>
 <% end %>
 
-<section id="map"></section>
-<section id="blog"></section>
-<section id="micro"></section>
-
-<section class="search-bar">
-	<div class="logo">
-		<h1>
-			<%= link_to_unless_current 'Sellsto.me', '/' %>
-		</h1>
-	</div>
-	<div id="query-view">
-		<label for="query">Search</label>
-		<input type="search" class="query" name="query">
-	</div>
-	<section id="controlPanel" class="controls">
-	  <ul id="changeViewTab" class="tab">
-	    <li id="mapView"        class="tabItem"><a>Map</a></li>
-	    <li id="blogView"       class="tabItem"><a href="#!/blog">Blog</a></li>
-	    <li id="microblogView"  class="tabItem"><a href="#!/micro">Microblog</a></li>
-	  </ul>
-	</section>
-</section>
-
-
-
-<section class="result-view">
-	<div class="slide-button"></div>
-	<ul class="result-list">
+<div id="toolbar">
+	<h1>Sellsto.me</h1>
+	<ul class="menu">
+		<li class="menu-ico">H</li>
+		<li class="menu-ico">M</li>
+		<li class="menu-ico selected">l</li>
+		<li class="menu-ico">y</li>
 	</ul>
-</section>
+	<div class="search">
+		<span class="menu-ico">s</span>
+		<input type="text" name="search" value="" placeholder="search">
+	</div>
+</div>
+
+<div id="map"></div>
+<div id="aside">
+	<ul></ul>
+</div>
