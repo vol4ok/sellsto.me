@@ -24,11 +24,6 @@ namespace "sellstome.search", (exports) ->
 	TAB_BLOG_VIEW = "blogView"
 	TAB_MICROBLOG_VIEW = "microblogView"
 	SEARCH_URL = expandApiURL("/search")
-
-	#system events
-	TAB_SWITCH_L = "tab:switch.local";
-	SEARCH_SEARCH_L = "search:search.local";
-	MAP_SHOW_DETAILS_L = "map:showDetails.local";
 	
 	root.$cache ?= {}
 
@@ -139,7 +134,7 @@ namespace "sellstome.search", (exports) ->
 		###@type {array}###
 		searchResults: null
 		###@type {sellstome.search.SearchResultView}###
-		expandedSearchResult: null
+		selectedSearchResult: null
 
 		initialize: () ->
 			@searchResults = new Array()
@@ -177,7 +172,8 @@ namespace "sellstome.search", (exports) ->
 
 			searchList.each (searchResult) =>
 				searchResultView = new SearchResultView({ model: searchResult, map: @map })
-				searchResultView.bind(MAP_SHOW_DETAILS_L, @renderAdInfo, this)
+				#searchResultView.bind(MAP_SHOW_DETAILS_L, @_onShowAdInfo, this)
+				#searchResultView.bind(MAP_HIDE_DETAILS_L, @_onHideAdInfo, this)
 				searchResultView.render()
 				@searchResults.push searchResultView
 				return
@@ -191,18 +187,20 @@ namespace "sellstome.search", (exports) ->
 			return this
 
 		###
-		#Renders dialog with ad descriptions.
-		#Ensures that only one dialog is opened on map.
-		#@param {sellstome.search.SearchResultView}
+		Ensures that only one dialog is opened on map.
+		@param {sellstome.search.SearchResultView}
+		todo zhugrov - I think here would be better to add toogle semantics
 		###
-		renderAdInfo: (searchResultView) ->
-			@expandedSearchResult.closeAdInfo() if not _.isNull( @expandedSearchResult )
-			if searchResultView != @expandedSearchResult
-				searchResultView.openAdInfo()
-				@expandedSearchResult = searchResultView
-			else
-				@expandedSearchResult = null
-			return this
+		_onShowAdInfo: (searchResultView) ->
+			if not _.isNull( @selectedSearchResult )
+				@selectedSearchResult.closeAdInfo()
+			@selectedSearchResult = searchResultView
+			return
+
+		_onHideAdInfo: (searchResultView) ->
+			@selectedSearchResult = null if searchResultView == @selectedSearchResult
+			return
+
 
 	class SearchView extends Backbone.View
 		events:
@@ -340,21 +338,32 @@ namespace "sellstome.search", (exports) ->
 				)
 
 				GoogleEventHub.addListener( @marker, 'click', (e) =>
-					@trigger(MAP_SHOW_DETAILS_L, this)
+					if _.isNull( @adInfo )
+						@openAdInfo()
+					else
+						@closeAdInfo()
 				)
 
 				return this
 
 			openAdInfo: () ->
-				@addInfo = new AdInfo
+				@adInfo = new AdInfo
 					anchor:       @marker
 					description:  @model.get('body')
 					map:          @map
+				@adInfo.bind( MAP_HIDE_DETAILS_L , @_onClosedAdInfo, this )
+				@trigger(MAP_SHOW_DETAILS_L, this)
 				return this
 
 			###Closes add info dialog ###
 			closeAdInfo: () ->
-				@addInfo.removeFromMap() if not _.isNull( @addInfo )
+				@adInfo.removeFromMap()
+				@adInfo.unbind( MAP_HIDE_DETAILS_L )
+				@adInfo = null
+				return this
+
+			_onClosedAdInfo: () ->
+				@trigger( MAP_HIDE_DETAILS_L, this )
 				return this
 
 			### Remove marker from google map ###

@@ -1,5 +1,7 @@
 SellstoMe::Application.routes.draw do
   
+  get "sphinx_search/index"
+
   root :to => 'dashboard#index'
 
   resources :custom_map, :only => [:index]
@@ -10,8 +12,9 @@ SellstoMe::Application.routes.draw do
       get :search
     end
   end
-  resources :geolocation, :only => [:index]
-  resources :search, :only => [:index]
+  resources :geolocation,     :only        => [:index]
+  resources :search,          :only        => [:index]
+  resources :sphinx_search,   :only        => [:index]
   match "/search/:query"       => "search#index"
   match "/search/:query/:page" => "search#index"
 

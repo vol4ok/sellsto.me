@@ -1,6 +1,7 @@
 #= require lang
 #= require underscore
 #= require jquery
+#= require config
 # This file would be used for implementing sellstome Google Map overlays
 # We currently using v3 Google map javascript API
 # @author Zhugrov Aliaksandr
@@ -96,6 +97,9 @@ namespace "sellstome.map", (exports) ->
 
 
 namespace "sellstome.map", (exports) ->
+
+	{LatLng} = google.maps
+
 	###
 	# @constructor
 	# @extends google.maps.OverlayView
@@ -104,7 +108,7 @@ namespace "sellstome.map", (exports) ->
 		@initialize( options )
 		return
 
-	_.extend AdInfo.prototype , new google.maps.OverlayView() ,
+	_.extend AdInfo.prototype , new google.maps.OverlayView() , Backbone.Events ,
 		#define object attributes
 
 		###@type {google.map.Marker} ###
@@ -118,8 +122,8 @@ namespace "sellstome.map", (exports) ->
 		###@type {Object}###
 		overlay:      null
 		###
-		# Actual google map instance
-		# @type {google.map.Map}
+		Actual google map instance
+		@type {google.map.Map}
 		###
 		map:          null
 
@@ -131,11 +135,14 @@ namespace "sellstome.map", (exports) ->
 			)
 			if not _.isNull( @map )
 				@setMap( @map ) #add overlay to map
+				@map.setOptions({ draggable: false })
 			return this
 
 		###this method is added just for convenience###
 		removeFromMap: () ->
+			@map.setOptions({ draggable: true })
 			@setMap(null)
+			@trigger( MAP_HIDE_DETAILS_L, this )
 			return this
 
 		onAdd: () ->
@@ -150,17 +157,26 @@ namespace "sellstome.map", (exports) ->
 			@container = container
 			panes.floatPane.appendChild( container )
 			# register appropriate event handlers
-			$( container ).click (e) =>
-				@removeFromMap()
-			$( overlay ).click (e) =>
-				@removeFromMap()
-			return
+			$( container ).click(_.bind( @removeFromMap, this ))
+			return this
+
+		###
+		Finds latitude and longitude of the top-left viewport corner
+		@return {google.map.LatLng}
+		###
+		findTopLeftViewportCoord: () ->
+			vieportBounds = @map.getBounds()
+			northEastP = vieportBounds.getNorthEast()
+			southWestP = vieportBounds.getSouthWest()
+			return new LatLng(northEastP.lat(), southWestP.lng())
+
 
 		draw: () ->
 			overlayProjection = @getProjection()
 			if _.isNull( @position )
 				@position = @anchor.getPosition()
 			offsetPoint = overlayProjection.fromLatLngToDivPixel( @position )
+			viewportOffesetPoint = overlayProjection.fromLatLngToDivPixel( @findTopLeftViewportCoord() )
 			#todo - remember that we should minimize a dom access in order to gain a performance
 			$( @container ).css
 				position: 'absolute'
@@ -171,9 +187,12 @@ namespace "sellstome.map", (exports) ->
 				width: '130px'
 			#todo zhugrov a - all styling should be applied via css as much as possible
 			$( @overlay ).css
-				height:           $( @overlay ).parent().height()
-				width:            $( @overlay ).parent().width()
-				backgroundColor:  'black'
+				height:           root.innerHeight
+				width:            root.innerWidth
+				position:         'absolute'
+				left:             viewportOffesetPoint.x
+				top:              viewportOffesetPoint.y
+				background:       'black'
 				opacity:          0.4
 			return
 

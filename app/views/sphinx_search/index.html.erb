@@ -1,0 +1,11 @@
+<% content_for :head do %>
+	<%= javascript_include_tag "sphinx_search" %>
+	<%= stylesheet_link_tag "sphinx_search" %>
+<% end %>
+
+<h1>Sphinx Engine Search Results</h1>
+<input type="text" name="query"  id="query" />
+<button type="button" value="Go" id="search"/>
+
+<div id="searchResultsPlaceholder">
+</div>
