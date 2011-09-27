@@ -74,6 +74,100 @@ a {
 	} 
 }
 
+.dotted {
+	text-decoration: none;
+	border-bottom: 1px dotted $color-2;
+}
+
+.clearfix:after {
+	content: ".";
+	display: block;
+	height: 0;
+	clear: both;
+	visibility: hidden;
+}
+
+.left {
+	float: left;
+}
+
+.right {
+	float: right;
+}
+
+.row {
+	display: table-row;
+}
+
+.col {
+	display: table-cell;
+	vertical-align: top;
+	padding: 5px;
+}
+
+hr {
+	height: 1px;
+	background: $color-4;
+}
+
+.wrap {
+	border-bottom: 1px solid red;
+}
+
+.image {
+	img {
+		@include border-radius(4px);
+	}
+}
+
+.content {
+	.message {
+		line-height: 18px;
+	}
+	.author {
+		font-weight: bold;
+		img { @include border-radius(3px)	}
+		a {	vertical-align: top; }
+	}
+}
+
+.bar {
+	font-size: 11px;
+	line-height: 21px;
+	height: 27px;
+	div {
+		margin: 0 5px;
+		&:first-child { margin-left: 0;	}
+		&:last-child { margin-right: 0; }
+	}
+}
+
+.price {
+	vertical-align: middle;
+	width: 60px;
+	.price-data {
+		width: 100%;
+		font-size: 21px;
+		text-align: center;
+	}
+	.items-count {
+		width: 100%;
+		font-size: 9px;
+		text-align: center;
+	}
+}
+
+.ad-btns span {
+	line-height: 14px;
+	font-size: 14px;
+	cursor: pointer;
+}
+
+.social-btns span {
+	line-height: 14px;
+	font-size: 16px;
+	cursor: pointer;
+}
 /* Elements */
 
 .menu-ico {
@@ -83,6 +177,16 @@ a {
 	font-family: Pictos;
 	text-align: center;
 	text-shadow: 0px 1px 0px rgba(255,255,255,0.5);
+}
+
+.mini-ico {
+	color: $color-2;
+	font-size: 11px;
+	line-height: 11px;
+	font-family: Pictos;
+	text-align: center;
+	text-shadow: 0px 1px 0px rgba(255,255,255,0.5);
+	margin-right: 3px;
 }
 
 .selected {
@@ -103,6 +207,7 @@ a {
 	color: $color-2;
 	background: $color-1;
 	border-bottom: 1px solid $color-3;
+	z-index: 100;
 	h1 {
 		float: left;
 		margin: 14px 14px;
@@ -147,3 +252,18 @@ a {
 	z-index: -100;
 }
 
+#aside {
+	position: absolute;
+	top: $toolbar-height;
+	left: 0;
+	bottom: 0;
+	width: 45%;
+	border-right: 4px solid $color-2;
+	background: #ddd;
+	z-index: 0;
+	li {
+		width: 100%;
+		border-bottom: 1px solid $color-2;
+	}
+
+}
