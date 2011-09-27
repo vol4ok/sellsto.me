@@ -2,6 +2,7 @@
 #= require jquery
 #= require backbone
 #= require backbone_ext
+#= require module/resizer
 #= require module/sellstome
 #= require module/generators
 #= require module/map/overlays
@@ -369,3 +370,5 @@ namespace "sellstome.search", (exports) ->
 
 jQuery(document).ready () ->
 	sellstome.search.initialize()
+	#todo vol4ok: move this code to proper place! (to aside-view constructor)
+	$('.resizer').resizer(target: $('#aside'))
