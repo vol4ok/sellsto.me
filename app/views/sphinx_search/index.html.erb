@@ -3,9 +3,21 @@
 	<%= stylesheet_link_tag "sphinx_search" %>
 <% end %>
 
-<h1>Sphinx Engine Search Results</h1>
-<input type="text" name="query"  id="query" />
-<button type="button" value="Go" id="search"/>
+<!-- template for the search result that would be returned from search result. -->
+<script type="text/template" id="search-result-template">
+	<div class="info">
+		Price: <span>{{price}}</span><br/>
+		Weight: <span>{{weight}}<span>
+	</div>
+	<div class="body">
+		Description: <span>{{original}}</span>
+	</div>
+</script>
 
+<h1>Sphinx Engine Search Results</h1>
+<div id="searchQuery">
+	<input type="text" name="query"  id="query" />
+	<button type="button" id="search">Go!</button>
+</div>
 <div id="searchResultsPlaceholder">
 </div>
