@@ -11,6 +11,9 @@
 
 namespace "sellstome.search", (exports) ->
 	
+	{expandApiURL} = sellstome.common
+	{relative_time} = sellstome.helpers
+	
 	# class AdModel
 	# 	default:
 	# 		id
@@ -22,53 +25,74 @@ namespace "sellstome.search", (exports) ->
 	# 		price
 	# 		count
 	# 		message
-			
-	
-	###----[ MAP ]----###
-	
-	class MapController extends Backbone.Controller
 	
 
 	###----[ DETAIL ]----###	
 	
 	class DetailPaneController extends Backbone.Controller
+			
+	###----[ PAGE ]----###
 	
-		
-	###----[ ASIDE ]----###
-	
-	class AsideView extends Backbone.View
+	class AsideItemView extends Backbone.View
 		initialize: (options) ->
 			@template = options.template
-		
-	class AsideController extends Backbone.Controller
-		class AsideItemView extends Backbone.Controller
-		class AsideItemController extends Backbone.Controller
-			card: ->
-			like: ->
-			reply: ->
-			tweet: ->
-			facebook: ->
-		initialize: ->
-			@detailPaneContreoller = new DetailPaneController
+		render: ->
+			$(@el).html(@template(@model.toJSON()))
+			console.log @el
+			return @el
 			
-	###----[ CONTENT ]----###
+	class AdModel extends Backbone.Model
+		card: ->
+		like: ->
+		reply: ->
+		tweet: ->
+		facebook: ->
+			
+	class AdList extends Backbone.Collection
+		model: AdModel
+		url: expandApiURL('/ads')
 		
-	class AdListCollection extends Backbone.Collection
+	class PageView extends Backbone.View
+		el: '#page'
+		initialize: (options) ->
+			@template = options.template
+		render: (list) ->
+			$(@el).html(@template())
+			@aside = @$('#aside')
+			@map = @$('map')
+			@$('.resizer').resizer(target: @aside)
+			console.log 'i\'m here!', list
+			list.forEach (model) =>
+				console.log 'view = new AsideItemView'
+				view = new AsideItemView
+					model: model
+					template: _.template($('#aside-item').html())
+				@aside.append(view.render())
+			return @el
 		
 	class PageController extends Backbone.Controller
-		initialize: ->
+		initialize: (options) ->
 		show: ->
 		hide: ->
 			
-			
 	class ProfilePageController extends PageController
 		initialize: ->
-			@_aside = new AsideView
 			
 	class SearchPageController extends PageController
-		initialize: ->
+		initialize: (options) ->
 		search: (query) -> alert(query)
 		
+	class ListPageController extends PageController
+		initialize: (options) ->
+			super(options)
+			@_adList = new AdList()
+			@_aside = new PageView(template: _.template($('#search-page').html()))
+			@_adList.fetch
+				success: => @_initializeCompletion(0)
+				error: => @_initializeCompletion(1)
+			
+		_initializeCompletion: (err) ->
+			@_aside.render(@_adList)
 		
 	###----[ TOOLBAR ]----###
 	
@@ -132,6 +156,7 @@ namespace "sellstome.search", (exports) ->
 		initialize: ->
 			@_toolbar = new ToolbarController()
 			@_pages = 
+				list: new ListPageController()
 				search: new SearchPageController()
 				progile: new ProfilePageController()
 
@@ -155,4 +180,5 @@ namespace "sellstome.search", (exports) ->
 	exports.SellsApp = SellsApp
 			
 $ () ->
+	_.templateSettings = interpolate: /\{\{(.+?)\}\}/g
 	$app = new sellstome.search.SellsApp()

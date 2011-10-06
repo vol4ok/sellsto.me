@@ -244,7 +244,7 @@ hr {
 
 #map {
 	position: absolute;
-	top: $toolbar-height;
+	top: 0; //$toolbar-height;
 	left: 0;
 	bottom: 0;
 	right: 0;
@@ -252,13 +252,23 @@ hr {
 	z-index: -100;
 }
 
-#aside {
+#page {
 	position: absolute;
 	top: $toolbar-height;
 	left: 0;
 	bottom: 0;
+	right: 0;
+	min-width: 850px;
+}
+
+#aside {
+	position: absolute;
+	top: 0; //$toolbar-height;
+	left: 0;
+	bottom: 0;
 	width: 45%;
 	background: #ddd;
+	//overflow-y: scroll;
 	z-index: 0;
 	li {
 		width: 100%;
@@ -266,9 +276,9 @@ hr {
 	}
 	.resizer {
 		position: absolute;
-		top: 0;
-		right: 0;
-		bottom: 0;
+		top: 0px;
+		right: 0px;
+		bottom: 0px;
 		width: 5px;
 		background: $color-2;
 		cursor: e-resize;
