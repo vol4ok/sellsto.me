@@ -25,8 +25,5 @@ SellstoMe::Application.configure do
   # Do not compress assets
   config.assets.compress = false
   
-  environment = Sprockets::Environment.new
-  environment.append_path 'app/assets/javascripts'
-  environment.append_path 'lib/assets/javascripts'
-  environment.append_path 'vendor/assets/javascripts'
+  config.assets.paths << File.join(Rails.root, 'vendor', 'assets', 'javascripts')
 end

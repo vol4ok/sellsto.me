@@ -57,4 +57,6 @@ SellstoMe::Application.configure do
   
   # Send deprecation notices to registered listeners
   config.active_support.deprecation = :notify
+  
+  config.assets.paths << File.join(Rails.root, 'vendor', 'assets', 'javascripts')
 end
