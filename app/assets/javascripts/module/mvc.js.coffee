@@ -9,18 +9,13 @@ namespace "sellstome.mvc", (exports) ->
 	
 	{api} = sellstome
 
-	exports.Events =
-		# Bind an event, specified by a string name, `ev`, to a `callback` function.
-		# Passing `"all"` will bind the callback to all events fired.
+	class Events
 		bind: (ev, callback, context) ->
 			calls = @_callbacks or (@_callbacks = {})
 			list  = calls[ev] or (calls[ev] = [])
 			list.push([callback, context])
 			return this
 
-	  # Remove one or many callbacks. If `callback` is null, removes all
-	  # callbacks for the event. If `ev` is null, removes all bound callbacks
-	  # for all events.
 		unbind: (ev, callback) ->
 			unless ev
 				@_callbacks = {}
@@ -36,9 +31,6 @@ namespace "sellstome.mvc", (exports) ->
 							break
 	    return this
 
-	  # Trigger an event, firing all bound callbacks. Callbacks are passed the
-	  # same arguments as `trigger` is, apart from the event name.
-	  # Listening for `"all"` passes the true event name as the first argument.
 	  trigger: (eventName) ->
 			both = 2
 			return this unless (calls = @_callbacks)
@@ -54,3 +46,5 @@ namespace "sellstome.mvc", (exports) ->
 							args = if both then api.slice.call(arguments, 1) else arguments
 							callback[0].apply(callback[1] or this, args)
 			return this
+			
+	exports.Events = Events

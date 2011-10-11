@@ -32,9 +32,10 @@ namespace "sellstome.api", (exports) ->
 
   # By default, Underscore uses ERB-style template delimiters, change the
   # following template settings to use alternative delimiters.
-  templateSettings =
-    evaluate    : /<%([\s\S]+?)%>/g
-    interpolate : /<%=([\s\S]+?)%>/g
+  templateSettings = 
+    evaluate: /<%([\s\S]+?)%>/g
+    interpolate: /<%=([\s\S]+?)%>/g
+    escape: /<%-([\s\S]+?)%>/g
 
   
   ###----[ COLLECTIONS ]----###
@@ -153,6 +154,17 @@ namespace "sellstome.api", (exports) ->
       computed = if iterator then iterator.call(context, value, index, list) else value
       computed < result.computed and (result = {value: value, computed: computed})
     return result.value
+    
+  shuffle = (obj) ->
+    shuffled = []
+    each obj, (value, index, list) ->
+      if index is 0
+        shuffled[0] = value
+      else
+        rand = Math.floor(Math.random() * (index + 1))
+        shuffled[index] = shuffled[rand]
+        shuffled[rand] = value
+    return shuffled
 
   sortBy = (obj, iterator, context) ->
     return pluck(((map obj, (value, index, list) ->
@@ -194,7 +206,8 @@ namespace "sellstome.api", (exports) ->
   rest = tail = (array, index, guard) ->
     slice.call(array, (index is null) or if guard then 1 else index)
 
-  last = (array) -> array[array.length - 1]
+  last = (array, n, guard) ->
+    return (if (n?) and not guard then slice.call(array, array.length - n) else array[array.length - 1])
 
   compact = (array) -> filter(array, (value) -> !!value)
 
@@ -212,6 +225,17 @@ namespace "sellstome.api", (exports) ->
       memo[memo.length] = el if 0 is i or (if isSorted is true then last(memo) isnt el else not include(memo, el))
       return memo
     , []
+    
+  uniq = unique = (array, isSorted, iterator) ->
+    initial = (if iterator then _.map(array, iterator) else array)
+    result = []
+    reduce initial, (memo, el, i) ->
+      if 0 == i or (if isSorted == true then last(memo) != el else not include(memo, el))
+        memo[memo.length] = el
+        result[result.length] = array[i]
+      return memo
+    , []
+    return result
 
   union = -> uniq(flatten(arguments))
 
@@ -366,30 +390,55 @@ namespace "sellstome.api", (exports) ->
     interceptor(obj)
     return obj
 
-  isEqual = (a, b) ->
-    return true  if a == b
-    atype = typeof (a)
-    btype = typeof (b)
-    return false  unless atype == btype
-    return true   if a == b
-    return false  if (not a and b) or (a and not b)
-    a = a._wrapped if a._chain
-    b = b._wrapped if b._chain
-    return a.isEqual(b) if a.isEqual
-    return b.isEqual(a) if b.isEqual
-    return a.getTime() == b.getTime()  if isDate(a) and isDate(b)
-    return false  if isNaN(a) and isNaN(b)
-    return a.source == b.source and 
-      a.global == b.global and a.ignoreCase == b.ignoreCase and 
-      a.multiline == b.multiline if isRegExp(a) and isRegExp(b)
-    return false if atype != "object"
-    return false if a.length and (a.length != b.length)
-    aKeys = keys(a)
-    bKeys = keys(b)
-    return false  unless aKeys.length == bKeys.length
-    for key of a
-      return false  if not (key of b) or not isEqual(a[key], b[key])
-    return true
+  eq = (a, b, stack) ->
+    return a != 0 or 1 / a == 1 / b  if a == b
+    return a == b  unless a?
+    typeA = typeof a
+    return false  unless typeA == typeof b
+    return false  unless not a == not b
+    return isNaN(b) if isNaN(a)
+    isStringA = isString(a)
+    isStringB = isString(b)
+    return isStringA and isStringB and String(a) == String(b)  if isStringA or isStringB
+    isNumberA = isNumber(a)
+    isNumberB = isNumber(b)
+    return isNumberA and isNumberB and +a == +b  if isNumberA or isNumberB
+    isBooleanA = isBoolean(a)
+    isBooleanB = isBoolean(b)
+    return isBooleanA and isBooleanB and +a == +b  if isBooleanA or isBooleanB
+    isDateA = isDate(a)
+    isDateB = isDate(b)
+    return isDateA and isDateB and a.getTime() == b.getTime()  if isDateA or isDateB
+    isRegExpA = isRegExp(a)
+    isRegExpB = isRegExp(b)
+    return isRegExpA and isRegExpB and a.source == b.source and a.global == b.global and a.multiline == b.multiline and a.ignoreCase == b.ignoreCase  if isRegExpA or isRegExpB
+    return false  unless typeA == "object"
+    a = a._wrapped  if a._chain
+    b = b._wrapped  if b._chain
+    return a.isEqual(b)  if _.isFunction(a.isEqual)
+    length = stack.length
+    while length--
+      return true  if stack[length] == a
+    stack.push a
+    size = 0
+    result = true
+    if a.length == +a.length or b.length == +b.length
+      size = a.length
+      result = size == b.length
+      if result
+        while size--
+          break  unless (result = size of a == size of b and eq(a[size], b[size], stack))
+    else
+      for own key of a
+        size++
+        break unless (result = hasOwnProperty.call(b, key) and eq(a[key], b[key], stack))
+      if result
+        for own key of b
+          break unless size--
+        result = not size
+    stack.pop()
+    return result
+  isEqual = (a, b) -> eq(a, b, [])
     
   isEmpty = (obj) ->
     return obj.length is 0 if isArray(obj) or isString(obj)
@@ -443,23 +492,25 @@ namespace "sellstome.api", (exports) ->
   uniqueId = (prefix) ->
     id = idCounter++
     return if prefix then prefix + id else id
-    
+
   template = (str, data) ->
-    c  = _.templateSettings
-    tmpl = 'var __p=[],print=function(){__p.push.apply(__p,arguments);};' +
-      'with(obj||{}){__p.push(\'' +
-      str.replace(/\\/g, '\\\\')
-        .replace(/'/g, "\\'")
-        .replace c.interpolate, (match, code) -> 
-          "'," + code.replace(/\\'/g, "'") + ",'"
-        .replace c.evaluate or null, (match, code) ->  
-          "');" + code.replace(/\\'/g, "'").replace(/[\r\n\t]/g, ' ') + "__p.push('"
-        .replace(/\r/g, '\\r')
-        .replace(/\n/g, '\\n')
-        .replace(/\t/g, '\\t') + 
-        "');}return __p.join('');"
-    func = new Function('obj', tmpl)
-    return if data then func(data) else func
+    c = templateSettings
+    tmpl = "var __p=[],print=function(){__p.push.apply(__p,arguments);};" + 
+      "with(obj||{}){__p.push('" + 
+      str.replace(/\\/g, "\\\\")
+      .replace(/'/g, "\\'")
+      .replace c.escape, (match, code) ->
+        "',_.escape(" + code.replace(/\\'/g, "'") + "),'"
+      .replace c.interpolate, (match, code) ->
+        "'," + code.replace(/\\'/g, "'") + ",'"
+      .replace c.evaluate or null, (match, code) ->
+        "');" + code.replace(/\\'/g, "'").replace(/[\r\n\t]/g, " ") + "__p.push('"
+      .replace(/\r/g, "\\r")
+      .replace(/\n/g, "\\n")
+      .replace(/\t/g, "\\t") + 
+      "');}return __p.join('');"
+    func = new Function("obj", tmpl)
+    return (if data then func(data) else func)
   
   ###----[ EXPORTS ]----###
   exports extends {templateSettings, breaker}

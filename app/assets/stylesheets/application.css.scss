@@ -11,7 +11,7 @@ body {
 	font-size: $font-size;
 	font-weight: 300;
 	line-height: $line-height; 
-	#background: url('bg2.png');
+	background: url('bg3.png');
 }
 
 p, h1, h2, h3, h4, h5, h6 {
@@ -93,6 +93,11 @@ a {
 
 .right {
 	float: right;
+}
+
+.ad-item {
+  margin: 0 auto;
+	max-width: 650px;
 }
 
 .row {
@@ -203,7 +208,7 @@ hr {
 	left: 0;
 	width: 100%;
 	height: $toolbar-height;
-	min-width: 850px;
+	min-width: 800px;
 	color: $color-2;
 	background: $color-1;
 	border-bottom: 1px solid $color-3;
@@ -229,7 +234,7 @@ hr {
 			resize: none;
 			vertical-align: top;
 			margin: 16px 14px 0;
-			width: 200px;
+			width: 160px;
 			color: $color-2;
 			font-family: $body-font;
 			font-size: 16px;
@@ -243,13 +248,13 @@ hr {
 }
 
 #map {
-	position: absolute;
-	top: 0; //$toolbar-height;
-	left: 0;
-	bottom: 0;
-	right: 0;
-	min-width: 850px;
-	z-index: -100;
+  position: absolute;
+  top: 0; //$toolbar-height;
+  bottom: 0;
+  right: 0;
+	//width: 55%;
+	//z-index: 0;
+	background: gold;
 }
 
 #page {
@@ -258,29 +263,36 @@ hr {
 	left: 0;
 	bottom: 0;
 	right: 0;
-	min-width: 850px;
+	min-width: 800px;
+	display: table-row;
+}
+
+.resizer {
+  opacity: 0.0;
+	position: absolute;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	width: 5px;
+	background: $color-2;
+	cursor: ew-resize;
+	z-index: 100;
 }
 
 #aside {
+  min-width: 400px;
+  opacity: 0.7;
 	position: absolute;
-	top: 0; //$toolbar-height;
-	left: 0;
-	bottom: 0;
-	width: 45%;
+  top: 0; //$toolbar-height;
+  left: 0;
+  bottom: 0;
+//	width: 45%;
+	border-right: 1px solid $color-2;
 	background: #ddd;
-	//overflow-y: scroll;
-	z-index: 0;
+	overflow-y: scroll;
+//	z-index: 0;
 	li {
 		width: 100%;
 		border-bottom: 1px solid $color-2;
-	}
-	.resizer {
-		position: absolute;
-		top: 0px;
-		right: 0px;
-		bottom: 0px;
-		width: 5px;
-		background: $color-2;
-		cursor: e-resize;
 	}
 }
