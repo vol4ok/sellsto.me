@@ -26,4 +26,5 @@ SellstoMe::Application.configure do
   config.assets.compress = false
   
   config.assets.paths << File.join(Rails.root, 'vendor', 'assets', 'javascripts')
+  config.assets.paths << File.join(Rails.root, 'vendor', 'assets', 'stylesheets')
 end

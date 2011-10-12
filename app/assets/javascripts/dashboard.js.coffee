@@ -1,5 +1,6 @@
 #= require lang
 #= require jquery
+#= require lionbars
 #= require backbone
 #= require backbone_ext
 #= require module/resizer
@@ -31,13 +32,13 @@ namespace "sellstome.search", (exports) ->
     className: 'ad-item'
     tagName: 'div'
     events:
-      'click': 'on-click'
+      'click': 'on_click'
     initialize: (options) ->
       @template = options.template
     render: ->
       $(@el).html(@template(@model.toJSON()))
       return @el
-    'on-click': (e) -> @trigger('select', this)
+    on_click: (e) -> @trigger('select', this)
       
   class AdModel extends Backbone.Model
     card: ->
@@ -55,7 +56,7 @@ namespace "sellstome.search", (exports) ->
     ASIDE_MINSIZE: 400
     MAP_MINSIZE: 250
     events:
-      'resizer-resize .resizer': 'on-resize'
+      'resizer-resize .resizer': 'on_resize'
     el: '#page'
     initialize: (options) ->
       @template = options.template
@@ -77,12 +78,14 @@ namespace "sellstome.search", (exports) ->
       request.getCurrentPosition(positionMap, errorCallback)
       
     render: (list) ->
-      $(window).resize _.bind(@['on-resize-window'],this)
+      $(window).resize _.bind(@on_resizeWindow,this)
       $(@el).html(@template())
       @aside = @$('#aside')
       @aside
         .css('min-width': @ASIDE_MINSIZE)
         .width(Math.round($(@el).width()*0.45))
+      
+
       @map = @$('#map')
         .css('min-width': @MAP_MINSIZE)
         .width($(@el).width() - @aside.width()-1)
@@ -97,6 +100,7 @@ namespace "sellstome.search", (exports) ->
           template: _.template($('#aside-item').html())
         @aside.append(view.render())
         @renderMap()
+      $('#aside').lionbars() 
       return @el
       
     _validateSize: (offset) ->
@@ -123,24 +127,17 @@ namespace "sellstome.search", (exports) ->
         else if ww >= @ASIDE_MINSIZE + @MAP_MINSIZE
           @aside.css(width: ww - @MAP_MINSIZE - 1)
           @_resizer.resizer('option', 'offset', ww - @MAP_MINSIZE)
-        @map.show()
-        # resolve google map bug with hidden div
-        GoogleEventHub.trigger(map, 'resize')
-        @map.hide()
         @map.css(opacity: 1)
-        @map.fadeIn()
         
-    'on-select': (view) -> @trigger('select', view)
-    'on-resize-window': (e) ->
-      @center = @gmap.getCenter()
-      @map.hide()
+    on_select: (view) -> @trigger('select', view)
+    on_resizeWindow: (e) ->
       # make this div transparent, 
       # in order to map aren't twitching when it appear after resize ###
       @map.css(opacity: 0)
       @_inc = 0 unless @inc?
       @_inc++
       setTimeout (=> @_resizeWindowComplete()), 300
-    'on-resize': (event,offset) ->
+    on_resize: (event,offset) ->
       @aside.css(width: offset)
       @map.css(width: $(@el).width() - offset-1)
       
@@ -161,14 +158,14 @@ namespace "sellstome.search", (exports) ->
       super(options)
       @_adList = new AdList()
       @_aside = new PageView(template: _.template($('#search-page').html()))
-      @_aside.bind('select', @['on-select'], this)
+      @_aside.bind('select', @on_select, this)
       @_adList.fetch
         success: => @_initializeCompletion(0)
         error: => @_initializeCompletion(1)
       
     _initializeCompletion: (err) ->
       @_aside.render(@_adList)
-    'on-select': (view) ->
+    on_select: (view) ->
       
     
   ###----[ TOOLBAR ]----###
@@ -177,7 +174,7 @@ namespace "sellstome.search", (exports) ->
     tagName: 'li'
     className: 'menu-ico'
     events:
-      'click': 'on-click'
+      'click': 'on_click'
     initialize: (options) ->
       @title = options.title if options?
       @_rendered = no
@@ -188,17 +185,17 @@ namespace "sellstome.search", (exports) ->
       return @el
     select: -> $(@el).addClass('selected')
     deselect: -> $(@el).removeClass('selected')
-    'on-click': -> @trigger('select', this)
+    on_click: -> @trigger('select', this)
   
   class ToolbarView extends Backbone.View
     el: '#toolbar'
     events:
-      'keypress .search-input': 'on-key-press'
+      'keypress .search-input': 'on_keyPress'
     initialize: ->
       @_menu = @$('.menu')
     renderItem: (view) ->
       @_menu.append(view.render())
-    'on-key-press': (e) ->
+    on_keyPress: (e) ->
       return true unless e.which is 13
       @trigger('search', $(e.currentTarget).val()) 
       return false
@@ -209,11 +206,11 @@ namespace "sellstome.search", (exports) ->
       @_view = new ToolbarView()
       @_items = []
       @_cidToIndex = {}
-      @_view.bind('search', @['on-search'], this)
+      @_view.bind('search', @on_search, this)
     addItem: (item) ->
       @_cidToIndex[item.cid] = @_items.length
       @_items.push(item)
-      item.bind('select', @['on-item-select'], this)
+      item.bind('select', @on_itemSelect, this)
       @_view.renderItem(item)
     selectItem: (index) ->
       @_items[@_index].deselect() if @_index? and @_index != index
@@ -222,8 +219,8 @@ namespace "sellstome.search", (exports) ->
         @_items[index].select()
       else
         @_index = null
-    'on-search': (query) -> @trigger('search', query)
-    'on-item-select': (item) -> 
+    on_search: (query) -> @trigger('search', query)
+    on_itemSelect: (item) -> 
       @trigger('item-select', @_cidToIndex[item.cid])
   
   
@@ -248,11 +245,11 @@ namespace "sellstome.search", (exports) ->
       
       @_toolbar.selectItem(0)
       @_toolbar.bind('item-select', @_toolbar.selectItem, @_toolbar)
-      @_toolbar.bind('search', @['on-search'], this)
-    'on-search': (query) ->
+      @_toolbar.bind('search', @on_search, this)
+    on_search: (query) ->
       @_pages.search.search(query)
       @_pages.search.show()
-    'on-change-page': (page) ->
+    on_changePage: (page) ->
         
   exports.SellsApp = SellsApp
       
