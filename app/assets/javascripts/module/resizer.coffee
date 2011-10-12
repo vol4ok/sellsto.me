@@ -10,14 +10,14 @@ $.widget "custom.resizer", $.ui.mouse,
   _create: ->
     @_mouseInit()
     @offset = @options.offset
-    @innerOffset = @options.width >> 1
+    @innerOffset = 0; #@options.width >> 1
     @element.css
       left: @offset - @innerOffset
       width: @options.width
   destroy: ->
     #todo:
   _mouseCapture: (e) ->
-    @element.css(opacity: 0.8)
+    #@element.css(opacity: 0.8)
     @currentX = e.pageX
     return true
   _mouseDrag: (e) ->
@@ -27,7 +27,7 @@ $.widget "custom.resizer", $.ui.mouse,
       @currentX = e.pageX
     @element.css(left: @offset - @innerOffset)
   _mouseStop: (e) ->
-    @element.css(opacity: 0.0)
+    #@element.css(opacity: 0.0)
     @_trigger('-resize', this, @offset)
   _setOption: (key, value) ->
     console.log '_setOption', key, value

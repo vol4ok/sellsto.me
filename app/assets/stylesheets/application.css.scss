@@ -5,7 +5,7 @@
 @import "common/helpers";
 @import "common/titillium-font";
 @import "common/pictos-font";
-@import "lionbars";
+//@import "lionbars";
 
 body {
 	font-family: $body-font;
@@ -144,6 +144,7 @@ hr {
 	height: 27px;
 	color: #888;
 	margin-top: 4px;
+	margin-bottom: 1px;
 	div {
 		margin: 0 5px;
 		&:first-child { margin-left: 0;	}
@@ -218,6 +219,7 @@ hr {
 	height: $toolbar-height;
 	min-width: 800px;
 	color: $color-2;
+	z-index: 100;
 	background: url('bg11.png');//$color-1;
 	//border-bottom: 1px solid $color-3;
 	@include box-shadow(0 1px 2px rgba(0,0,0,0.15));
@@ -267,7 +269,7 @@ hr {
 	//background: gold;
 }
 
-#page {
+#pages {
 	position: absolute;
 	top: $toolbar-height;
 	left: 0;
@@ -278,13 +280,15 @@ hr {
 }
 
 .resizer {
-  opacity: 0.0;
+  opacity: 1.0;
 	position: absolute;
+	border-left: 1px solid #D6D6D6;
+	border-right: 1px solid #D6D6D6;
 	top: 0;
 	left: 0;
 	bottom: 0;
 	width: 5px;
-	background: $color-2;
+	background: #eee;
 	cursor: ew-resize;
 	z-index: 100;
 }
@@ -297,12 +301,21 @@ hr {
   left: 0;
   bottom: 0;
 //	width: 45%;
-	border-right: 2px solid #ddd;
+	border-right: 1px solid #D6D6D6;
 	background: url('bg8.png');//#f0f0f0;
 	overflow-y: auto;
-  z-index: 1;
+  z-index: 0;
 	li {
 		width: 100%;
 		border-bottom: 1px solid $color-2;
 	}
+}
+
+// temp
+.fish {
+  margin: 300px auto;
+  h1 {
+    color: rgba(255,255,255,0.3);
+    text-align: center;
+  }
 }

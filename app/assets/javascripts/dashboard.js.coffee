@@ -1,6 +1,6 @@
 #= require lang
 #= require jquery
-#= require lionbars
+#= require iscroll
 #= require backbone
 #= require backbone_ext
 #= require module/resizer
@@ -57,9 +57,12 @@ namespace "sellstome.search", (exports) ->
     MAP_MINSIZE: 250
     events:
       'resizer-resize .resizer': 'on_resize'
-    el: '#page'
+    #el: '#page'
+    tagName: 'div'
     initialize: (options) ->
       @template = options.template
+      @_isTabActive = no
+      @_isTabRendered = no
       
     renderMap: ->
       request = new GeolocationRequest()
@@ -76,16 +79,18 @@ namespace "sellstome.search", (exports) ->
         alert('error')
         
       request.getCurrentPosition(positionMap, errorCallback)
+    
+    setList: (@list) ->
       
     render: (list) ->
       $(window).resize _.bind(@on_resizeWindow,this)
       $(@el).html(@template())
+      $('#pages').append(@el)
       @aside = @$('#aside')
       @aside
         .css('min-width': @ASIDE_MINSIZE)
         .width(Math.round($(@el).width()*0.45))
-      
-
+      @itemList = @$('.item-list')
       @map = @$('#map')
         .css('min-width': @MAP_MINSIZE)
         .width($(@el).width() - @aside.width()-1)
@@ -94,14 +99,34 @@ namespace "sellstome.search", (exports) ->
         width: @SEPARATOR_SIZE
         offset: @aside.width()
         validate: _.bind(@_validateSize, this)
-      list.forEach (model) =>
+      @list.forEach (model) =>
         view = new AsideItemView
           model: model
           template: _.template($('#aside-item').html())
-        @aside.append(view.render())
-        @renderMap()
-      $('#aside').lionbars() 
+        @itemList.append(view.render())
+      @renderMap()
+      @_isTabRendered = yes
+      # @scroll = new iScroll 'aside', 
+      #   hScroll: false
+      #   hScrollbar: false
+      #   fadeScrollbar: true
+      #$('#aside').lionbars('dark',false,true,true) 
       return @el
+      
+    show: ->
+      unless @_isTabRendered
+        $(@el).css(opacity: 0)
+        @render() 
+        $(@el).animate("opacity": 1)
+      else
+        #$(@el).show()
+        $(@el).fadeIn 200, =>
+          GoogleEventHub.trigger(@gmap, 'resize')
+      @_isTabActive = yes
+    hide: ->
+      #$(@el).hide()
+      $(@el).fadeOut(200)
+      @_isTabActive = no
       
     _validateSize: (offset) ->
       unless @_asideMinSize?
@@ -127,10 +152,12 @@ namespace "sellstome.search", (exports) ->
         else if ww >= @ASIDE_MINSIZE + @MAP_MINSIZE
           @aside.css(width: ww - @MAP_MINSIZE - 1)
           @_resizer.resizer('option', 'offset', ww - @MAP_MINSIZE)
-        @map.css(opacity: 1)
+        #@map.css(opacity: 1)
+        @map.stop().animate({ "opacity": 1 })
         
     on_select: (view) -> @trigger('select', view)
     on_resizeWindow: (e) ->
+      return unless @_isTabActive
       # make this div transparent, 
       # in order to map aren't twitching when it appear after resize ###
       @map.css(opacity: 0)
@@ -141,33 +168,70 @@ namespace "sellstome.search", (exports) ->
       @aside.css(width: offset)
       @map.css(width: $(@el).width() - offset-1)
       
+  class FishPage extends Backbone.View
+    tagName: 'div'
+    initialize: (options) ->
+      @template = options.template
+      @_isTabActive = no
+      @_isTabRendered = no
+    render: ->
+      $(@el).html(@template())
+      $('#pages').append(@el)
+      @_isTabRendered = yes
+    show: ->
+      unless @_isTabRendered
+        $(@el).css(opacity: 0)
+        @render() 
+        $(@el).animate("opacity": 1)
+      else
+        #$(@el).show()
+        $(@el).fadeIn(200)
+    hide: ->
+      #$(@el).hide()
+      $(@el).fadeOut(200)
+      
   class PageController extends Backbone.Controller
     initialize: (options) ->
-    show: ->
-    hide: ->
+      @_page = null
+    show: -> @_page.show()
+    hide: -> @_page.hide()
       
   class ProfilePageController extends PageController
-    initialize: ->
-      
-  class SearchPageController extends PageController
     initialize: (options) ->
-    search: (query) -> alert(query)
+      super(options)
+      @_page = new FishPage(template: _.template($('#profile-page').html()))
     
-  class ListPageController extends PageController
+  class FolowersAdsPageController extends PageController
     initialize: (options) ->
       super(options)
       @_adList = new AdList()
-      @_aside = new PageView(template: _.template($('#search-page').html()))
-      @_aside.bind('select', @on_select, this)
+      @_page = new PageView(template: _.template($('#folowers-ads-page').html()))
+      @_page.bind('select', @on_select, this)
       @_adList.fetch
         success: => @_initializeCompletion(0)
         error: => @_initializeCompletion(1)
       
     _initializeCompletion: (err) ->
-      @_aside.render(@_adList)
+      @_page.setList(@_adList)
     on_select: (view) ->
       
-    
+  class MessagesPageController extends PageController
+    initialize: (options) ->
+      super(options)
+      @_page = new FishPage(template: _.template($('#messages-page').html()))
+        
+  class PreferencesPageController extends PageController
+    initialize: (options) ->
+      super(options)
+      @_page = new FishPage(template: _.template($('#preferences-page').html()))
+        
+  class SearchPageController extends PageController
+    initialize: (options) ->
+      super(options)
+      @_page = new FishPage(template: _.template($('#search-page').html()))
+    search: (query) -> alert(query)
+      
+  
   ###----[ TOOLBAR ]----###
   
   class ToolbarItemView extends Backbone.View
@@ -230,10 +294,11 @@ namespace "sellstome.search", (exports) ->
     initialize: ->
       @_toolbar = new ToolbarController()
       @_pages = 
-        list: new ListPageController()
-        search: new SearchPageController()
-        progile: new ProfilePageController()
-
+        0: new ProfilePageController()
+        1: new MessagesPageController()
+        2: new FolowersAdsPageController()
+        3: new PreferencesPageController
+        4: new SearchPageController()
       menuItem = new ToolbarItemView(title: 'H')
       @_toolbar.addItem(menuItem)
       menuItem = new ToolbarItemView(title: 'M')
@@ -243,13 +308,21 @@ namespace "sellstome.search", (exports) ->
       menuItem = new ToolbarItemView(title: 'y')
       @_toolbar.addItem(menuItem)
       
+      @_index = 0
+      @_pages[@_index].show()
+      
       @_toolbar.selectItem(0)
       @_toolbar.bind('item-select', @_toolbar.selectItem, @_toolbar)
+      @_toolbar.bind('item-select', @on_changePage, this)
       @_toolbar.bind('search', @on_search, this)
     on_search: (query) ->
       @_pages.search.search(query)
       @_pages.search.show()
     on_changePage: (page) ->
+      console.log 'on_changePage', page, @_pages[@_index]
+      @_pages[@_index].hide()
+      @_index = page
+      @_pages[@_index].show()
         
   exports.SellsApp = SellsApp
       
