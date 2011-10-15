@@ -163,7 +163,7 @@ namespace "sellstome.search", (exports) ->
       @map.css(opacity: 0)
       @_inc = 0 unless @inc?
       @_inc++
-      setTimeout (=> @_resizeWindowComplete()), 300
+      setTimeout (=> @_resizeWindowComplete()), 400
     on_resize: (event,offset) ->
       @aside.css(width: offset)
       @map.css(width: $(@el).width() - offset-1)
@@ -283,6 +283,9 @@ namespace "sellstome.search", (exports) ->
         @_items[index].select()
       else
         @_index = null
+    selectSearch: ->
+      @_items[@_index].deselect() if @_index?
+      @_index = null
     on_search: (query) -> @trigger('search', query)
     on_itemSelect: (item) -> 
       @trigger('item-select', @_cidToIndex[item.cid])
@@ -316,10 +319,14 @@ namespace "sellstome.search", (exports) ->
       @_toolbar.bind('item-select', @on_changePage, this)
       @_toolbar.bind('search', @on_search, this)
     on_search: (query) ->
-      @_pages.search.search(query)
-      @_pages.search.show()
+      @_pages[@_index].hide()
+      @_index = 4
+      @_pages[4].search(query)
+      @_pages[4].show()
+      @_toolbar.selectSearch()
     on_changePage: (page) ->
       console.log 'on_changePage', page, @_pages[@_index]
+      return if page == @_index
       @_pages[@_index].hide()
       @_index = page
       @_pages[@_index].show()
