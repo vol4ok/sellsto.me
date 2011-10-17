@@ -5,15 +5,25 @@
 @import "common/helpers";
 @import "common/titillium-font";
 @import "common/pictos-font";
-//@import "lionbars";
+
+/* CONFIG */
+
+$color-1: #CCC;
+$color-2: #777;
+$color-3: #A0A0A0;
+$color-4: #B4B4B4;
+$toolbar-height: 50px;
+$content-pane-width: 64px;
+$page-min-width: 840px;
+$TOP: 100;
+
 
 body {
 	font-family: $body-font;
 	font-size: $font-size;
 	font-weight: 300;
 	line-height: $line-height; 
-	background: url('bg9.png');
-	overflow: hidden;
+	overflow-y: hidden;
 }
 
 p, h1, h2, h3, h4, h5, h6 {
@@ -22,9 +32,10 @@ p, h1, h2, h3, h4, h5, h6 {
 
 h1 {
 	font-family: Titillium;
-	font-size: 35px;
+	font-size: 32px;
 	line-height: 2*$line-height;
 	margin-bottom: $line-height;
+	font-weight: lighter;
 }
 
 h2 {
@@ -58,12 +69,14 @@ h6 {
 	line-height: $line-height;
 }
 
+input {
+  font-family: $ui-font;
+}
+
 a {
   color: #000;
-  //text-decoration: underline;
   &:visited {
     color: #000;
-    //text-decoration: underline; 
 	}
   &:hover {
 		color: #fff; 
@@ -94,221 +107,204 @@ a {
 }
 
 .right {
-	float: right;
+	float: right; 
 }
 
-.ad-item {
-  margin: 0 auto;
-	max-width: 650px;
-}
-
-.row {
-	display: table-row;
-}
-
-.col {
-	display: table-cell;
-	vertical-align: top;
-	padding: 5px;
-}
-
-hr {
-	height: 1px;
-	background: #ddd;//$color-4;
-}
-
-.wrap {
-	border-bottom: 1px solid red;
-}
-
-.image {
-	img {
-		@include border-radius(4px);
-	}
-}
-
-.content {
-	.message {
-		line-height: 18px;
-	}
-	.author {
-		font-weight: bold;
-		img { @include border-radius(3px)	}
-		a {	vertical-align: top; }
-	}
-}
-
-.bar {
-	font-size: 11px;
-	line-height: 21px;
-	height: 27px;
-	color: #888;
-	margin-top: 4px;
-	margin-bottom: 1px;
-	div {
-		margin: 0 5px;
-		&:first-child { margin-left: 0;	}
-		&:last-child { margin-right: 0; }
-	}
-}
-
-.price {
-	vertical-align: middle;
-	width: 60px;
-	.price-data {
-		width: 100%;
-		font-size: 21px;
-		text-align: center;
-	}
-	.items-count {
-		width: 100%;
-		font-size: 9px;
-		text-align: center;
-	}
-}
-
-.ad-btns span {
-	line-height: 14px;
-	font-size: 14px;
-	cursor: pointer;
-}
-
-.social-btns span {
-	line-height: 14px;
-	font-size: 16px;
-	cursor: pointer;
-}
-/* Elements */
-
-.menu-ico {
-	color: $color-2;
-	font-size: 36px;
-	line-height: 36px;
-	font-family: Pictos;
-	text-align: center;
-	text-shadow: 0px 1px 0px rgba(255,255,255,0.5);
-}
-
-.mini-ico {
-	//color: $color-2;
-	color: #888;
-	font-size: 11px;
-	line-height: 11px;
-	font-family: Pictos;
-	text-align: center;
-	text-shadow: 0px 1px 0px rgba(255,255,255,0.5);
-	margin-right: 3px;
-}
-
-.selected {
-	color: white;
-//  background: $color-4;
-//  border-right: 1px solid $color-3;
-//  border-left: 1px solid $color-3;
-	background: #545454;
-	border-right: 1px solid #444;
-	border-left: 1px solid #444;
-	text-shadow: none;
-}
+/* TOOLBAR */
 
 #toolbar {
-	position: absolute;
+  position: absolute;
 	top: 0;
 	left: 0;
-	width: 100%;
+	right: 0;
 	height: $toolbar-height;
-	min-width: 800px;
+	min-width: $page-min-width;
 	color: $color-2;
-	z-index: 100;
-	background: url('bg11.png');//$color-1;
-	//border-bottom: 1px solid $color-3;
-	@include box-shadow(0 1px 2px rgba(0,0,0,0.15));
-	z-index: 100;
+	background: url('bg11.png');
+	overflow: hidden;
+	//border-bottom: 1px solid #dadada;
+	@include box-shadow(0 1px 2px rgba(0,0,0,0.35));
+	z-index: $TOP;
+	@include user-select(none);
 	h1 {
 		float: left;
-		margin: 14px 14px;
+		margin: 8px 8px;
 		text-shadow: 0px 1px 0px rgba(255,255,255,0.5);
 	}
 	ul {
-		float:left;
-		margin-left: 100px;
+	  position: absolute;
+	  left: 200px;
+	  right: 5px;
+		margin-left: 80px;
 		height: 100%;
 	}
 	li {
 		float: left;
-		width: $toolbar-height;
 		height: 100%;
-		cursor: pointer;
 	}
-	.search {
-		float: right;
-		input {
-			resize: none;
-			vertical-align: top;
-			margin: 16px 14px 0;
-			width: 160px;
-			color: $color-2;
-			font-family: $body-font;
-			font-size: 16px;
-			padding: 8px;
-			border: 1px solid $color-3;
-			@include border-radius(4px);
-			@include box-shadow-2(inset 0 3px 5px rgba(0,0,0,0.15), 
-			                      0px 1px 0px rgba(255,255,255,0.5) );
-		}
-	}
+	
+	.search-toolbar-item {
+    margin: 8px 12px 0;
+    position: relative;
+    width: 350px;
+    .search-ico {
+      position: absolute;
+      right: 8px;
+      top: -2px;
+      z-index: 101;
+    	color: #858585;
+    	font-size: 22px;
+    	line-height: 22px;
+    	font-family: Pictos;
+    	text-align: center;
+    	text-shadow: 0px 1px 0px rgba(255,255,255,0.5);
+    	cursor: pointer;
+    }
+    .search-input {
+      box-sizing: border-box;
+      -webkit-box-sizing: border-box;
+      -moz-box-sizing: border-box;
+    	resize: none;
+    	vertical-align: top;
+    	width: 100%;
+    	color: $color-2;
+    	font-family: $body-font;
+    	font-size: 14px;
+    	padding: 8px 32px 8px 8px;
+    	border: 1px solid #b8b8b8;
+    	@include border-radius(4px);
+    	@include box-shadow-2(inset 0 3px 5px rgba(0,0,0,0.15), 
+    	                      0px 1px 0px rgba(255,255,255,0.7) );
+    }
+  }
+
+  .selected {
+    background: #888;
+  	border-right: 1px solid #777;
+  	border-left: 1px solid #777;
+    .toolbar-ico {
+      margin: 0 11px;
+    	color: white;
+    	font-size: 30px;
+    	line-height: 28px;
+    	font-family: Pictos;
+    	text-align: center;
+    	text-shadow: none;
+    	cursor: pointer;
+    	@include user-select(none);
+    }
+  }
+
+  .toolbar-ico {
+    margin: 0 12px;
+  	color: #858585;
+  	font-size: 30px;
+  	line-height: 28px;
+  	font-family: Pictos;
+  	text-align: center;
+  	text-shadow: 0px 1px 0px rgba(255,255,255,0.7);
+  	cursor: pointer;
+  	@include user-select(none);
+  }
+
+  #preferenes-ico {
+    line-height: 30px;
+    font-size: 28px !important;
+  }
+
+  #followers-ico {
+    line-height: 24px;
+    font-size: 34px !important;
+  }
+
+  .toolbar-separator {
+    $vert-margin: 9px;
+    width: 0;
+    border-left: 1px solid #b8b8b8;
+    border-right: 1px solid #f0f0f0;
+    height: $toolbar-height - 2*$vert-margin;
+    margin: $vert-margin 10px;
+  }
 }
 
-#map {
+/* TABPANE */
+
+#tab-pane {
   position: absolute;
-  top: 0; //$toolbar-height;
-  bottom: 0;
-  right: 0;
-	//width: 55%;
-	//z-index: 0;
-	//background: gold;
-}
-
-#pages {
-	position: absolute;
 	top: $toolbar-height;
 	left: 0;
 	bottom: 0;
-	right: 0;
-	min-width: 800px;
-	display: table-row;
-}
-
-.resizer {
-  opacity: 1.0;
-	position: absolute;
-	border-left: 1px solid #D6D6D6;
-	border-right: 1px solid #D6D6D6;
-	top: 0;
-	left: 0;
-	bottom: 0;
-	width: 5px;
-	background: #eee;
-	cursor: ew-resize;
-	z-index: 100;
-}
-
-#aside {
-  min-width: 400px;
-  opacity: 1.0;
-	position: absolute;
-  top: 0; //$toolbar-height;
-  left: 0;
-  bottom: 0;
-//	width: 45%;
-	border-right: 1px solid #D6D6D6;
-	background: url('bg8.png');//#f0f0f0;
-	overflow-y: auto;
-  z-index: 0;
-	li {
-		width: 100%;
-		border-bottom: 1px solid $color-2;
+	width: $content-pane-width;
+	background: url('bg10.png');
+	@include user-select(none);
+	
+	ul {
+	  position: absolute;
+	  top: 100px;
+	  left: 0;
+	  right: 0;
+	  bottom: 0;
 	}
+	li {
+	  width: 100%;
+	}
+	
+	.selected {
+    .tab-ico {
+      height: 50px;
+    	color: #01B3F2;
+    	font-size: 30px;
+    	line-height: 28px;
+    	font-family: Pictos;
+    	text-align: center;
+    	cursor: pointer;
+    	text-shadow: 0px 0px 4px #01B3F2;
+    	@include user-select(none);
+    }
+  }
+
+  .tab-ico {
+    height: 50px;
+  	color: #aaa;
+  	font-size: 30px;
+  	line-height: 28px;
+  	font-family: Pictos;
+  	text-align: center;
+  	cursor: pointer;
+  	@include user-select(none);
+  }
+
+  .tab-separator {
+    $horiz-margin: 0px;
+    height: 0;
+    border-top: 1px solid #242424;
+    border-bottom: 1px solid #444;
+    width: $content-pane-width - 2*$horiz-margin;
+    margin: 10px $horiz-margin;
+  }
+  .avator {
+    margin-top: 10px;
+    width: 100%;
+    text-align: center;
+    img {
+      @include border-radius(4px);
+      @include box-shadow-2(0px -1px 0px rgba(255,255,255,0.4), 
+                            0px 1px 1px rgba(0,0,0,0.7));
+    }
+  }
+}
+
+/* CONTENT-VIEW */
+
+#content-view {
+  position: absolute;
+	top: $toolbar-height;
+	left: $content-pane-width;
+	right: 0;
+	bottom: 0;
+	background: url('bg9.png');
+	border-left: 1px solid #242424;
+	min-width: $page-min-width - $content-pane-width;
 }
 
 // temp

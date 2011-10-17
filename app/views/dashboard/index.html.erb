@@ -1,94 +1,104 @@
-<% content_for :title, "Search" %>
+<% content_for :title, "Dashboard" %>
 
 <% content_for :head do %>
 	<meta name="viewport" content="initial-scale=1.0, user-scalable=no">
 	<%= javascript_include_tag "http://maps.google.com/maps/api/js?sensor=false&key=ABQIAAAAYUB6q4UJksDvp1TvGGHG_BQNYqpsCpiTg7NWK5aiP4T3BBIq-RRZOwE9ta7QktesY-NgAnSC2S6aiw" %>
-	<%= javascript_include_tag "dashboard" %>
 <% end %>
 
-<script type="html/template" id="profile-page">
+<script type="html/template" id="search-input">
+	<div class="search-toolbar-item">
+		<div class="search-ico">s</div>
+		<input class="search-input" type="text" name="search" value="" placeholder="Search">
+	</div>
+</script>
+
+<script type="html/template" id="new-ad-toolbar-item">
+	<div class="toolbar-ico">W</div>
+</script>
+
+<script type="html/template" id="preferences-toolbar-item">
+	<div class="toolbar-ico" id="preferenes-ico">y</div>
+</script>
+
+<script type="html/template" id="followers-toolbar-item">
+	<div class="toolbar-ico" id="followers-ico">g</div>
+</script>
+
+<script type="html/template" id="toolbar-separator">
+	<div class="toolbar-separator"></div>
+</script>
+
+<script type="html/template" id="list-tab">
+	<div class="tab-ico">l</div>
+</script>
+
+<script type="html/template" id="mine-tab">
+	<div class="tab-ico">U</div>
+</script>
+
+<script type="html/template" id="messages-tab">
+	<div class="tab-ico">M</div>
+</script>
+
+<script type="html/template" id="card-tab">
+	<div class="tab-ico">$</div>
+</script>
+
+<script type="html/template" id="like-tab">
+	<div class="tab-ico">k</div>
+</script>
+
+<script type="html/template" id="search-tab">
+	<div class="tab-ico">s</div>
+</script>
+
+<script type="html/template" id="tab-separator">
+	<div class="tab-separator"></div>
+</script>
+
+<script type="html/template" id="list-block">
 	<div class="fish">
-		<h1>1 — profile page</h1>
+		<h1>1 - list page</h1>
 	</div>
 </script>
 
-<script type="html/template" id="messages-page">
+<script type="html/template" id="mine-block">
 	<div class="fish">
-		<h1>2 - messages page</h1>
+		<h1>2 — mine page</h1>
 	</div>
 </script>
 
-<script type="html/template" id="folowers-ads-page">
-	<div id="aside">
-		<div class="item-list"></div>
-	</div>
-	<div class="resizer"></div>
-	<div id="map"></div>
-</script>
-
-<script type="html/template" id="preferences-page">
+<script type="html/template" id="messages-block">
 	<div class="fish">
-		<h1>4 - preferences page</h1>
+		<h1>3 - messages page</h1>
 	</div>
 </script>
 
-<script type="html/template" id="search-page">
+<script type="html/template" id="card-block">
 	<div class="fish">
-		<h1>5 — search page</h1>
+		<h1>4 - card page</h1>
 	</div>
 </script>
 
-<script type="html/template" id="aside-item">
-	<div class="row">
-		<div class="col image">
-			<img src="http://localhost:4000/images/m/{{ images[0].name }}.{{ images[0].type }}" alt="">
-		</div>
-
-		<div class="col content">
-			<div class="bar clearfix">
-				<div class="author left">
-					<img src="http://localhost:4000/images/m/{{ avator.name }}.{{ avator.type }}" alt="">
-					<a href="/user/{{ author }}">{{ author }}</a>
-				</div>
-			</div>
-			<div class="message">
-				{{ body }}
-			</div>
-			<div class="bar clearfix">
-				<!-- <div class="social-btns right">
-					<span class="mini-ico">B</span>
-				</div> -->
-				<div class="timestamp left"><span class="mini-ico">t</span>{{ sellstome.helpers.relative_time(created_at) }}</div>
-				<div class="location left"><span class="mini-ico">@</span>{{ Math.round(location.latitude*100)/100 }}, {{ Math.round(location.longitude*100)/100 }}</div>
-				<div class="ad-btns right">
-					<span class="mini-ico">k</span>
-					<span class="mini-ico">$</span>
-					<span class="mini-ico">R</span>
-				</div>
-			</div>
-		</div>
-
-		<div class="col price">
-			<div class="price-data">
-				<sup>$</sup>{{ price }}
-			</div>
-			<div class="items-count">
-				{{ count }} items
-			</div>
-		</div>
+<script type="html/template" id="like-block">
+	<div class="fish">
+		<h1>5 - like page</h1>
 	</div>
-	<hr>
+</script>
+
+<script type="html/template" id="search-block">
+	<div class="fish">
+		<h1>6 — search page</h1>
+	</div>
 </script>
 
 <div id="toolbar">
 	<h1>Sellsto.me</h1>
-	<ul class="menu">
-	</ul>
-	<div class="search">
-		<span class="menu-ico">s</span>
-		<input class="search-input" type="text" name="search" value="" placeholder="search">
-	</div>
+	<ul class="items"></ul>
 </div>
 
-<div id="pages"></div>
-
+<div id="tab-pane">
+	<div class="avator"></div>
+	<ul class="items"></ul>
+</div>
+<div id="content-view"></div>

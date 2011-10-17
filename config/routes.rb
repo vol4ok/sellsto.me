@@ -1,7 +1,7 @@
 SellstoMe::Application.routes.draw do
   
   root :to => 'dashboard#index'
-  match "/search"       => "search#index"
+  match "*path" => 'dashboard#index'
   
   # The priority is based upon order of creation:
   # first created -> highest priority.
