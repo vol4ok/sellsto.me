@@ -2,241 +2,79 @@
 #= require jquery
 #= require backbone
 #= require backbone_ext
+#= require module/ui
 #= require module/resizer
 #= require module/sellstome
 
 namespace "sellstome", (exports) ->
   
-  Template = (id) -> _.template($(id).html())
-    
-  class ISelectableItem
-    select: ->
-      $(@el).addClass('selected')
-    deselect: ->
-      $(@el).removeClass('selected')
-    on_select: ->
-      @trigger('select', this)
+  {ui} = sellstome
   
-  class ISwitchItem
-    switch: (item) ->
-      @items[@currentCid].deselect() if @currentCid?
-      if @currentCid != item.cid
-        @currentCid = item.cid
-        item.select()
-      else
-        @currentCid = null
+  root.$ctrs = {}
+  root.$views = {}
+  root.$NS =
+    '#': $views
+    '$': $ctrs
   
-  class UIItem extends Backbone.View
-    tagName: 'li'
+  class CTRBase extends Backbone.Controller
     initialize: (options) ->
-      $(@el).html(options.template())
-    render: -> @el
-    
-  ### TOOLBAR ###
-    
-  class UIToolbarItem extends UIItem
-    tagName: 'li'
-    initialize: (options) ->
-      super(options)
-      $(@el).css(float: 'right') if options.right
-  
-  class UIToolbarButton extends UIToolbarItem
-    @implements ISelectableItem
-    events:
-      'click': 'on_select'
-        
-  class UIToolbar extends Backbone.View
-    @implements ISwitchItem
-    items: {}
-    initialize: ->
-      @_itemsEl = @$('.items')
-    addItem: (item) ->
-      @items[item.cid] = item
-      @_itemsEl.append(item.render())
-      
-  ### TABPANE ###
-      
-  class UITabItem extends UIItem
-    @implements ISelectableItem
-    events:
-      'click': 'on_select'
-      
-  class UITabPane extends Backbone.View
-    @implements ISwitchItem
-    items: {}
-    initialize: (optinos) ->
-      @_avatorEl = @$('.avator')
-      @_itemsEl = @$('.items')
-    setAvator: (avator) ->
-      @_avatorEl.html(avator.render())
-    addItem: (item) ->
-      @items[item.cid] = item
-      @_itemsEl.append(item.render())
-      
-  class UIAvator extends UIItem
-    initialize: (options) ->
-      @el = @make 'img',
-        src: options.url
-        alt: options.alt
-        
-  ### CONTENT BLOCK ###
-    
-  class UIContentBlock extends Backbone.View
-    initialize: (options) ->
-      $(@el).html(options.template())
-    render: -> @el
-    show: -> $(@el).show()
-    hide: -> $(@el).hide()
-      
-  class UIContentView extends Backbone.View
-    blocks: {}
-    initialize: (options) ->
-    addBlock: (block) ->
-      @blocks[block.cid] = block
-    switch: (cid) ->
-      console.log 'switch', cid
-      $(@el).html(@blocks[cid].render())
-      
-  ### APP ###
+      @cid = options.id if options? and options.id?
+      $ctrs[@cid] = this
   
   class SellsApp extends Backbone.Router
     routes:
       '*path': 'routeTo'
+    bindings:
+      '#toolbar:select': '#toolbar:switch'
+      '#tabpane:select': '#tabpane:switch'
+      '#list-tab-button:select': '$app:on_tabSwitch'
+      '#mine-tab-button:select': '$app:on_tabSwitch'
+      '#messages-tab-button:select': '$app:on_tabSwitch'
+      '#card-tab-button:select': '$app:on_tabSwitch'
+      '#like-tab-button:select': '$app:on_tabSwitch'
+      '#search-tab-button:select': '$app:on_tabSwitch'
     initialize: ->
-      @_toolbar = new UIToolbar
-        el: '#toolbar'
-        
-      @_tabPane = new UITabPane
-        el: '#tab-pane'
-        
-      @_contentView = new UIContentView
-        el: '#content-view'
-        
-      # ---> toolbar <--- #
-         
-      item = new UIToolbarButton
-        template: Template('#new-ad-toolbar-item')
-      item.bind('select', @on_toolbarItemSelect, this)
-      @_toolbar.addItem(item)
+      @cid = 'app'
+      $ctrs[@cid] = this
+      new CTRBase
       
-      item = new UIToolbarItem
-        template: Template('#toolbar-separator')
-      item.bind('select', @on_toolbarItemSelect, this)
-      @_toolbar.addItem(item)
-        
-      item = new UIToolbarItem
-        template: Template('#search-input')
-      item.bind('select', @on_toolbarItemSelect, this)
-      @_toolbar.addItem(item)
+      $(document).ready(_.bind(@on_domLoaded, this))
       
-      item = new UIToolbarButton
-        template: Template('#preferences-toolbar-item')
-        right: yes
-      item.bind('select', @on_toolbarItemSelect, this)
-      @_toolbar.addItem(item)
-      
-      item = new UIToolbarButton
-        template: Template('#followers-toolbar-item')
-        right: yes
-      item.bind('select', @on_toolbarItemSelect, this)
-      @_toolbar.addItem(item)
-      
-      # ---> tab & blocks <--- #
-        
-      block = new UIContentBlock
-        template: Template('#list-block')
-      @_contentView.addBlock(block)
-      
-      item = new UITabItem
-        template: Template('#list-tab')
-      item.blockCid = block.cid
-      item.bind('select', @on_tabSelect, this)
-      @_tabPane.addItem(item)
-      @on_tabSelect(item)
-      
-      
-      block = new UIContentBlock
-        template: Template('#mine-block')
-      @_contentView.addBlock(block)
-      
-      item = new UITabItem
-        template: Template('#mine-tab')
-      item.blockCid = block.cid
-      item.bind('select', @on_tabSelect, this)
-      @_tabPane.addItem(item)
-      
-      
-      block = new UIContentBlock
-        template: Template('#messages-block')
-      @_contentView.addBlock(block)
-      
-      item = new UITabItem
-        template: Template('#messages-tab')
-      item.blockCid = block.cid
-      item.bind('select', @on_tabSelect, this)
-      @_tabPane.addItem(item)
-      
-      
-      item = new UIItem
-        template: Template('#tab-separator')
-      @_tabPane.addItem(item)
-      
-      
-      block = new UIContentBlock
-        template: Template('#card-block')
-      @_contentView.addBlock(block)
-      
-      item = new UITabItem
-        template: Template('#card-tab')
-      item.blockCid = block.cid
-      item.bind('select', @on_tabSelect, this)
-      @_tabPane.addItem(item)
-      
-      
-      block = new UIContentBlock
-        template: Template('#like-block')
-      @_contentView.addBlock(block)
-      
-      item = new UITabItem
-        template: Template('#like-tab')
-      item.blockCid = block.cid
-      item.bind('select', @on_tabSelect, this)
-      @_tabPane.addItem(item)
-      
-      
-      item = new UIItem
-        template: Template('#tab-separator')
-      @_tabPane.addItem(item)
-      
-      
-      block = new UIContentBlock
-        template: Template('#search-block')
-      @_contentView.addBlock(block)
-      
-      item = new UITabItem
-        template: Template('#search-tab')
-      item.blockCid = block.cid
-      item.bind('select', @on_tabSelect, this)
-      @_tabPane.addItem(item)
-      
-      avator = new UIAvator
-        url: '/assets/sample/avator.png'
-        alt: 'vol4ok'
-      @_tabPane.setAvator(avator)
-        
     routeTo: (path) ->
       console.log 'routeTo:', path
+    _initAutoloadClasses: ->
+      $('.autoload').each (i, _el) =>
+        el = $(_el)
+        el.removeClass('autoload')
+        #console.log _el.tagName, _el.type, el.data()
+        if _el.tagName == 'SCRIPT' and _el.type == 'html/template'
+          view = new ui[el.data('class')](template: _.template($(el).html()))
+        else
+          view = new ui[el.data('class')](el: _el)
+    makeBindings: (trgStr,srcStr) ->
+      [srcCid, event]  = srcStr.split(':')
+      [trgCid, method] = trgStr.split(':')
+      srcNs = $NS[srcCid[0]]
+      trgNs = $NS[trgCid[0]]
+      srcCid = srcCid.slice(1)
+      trgCid = trgCid.slice(1)
+      #console.log srcNs,srcCid,event,' -> ', trgNs,trgCid,method
+      srcNs[srcCid].bind(event, trgNs[trgCid][method], trgNs[trgCid])  
+    _initBindings: ->
+      _.each(@bindings, @makeBindings)
+    on_domLoaded: ->
+      console.log '!on_domLoaded'
+      @_initAutoloadClasses()
+      @_initBindings()
+    on_tabSwitch: (view) ->
+      console.log 'on_tabSwitch', view.blockCid
+      # contentView = $views['content-view']
+      # unless contentView.blocks[view.blockCid]?
+      #   contentView.addBlock($views[view.blockCid])
+      # contentView.switch(view.blockCid)
       
-    on_toolbarItemSelect: (item) ->
-      @_toolbar.switch(item)
-        
-    on_tabSelect: (item) ->
-      @_tabPane.switch(item)
-      @_contentView.switch(item.blockCid)
-      
+  
   exports.App = SellsApp
   
-$ () ->
-  _.templateSettings = interpolate: /\{\{(.+?)\}\}/g
-  $app = new sellstome.App
-  Backbone.history.start(pushState: yes);
+$app = new sellstome.App
+Backbone.history.start(pushState: yes);
