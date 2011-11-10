@@ -5,6 +5,7 @@ module.exports = exports = ->
         h1 ->
           a href: '/', 'Sellsto.me'
       li '#new-ad-button.toolbar-button', data: {class: 'UIToolbarButton'}
+      li '.toolbar-separator', data: {class: 'UIToolbarSeparator'}
       li '#search.toolbar-search', data: {class: 'UIToolbarSearch'}, ->
         input '.search-input', type: 'text', name: 'search', value: '', placeholder: 'Search'
         div '#search-button.search-button', ''
@@ -13,9 +14,11 @@ module.exports = exports = ->
     ul '#sidebar.sidebar.autoload', data: {class: 'UISidebar', 'content-view': 'content-view'}, ->
       li '#list-sidebar-button.sidebar-button.selected', data: {class: 'UISidebarButton', 'content-block': 'list-block'}
       li '#mine-sidebar-button.sidebar-button', data: {class: 'UISidebarButton', 'content-block': 'mine-block'}
+      li '.sidebar-separator', data: {class: 'UISidebarSeparator'}
       li '#messages-sidebar-button.sidebar-button', data: {class: 'UISidebarButton', 'content-block': 'messages-block'}
       li '#card-sidebar-button.sidebar-button', data: {class: 'UISidebarButton', 'content-block': 'card-block'}
       li '#like-sidebar-button.sidebar-button', data: {class: 'UISidebarButton', 'content-block': 'like-block'}
+      li '.sidebar-separator', data: {class: 'UISidebarSeparator'}
       li '#search-sidebar-button.sidebar-button', data: {class: 'UISidebarButton', 'content-block': 'search-block'}
     ul '#content-view.content-view.autoload', data: {class: 'UIContentView'}, ->
       li '#list-block.content-block', data: {class: 'UIContentBlock'}, ->
