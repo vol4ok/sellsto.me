@@ -8,12 +8,9 @@ CoffeeScript = require './coffee-script/lib/coffee-script'
 {compile} = CoffeeScript
 {inspect} = require 'util'
 stylus = require 'stylus'
-less = require './less.js/lib/less'
-jade = require 'jade'
-jsdom = require 'jsdom' 
+less = require 'less'
 jsp = require("uglify-js").parser
 pro = require("uglify-js").uglify
-jquery = fs.readFileSync('./builder/jquery.min.js', 'utf-8')
 
 REQUIRE_REGEX = /#\s*require\s+([A-Za-z_$-][A-Za-z0-9_$-.\/]*)/g
 SCRIPT_FILES  = ['js', 'coffee']
@@ -203,41 +200,6 @@ exports.build_style = (options) ->
       css += '\n' + results['less']
       css += '\n' + results['styl']
       fs.writeFileSync(output, css, 'utf-8')
-  return
-  
-exports.build_view0 = (options) ->
-  path = join(cfg['view-dir'], 'index.jade')
-  #html = fs.readFileSync(path, 'utf-8')
-  str = fs.readFileSync(path, 'utf-8')
-  fn = jade.compile(str, filename: path)
-  html = fn()
-  fs.writeFileSync(join(cfg['view-dir'], '__temp', 'test.html'), html)
-  _.templateSettings =
-    evaluate   : /\{\{(.+?)\}\}/g
-    interpolate: /\{\{=(.+?)\}\}/g
-    escape     : /\{\{-(.+?)\}\}/g
-  jsdom.env 
-    html: html,
-    src: fs.readFileSync('./builder/jquery.min.js', 'utf-8')
-    done: (errors, window) ->
-      $ = window.$
-      js = '$__templates = {\n'
-      $('.template').each (k,_v) -> 
-        v = $(_v)
-        v.detach()
-        code = _.template(v.html()).toString().replace(/^function anonymous/, 'function')
-        #templates[v.data('class')] = template: code
-        js += "\t'#{v.data('class')}': #{code},\n"
-      js += '};'
-      ast = jsp.parse(js)
-      ast = pro.ast_mangle(ast)
-      ast = pro.ast_squeeze(ast)
-      js = pro.gen_code(ast)
-      #json = JSON.stringify templates
-      #$('head').append("<script type=\"text/json\" id=\"templates\">#{json}</script>")#append("<script type=\"text/javascript\">$T = JSON.parse('');</script>")
-      $('head').append('<__script type="text/javascript">'+js+'</__script>')
-      html = "<!DOCTYPE html><html>#{$("html").html()}</html>".replace(/(<\/?)__script([^>]*>)/g,'$1script$2')
-      fs.writeFileSync(join(cfg['output-dir'], "index.html"), html, 'utf-8')
   return
   
 exports.build_view = (options) ->
