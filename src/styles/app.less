@@ -1,0 +1,28 @@
+// #require common/reset
+// #require common/pictos-font
+// #require common/spinner
+
+@import "common/mixins";
+@import "ui/toolbar";
+@import "ui/sidebar";
+@import "ui/content";
+@import "ui/ad";
+@import "ui/map";
+
+
+.left  { float: left  !important; }
+.right { float: right !important; }
+
+
+/* icons */
+#new-ad-button:before           { content: "W"; }
+#search-button:before           { content: "s"; } 
+#pref-button:before             { content: "y"; }
+#followers-button:before        { content: "g"; } 
+
+#list-sidebar-button:before     { content: "l"; }
+#mine-sidebar-button:before     { content: "U"; }
+#messages-sidebar-button:before { content: "M"; }
+#card-sidebar-button:before     { content: "$"; }
+#like-sidebar-button:before     { content: "k"; }
+#search-sidebar-button:before   { content: "s"; }

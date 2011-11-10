@@ -5,6 +5,7 @@ tmp/
 .sass-cache/
 .rvmrc
 *.DS_Store
+node_modules
 config/mongoid.yml
 /.idea/.generators
 /.idea/.name

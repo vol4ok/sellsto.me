@@ -1,0 +1,42 @@
+@import "../common/mixins";
+@import "../common/config";
+
+.sidebar {
+  position: absolute;
+  top: @toolbar-height;
+  left: 0;
+  bottom: 0;
+  width: @global-sidebar-width;
+  background: url('bg10.png');
+  
+  .user-select(none);
+  
+  li {
+    width: 100%;
+  }
+
+  .sidebar-button {
+    height: 50px;
+    color: #aaa;
+    font-size: 30px;
+    line-height: 28px;
+    font-family: Pictos;
+    text-align: center;
+    cursor: pointer;
+    .user-select(none);
+  }
+  
+  .selected {
+    color: gold; //#01B3F2;
+    text-shadow: 0px 0px 4px gold;//#01B3F2;
+  }
+
+  .sidebar-separator {
+    @horiz-margin: 0px;
+    height: 0;
+    border-top: 1px solid #242424;
+    border-bottom: 1px solid #444;
+    width: @global-sidebar-width - 2*@horiz-margin;
+    margin: 10px @horiz-margin;
+  }
+}
