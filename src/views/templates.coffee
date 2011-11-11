@@ -10,6 +10,5 @@ module.exports = exports =
         div '.items-count', '<%= count %> items'
   UISpinner: ->  
     span '.spin-1', 'Loading...'
-  UINewAdModal: ->
     
     

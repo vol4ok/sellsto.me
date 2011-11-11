@@ -3,7 +3,7 @@
 namespace "sm.ui", (exports) ->
   
   {ui} = sm
-  {UIView, UIItem, ISelectableItem} = ui
+  {UIView, UIItem, UIClickableItem} = ui
     
   class UISidebar extends UIView
     initialize: (options) ->
@@ -25,15 +25,14 @@ namespace "sm.ui", (exports) ->
         @items[item.cid] = item
         @items[@count]   = item
         @count++
-        _.defer => @on_itemSelect(item) if el.hasClass('selected')
-        item.bind('select', @on_itemSelect, this)
-    on_itemSelect: (item) -> 
-      @trigger('select', item)
+        _.defer => @on_itemClick(item) if el.hasClass('selected')
+        item.bind('click', @on_itemClick, this)
+    on_itemClick: (item) -> 
+      @trigger('click', item)
       
-  class UISidebarButton extends UIItem
-    @implements ISelectableItem
+  class UISidebarButton extends UIClickableItem
     events:
-      'click': 'on_select'
+      'click': 'on_click'
     initialize: (options = {}) ->
       super(options)
       @contentBlock = $(@el).data('content-block')

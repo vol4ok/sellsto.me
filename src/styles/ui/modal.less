@@ -1,3 +1,65 @@
+@import "../common/mixins";
+@import "../common/config";
+
+
+.modal-underlay {
+  display: none;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: black;
+  opacity: 0.4;
+}
+
+.modal-holder-wrap {
+  margin: 0 auto;
+  display: table;
+  height: 100%;
+  z-index: 100;
+}
+
+.modal-holder {
+  height: 100%;
+  display: table-cell;
+  vertical-align: middle;
+}
+
 .modal {
-  
+  position: relative;
+  background: #f0f0f0;
+  padding: 20px 15px;
+  z-index: 101;
+  .border-box();
+  .border-radius(4px);
+  .box-shadow(0 1px 10px rgba(0,0,0,45%));
+  .close {
+    position: absolute;
+    display: block;
+    text-decoration: none;
+    color: #aaa;
+    top: 0px;
+    right: 4px;
+    font-weight: bold;
+    text-shadow: 0px 1px 0px rgba(255,255,255,70%);
+    &:before {
+      content: "×";
+    }
+    &:hover {
+      color: #444;
+    }
+  }
+}
+
+#new-ad-modal {
+  display: none;
+  textarea {
+    display: block;
+    width: 400px;
+    height: 40px;
+    border: 1px solid #777;
+    .border-radius(4px);
+  }
 }

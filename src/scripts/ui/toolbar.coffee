@@ -3,7 +3,7 @@
 namespace "sm.ui", (exports) ->
   
   {ui} = sm
-  {UIView, UIItem, ISelectableItem} = ui
+  {UIView, UIItem, UIClickableItem} = ui
     
   class UIToolbar extends UIView
     initialize: (options) -> 
@@ -14,9 +14,9 @@ namespace "sm.ui", (exports) ->
       @_initItems()      
     switch: (id) ->
       @items[@state.current].deselect() if @state.current?
-      if @state.current != id
+      if @state.current != id and id?
         @state.current = id
-        @items[id].select()
+        item = @items[id].select()
       else
         @state.current = null
     _initItems: ->
@@ -27,27 +27,28 @@ namespace "sm.ui", (exports) ->
         @items[@count]   = item
         @count++
         @on_itemSelect(item) if el.hasClass('selected')
-        item.bind('select', @on_itemSelect, this)
-    on_itemSelect: (item) ->
-      @trigger('select', item)
+        item.bind('click', @on_itemClick, this)
+    on_itemClick: (item) ->
+      @trigger('click', item)
       
-  class UIToolbarButton extends UIItem
-    @implements ISelectableItem
+  class UIToolbarButton extends UIClickableItem
     events:
-      'click': 'on_select'
+      'click': 'on_click'
     initialize: (options) ->
       super(options)
       
   class UIToolbarSearch extends UIItem
     events:
-      'click .search-button': 'on_select'
+      'click .search-button': 'on_click'
     initialize: (options) ->
       super(options)
       @query = ''
       @input = $('.search-input')
-    on_select: ->
+      @event = $(@el).data('event') || null
+      console.log @event
+    on_click: ->
       @query = @input.val()
-      @trigger('select', this)
+      @trigger('click', this)
     select: ->
     deselect: ->
       

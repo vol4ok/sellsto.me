@@ -2284,7 +2284,7 @@
   });
 
   namespace("sm.ctr", function(exports) {
-    var AdListCollection, AdListCtr, AdModel, Collection, Controller, Model, Router, View, _ref;
+    var AdListCollection, AdListCtr, AdModel, Collection, Controller, ModalController, Model, Router, View, _ref;
     _ref = sm.mvc, Controller = _ref.Controller, View = _ref.View, Model = _ref.Model, Collection = _ref.Collection, Router = _ref.Router;
     AdModel = (function() {
 
@@ -2348,33 +2348,59 @@
       return AdListCtr;
 
     })();
+    ModalController = (function() {
+
+      __extends(ModalController, Controller);
+
+      function ModalController() {
+        ModalController.__super__.constructor.apply(this, arguments);
+      }
+
+      ModalController.prototype.initialize = function(options) {
+        this.buttonCid = options.button;
+        this.modalCid = options.modal;
+        return $app.bind('views-loaded', this.on_viewsLoaded, this);
+      };
+
+      ModalController.prototype.on_viewsLoaded = function() {
+        this.toolbar = $$('toolbar');
+        this.underlay = $$('modal-underlay');
+        this.button = $$(this.buttonCid);
+        this.modal = $$(this.modalCid);
+        this.button.bind('select', this.on_select, this);
+        this.button.bind('deselect', this.on_deselect, this);
+        this.modal.bind('close', this.on_modal_close, this);
+        return this.underlay.bind('click', this.on_modal_close, this);
+      };
+
+      ModalController.prototype.on_select = function(item) {
+        this.underlay.show();
+        return this.modal.show();
+      };
+
+      ModalController.prototype.on_deselect = function(item) {
+        this.underlay.hide();
+        return this.modal.hide();
+      };
+
+      ModalController.prototype.on_modal_close = function() {
+        this.underlay.hide();
+        this.modal.hide();
+        return this.toolbar["switch"](null);
+      };
+
+      return ModalController;
+
+    })();
     return __extends(exports, {
-      AdListCtr: AdListCtr
+      AdListCtr: AdListCtr,
+      ModalController: ModalController
     });
   });
 
   namespace("sm.ui", function(exports) {
-    var Collection, Controller, ISelectableItem, Model, Router, UIItem, UIView, View, _ref;
+    var Collection, Controller, Model, Router, UIClickableItem, UIItem, UIView, View, _ref;
     _ref = sm.mvc, Controller = _ref.Controller, View = _ref.View, Model = _ref.Model, Collection = _ref.Collection, Router = _ref.Router;
-    ISelectableItem = (function() {
-
-      function ISelectableItem() {}
-
-      ISelectableItem.prototype.select = function() {
-        return $(this.el).addClass('selected');
-      };
-
-      ISelectableItem.prototype.deselect = function() {
-        return $(this.el).removeClass('selected');
-      };
-
-      ISelectableItem.prototype.on_select = function() {
-        return this.trigger('select', this);
-      };
-
-      return ISelectableItem;
-
-    })();
     UIView = (function() {
 
       __extends(UIView, View);
@@ -2416,17 +2442,48 @@
       return UIItem;
 
     })();
+    UIClickableItem = (function() {
+
+      __extends(UIClickableItem, UIItem);
+
+      function UIClickableItem() {
+        UIClickableItem.__super__.constructor.apply(this, arguments);
+      }
+
+      UIClickableItem.prototype.initialize = function(options) {
+        return UIClickableItem.__super__.initialize.call(this, options);
+      };
+
+      UIClickableItem.prototype.select = function() {
+        $(this.el).addClass('selected');
+        this.state.selected = true;
+        return this.trigger('select', this);
+      };
+
+      UIClickableItem.prototype.deselect = function() {
+        $(this.el).removeClass('selected');
+        this.state.selected = false;
+        return this.trigger('deselect', this);
+      };
+
+      UIClickableItem.prototype.on_click = function() {
+        return this.trigger('click', this);
+      };
+
+      return UIClickableItem;
+
+    })();
     return __extends(exports, {
-      ISelectableItem: ISelectableItem,
       UIView: UIView,
-      UIItem: UIItem
+      UIItem: UIItem,
+      UIClickableItem: UIClickableItem
     });
   });
 
   namespace("sm.ui", function(exports) {
-    var ISelectableItem, UIItem, UIToolbar, UIToolbarButton, UIToolbarLogo, UIToolbarSearch, UIToolbarSeparator, UIView, ui;
+    var UIClickableItem, UIItem, UIToolbar, UIToolbarButton, UIToolbarLogo, UIToolbarSearch, UIToolbarSeparator, UIView, ui;
     ui = sm.ui;
-    UIView = ui.UIView, UIItem = ui.UIItem, ISelectableItem = ui.ISelectableItem;
+    UIView = ui.UIView, UIItem = ui.UIItem, UIClickableItem = ui.UIClickableItem;
     UIToolbar = (function() {
 
       __extends(UIToolbar, UIView);
@@ -2444,10 +2501,11 @@
       };
 
       UIToolbar.prototype["switch"] = function(id) {
+        var item;
         if (this.state.current != null) this.items[this.state.current].deselect();
-        if (this.state.current !== id) {
+        if (this.state.current !== id && (id != null)) {
           this.state.current = id;
-          return this.items[id].select();
+          return item = this.items[id].select();
         } else {
           return this.state.current = null;
         }
@@ -2466,12 +2524,12 @@
           _this.items[_this.count] = item;
           _this.count++;
           if (el.hasClass('selected')) _this.on_itemSelect(item);
-          return item.bind('select', _this.on_itemSelect, _this);
+          return item.bind('click', _this.on_itemClick, _this);
         });
       };
 
-      UIToolbar.prototype.on_itemSelect = function(item) {
-        return this.trigger('select', item);
+      UIToolbar.prototype.on_itemClick = function(item) {
+        return this.trigger('click', item);
       };
 
       return UIToolbar;
@@ -2479,16 +2537,14 @@
     })();
     UIToolbarButton = (function() {
 
-      __extends(UIToolbarButton, UIItem);
+      __extends(UIToolbarButton, UIClickableItem);
 
       function UIToolbarButton() {
         UIToolbarButton.__super__.constructor.apply(this, arguments);
       }
 
-      UIToolbarButton.implements(ISelectableItem);
-
       UIToolbarButton.prototype.events = {
-        'click': 'on_select'
+        'click': 'on_click'
       };
 
       UIToolbarButton.prototype.initialize = function(options) {
@@ -2507,18 +2563,20 @@
       }
 
       UIToolbarSearch.prototype.events = {
-        'click .search-button': 'on_select'
+        'click .search-button': 'on_click'
       };
 
       UIToolbarSearch.prototype.initialize = function(options) {
         UIToolbarSearch.__super__.initialize.call(this, options);
         this.query = '';
-        return this.input = $('.search-input');
+        this.input = $('.search-input');
+        this.event = $(this.el).data('event') || null;
+        return console.log(this.event);
       };
 
-      UIToolbarSearch.prototype.on_select = function() {
+      UIToolbarSearch.prototype.on_click = function() {
         this.query = this.input.val();
-        return this.trigger('select', this);
+        return this.trigger('click', this);
       };
 
       UIToolbarSearch.prototype.select = function() {};
@@ -2568,9 +2626,9 @@
   });
 
   namespace("sm.ui", function(exports) {
-    var ISelectableItem, UIItem, UISidebar, UISidebarButton, UISidebarSeparator, UIView, ui;
+    var UIClickableItem, UIItem, UISidebar, UISidebarButton, UISidebarSeparator, UIView, ui;
     ui = sm.ui;
-    UIView = ui.UIView, UIItem = ui.UIItem, ISelectableItem = ui.ISelectableItem;
+    UIView = ui.UIView, UIItem = ui.UIItem, UIClickableItem = ui.UIClickableItem;
     UISidebar = (function() {
 
       __extends(UISidebar, UIView);
@@ -2611,14 +2669,14 @@
           _this.items[_this.count] = item;
           _this.count++;
           _.defer(function() {
-            if (el.hasClass('selected')) return _this.on_itemSelect(item);
+            if (el.hasClass('selected')) return _this.on_itemClick(item);
           });
-          return item.bind('select', _this.on_itemSelect, _this);
+          return item.bind('click', _this.on_itemClick, _this);
         });
       };
 
-      UISidebar.prototype.on_itemSelect = function(item) {
-        return this.trigger('select', item);
+      UISidebar.prototype.on_itemClick = function(item) {
+        return this.trigger('click', item);
       };
 
       return UISidebar;
@@ -2626,16 +2684,14 @@
     })();
     UISidebarButton = (function() {
 
-      __extends(UISidebarButton, UIItem);
+      __extends(UISidebarButton, UIClickableItem);
 
       function UISidebarButton() {
         UISidebarButton.__super__.constructor.apply(this, arguments);
       }
 
-      UISidebarButton.implements(ISelectableItem);
-
       UISidebarButton.prototype.events = {
-        'click': 'on_select'
+        'click': 'on_click'
       };
 
       UISidebarButton.prototype.initialize = function(options) {
@@ -2893,6 +2949,97 @@
     });
   });
 
+  namespace("sm.ui", function(exports) {
+    var UIModal, UIModalUnderlay, UINewAdModal, UIView, ui;
+    ui = sm.ui;
+    UIView = ui.UIView;
+    UIModal = (function() {
+
+      __extends(UIModal, UIView);
+
+      function UIModal() {
+        UIModal.__super__.constructor.apply(this, arguments);
+      }
+
+      UIModal.prototype.initialize = function(options) {
+        return UIModal.__super__.initialize.call(this, options);
+      };
+
+      UIModal.prototype.show = function() {
+        console.log('show modal');
+        this.trigger('show', this);
+        return $(this.el).fadeIn(150);
+      };
+
+      UIModal.prototype.hide = function() {
+        this.trigger('hide', this);
+        return $(this.el).fadeOut(150);
+      };
+
+      return UIModal;
+
+    })();
+    UINewAdModal = (function() {
+
+      __extends(UINewAdModal, UIModal);
+
+      function UINewAdModal() {
+        UINewAdModal.__super__.constructor.apply(this, arguments);
+      }
+
+      UINewAdModal.prototype.events = {
+        'click .close': 'on_close'
+      };
+
+      UINewAdModal.prototype.initialize = function(options) {
+        return UINewAdModal.__super__.initialize.call(this, options);
+      };
+
+      UINewAdModal.prototype.on_close = function() {
+        return this.trigger('close', this);
+      };
+
+      return UINewAdModal;
+
+    })();
+    UIModalUnderlay = (function() {
+
+      __extends(UIModalUnderlay, UIView);
+
+      function UIModalUnderlay() {
+        UIModalUnderlay.__super__.constructor.apply(this, arguments);
+      }
+
+      UIModalUnderlay.prototype.events = {
+        'click': 'on_click'
+      };
+
+      UIModalUnderlay.prototype.initialize = function(options) {
+        return UIModalUnderlay.__super__.initialize.call(this, options);
+      };
+
+      UIModalUnderlay.prototype.show = function() {
+        return $(this.el).fadeIn(200);
+      };
+
+      UIModalUnderlay.prototype.hide = function() {
+        return $(this.el).fadeOut(200);
+      };
+
+      UIModalUnderlay.prototype.on_click = function() {
+        return this.trigger('click', this);
+      };
+
+      return UIModalUnderlay;
+
+    })();
+    return __extends(exports, {
+      UIModal: UIModal,
+      UINewAdModal: UINewAdModal,
+      UIModalUnderlay: UIModalUnderlay
+    });
+  });
+
   namespace("sm", function(exports) {
     var App, Collection, Controller, Model, Router, View, _ref;
     _ref = sm.mvc, Controller = _ref.Controller, View = _ref.View, Model = _ref.Model, Collection = _ref.Collection, Router = _ref.Router;
@@ -2912,12 +3059,22 @@
       };
 
       App.prototype.bindings = {
-        'toolbar:select': 'app:on_toolbarItemSelect',
-        'sidebar:select': 'app:on_sidebarItemSelect'
+        'toolbar:click': 'app:on_toolbarItemClick',
+        'sidebar:click': 'app:on_sidebarItemClick'
       };
 
       App.prototype.controllers = {
-        'ad-list-controller': 'AdListCtr'
+        'ad-list-controller': {
+          "class": 'AdListCtr',
+          options: {}
+        },
+        'new-ad-controller': {
+          "class": 'ModalController',
+          options: {
+            modal: 'new-ad-modal',
+            button: 'new-ad-button'
+          }
+        }
       };
 
       App.prototype.initialize = function(options) {
@@ -2946,10 +3103,9 @@
 
       App.prototype._initControllers = function() {
         var _this = this;
-        return _.each(this.controllers, function(klass, id) {
-          return new ctr[klass]({
-            cid: id
-          });
+        return _.each(this.controllers, function(ctx, id) {
+          ctx.options.cid = id;
+          return new ctr[ctx["class"]](ctx.options);
         });
       };
 
@@ -2988,11 +3144,11 @@
         return this.trigger('views-loaded');
       };
 
-      App.prototype.on_toolbarItemSelect = function(item) {
+      App.prototype.on_toolbarItemClick = function(item) {
         return this.toolbar["switch"](item.cid);
       };
 
-      App.prototype.on_sidebarItemSelect = function(item) {
+      App.prototype.on_sidebarItemClick = function(item) {
         this.sidebar["switch"](item.cid);
         return this.content["switch"](item.contentBlock);
       };

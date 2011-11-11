@@ -4,14 +4,6 @@
 namespace "sm.ui", (exports) ->
   
   {Controller, View, Model, Collection, Router} = sm.mvc
-
-  class ISelectableItem
-    select: ->
-      $(@el).addClass('selected')
-    deselect: ->
-      $(@el).removeClass('selected')
-    on_select: ->
-      @trigger('select', this)
       
   class UIView extends View
     initialize: (options) ->
@@ -25,5 +17,19 @@ namespace "sm.ui", (exports) ->
       super(options)
       @order = options.order if options.order
       $(@el).css(float: 'right') if options.right
+      
+  class UIClickableItem extends UIItem
+    initialize: (options) ->
+      super(options)
+    select: ->
+      $(@el).addClass('selected')
+      @state.selected = yes
+      @trigger('select', this)
+    deselect: ->
+      $(@el).removeClass('selected')
+      @state.selected = no
+      @trigger('deselect', this)
+    on_click: ->
+      @trigger('click', this)
     
-  exports extends {ISelectableItem, UIView, UIItem}
+  exports extends {UIView, UIItem, UIClickableItem}

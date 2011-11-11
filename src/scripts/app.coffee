@@ -2,12 +2,13 @@
 #require backbone
 #require cfg
 #require mvc
-#require ctr/ad-list
+#require ctr
 #require ui/toolbar
 #require ui/sidebar
 #require ui/content
 #require ui/ad
 #require ui/map
+#require ui/modal
 
 namespace "sm", (exports) ->
   
@@ -19,10 +20,15 @@ namespace "sm", (exports) ->
     routes:
       '*path': 'routeTo'
     bindings:
-      'toolbar:select': 'app:on_toolbarItemSelect'
-      'sidebar:select': 'app:on_sidebarItemSelect'
+      'toolbar:click': 'app:on_toolbarItemClick'
+      'sidebar:click': 'app:on_sidebarItemClick'
     controllers: 
-      'ad-list-controller': 'AdListCtr'
+      'ad-list-controller': 
+        class: 'AdListCtr'
+        options: {}
+      'new-ad-controller': 
+        class: 'ModalController'
+        options: {modal: 'new-ad-modal', button: 'new-ad-button'}
       
     initialize: (options = {}) ->
       @cid = 'app'
@@ -43,8 +49,9 @@ namespace "sm", (exports) ->
       _.each(@bindings, @makeBinding)
     
     _initControllers: ->
-      _.each @controllers, (klass, id) =>
-        new ctr[klass](cid: id)
+      _.each @controllers, (ctx, id) =>
+        ctx.options.cid = id
+        new ctr[ctx.class](ctx.options)
       
     _initAutoloadClasses: ->
       $('.autoload').each (i, _el) =>
@@ -67,12 +74,13 @@ namespace "sm", (exports) ->
       @toolbar = $$('toolbar')
       @sidebar = $$('sidebar')
       @content = $$('content-view')
+      
       @trigger('views-loaded')
       
-    on_toolbarItemSelect: (item) ->
+    on_toolbarItemClick: (item) ->
       @toolbar.switch(item.cid)
       
-    on_sidebarItemSelect: (item) ->
+    on_sidebarItemClick: (item) ->
       @sidebar.switch(item.cid)
       @content.switch(item.contentBlock)
       
