@@ -3,11 +3,24 @@ module.exports = exports = ->
   div '.modal-holder-wrap', ->
     div '#modal-holder.modal-holder', ->
       div '#new-ad-modal.modal.autoload', data: {class: 'UINewAdModal'}, ->
-        form ->
-          fieldset ->
-            textarea '.body', ''
-            button '.submit.right.btn.primary.disabled', 'Create'
-            button '.close.left.btn', 'Cancel'
+        div '.body', ->
+          # div '.x.close', ''
+          form ->
+            fieldset ->
+              textarea '.message', ''
+              ul ->
+                li ->
+                  label for: 'price', 'Price:'
+                  input '.price', name: 'price', maxlength: '5'
+                  text 'руб.'
+                # li ->
+                #   label for: 'count', 'Count:'
+                #   input '.count', name: 'count'
+                li '.right.photo-btn', 'v'
+                li '.right.video-btn', 'V'
+        div '.footer', ->
+          button '.submit.right.btn.primary.disabled', 'Create'
+          button '.close.left.btn', 'Cancel'
   ul '#toolbar.toolbar.autoload', data: {class: 'UIToolbar'}, ->
     li '.toolbar-logo', data: {class: 'UIToolbarLogo'}, ->
       h1 ->
