@@ -30,12 +30,12 @@
 .modal {
   position: relative;
   background: #f0f0f0;
-  padding: 20px 15px;
+  //padding: 20px 15px;
   z-index: 101;
   .border-box();
   .border-radius(4px);
   .box-shadow(0 1px 10px rgba(0,0,0,45%));
-  .close {
+  .close-btn {
     position: absolute;
     display: block;
     text-decoration: none;
@@ -55,11 +55,26 @@
 
 #new-ad-modal {
   display: none;
-  textarea {
+  .body {
     display: block;
+    color: #333;
+    font-family: @body-font;
+    font-size: 14px;
+    padding: 8px;
+    resize: none;
     width: 400px;
-    height: 40px;
-    border: 1px solid #777;
-    .border-radius(4px);
+    height: 80px;
+    border: none;
+    border-bottom: 1px solid #ddd;
+    -webkit-border-top-left-radius: 4px;
+    -webkit-border-top-right-radius: 4px;
+    -moz-border-radius-topleft: 4px;
+    -moz-border-radius-topright: 4px;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+  }
+  
+  .btn {
+    margin: 5px;
   }
 }

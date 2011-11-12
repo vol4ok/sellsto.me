@@ -24,6 +24,7 @@ namespace "sm.ui", (exports) ->
       super(options)
     on_close: ->
       @trigger('close', this)
+      return false
       
   class UIModalUnderlay extends UIView
     events: 

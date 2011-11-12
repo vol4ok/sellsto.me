@@ -3,9 +3,11 @@ module.exports = exports = ->
   div '.modal-holder-wrap', ->
     div '#modal-holder.modal-holder', ->
       div '#new-ad-modal.modal.autoload', data: {class: 'UINewAdModal'}, ->
-        a '.close', href: '#'
-        textarea()
-        input type: 'submit'
+        form ->
+          fieldset ->
+            textarea '.body', ''
+            button '.submit.right.btn.primary.disabled', 'Create'
+            button '.close.left.btn', 'Cancel'
   ul '#toolbar.toolbar.autoload', data: {class: 'UIToolbar'}, ->
     li '.toolbar-logo', data: {class: 'UIToolbarLogo'}, ->
       h1 ->

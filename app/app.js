@@ -2996,7 +2996,8 @@
       };
 
       UINewAdModal.prototype.on_close = function() {
-        return this.trigger('close', this);
+        this.trigger('close', this);
+        return false;
       };
 
       return UINewAdModal;
