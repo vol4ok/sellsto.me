@@ -687,26 +687,48 @@ hr {
   font-size: 12px;
   font-family: Geneva, Lucida Grande, Lucida Sans, Lucida Sans Unicode, Verdana, sans-serif;
 }
-#new-ad-modal .body label {
-  margin-right: 5px;
+#new-ad-modal .body #price-input {
+  width: 42px;
 }
-#new-ad-modal .body .price, #new-ad-modal .body .count {
+#new-ad-modal .body #quantity-input {
+  width: 28px;
+}
+#new-ad-modal .body #photo-button:before {
+  content: 'v';
+}
+#new-ad-modal .body #video-button:before {
+  content: 'V';
+}
+#new-ad-modal .body .input {
+  margin-right: 12px;
+}
+#new-ad-modal .body .input input {
   border: none;
   border-bottom: 1px solid #999;
-  width: 42px;
   color: #333;
-  font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
   font-size: 14px;
+  font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
   text-align: right;
+  margin: 0 1px;
 }
-#new-ad-modal .body .photo-btn, #new-ad-modal .body .video-btn {
-  cursor: pointer;
+#new-ad-modal .body .input label {
+  margin-right: 5px;
+}
+#new-ad-modal .body .button {
+  height: 16px;
+  margin-left: 10px;
+}
+#new-ad-modal .body .button a {
   position: relative;
-  top: -6px;
-  font-family: Pictos !important;
-  font-size: 24px !important;
+  top: -5px;
+  font-family: Pictos;
+  font-size: 20px;
   line-height: 16px;
-  margin-left: 8px;
+  text-decoration: none;
+  color: inherit;
+}
+#new-ad-modal .body .button a:hover {
+  color: #555;
 }
 #new-ad-modal .footer {
   border-top: 1px solid #f0f0f0;
@@ -791,6 +813,13 @@ hr {
 }
 #new-ad-modal .footer:after {
   clear: both;
+}
+#new-ad-modal .footer .counter {
+  font-size: 13px;
+  font-family: Geneva, Lucida Grande, Lucida Sans, Lucida Sans Unicode, Verdana, sans-serif;
+  color: #999;
+  text-shadow: 0px 1px 0px rgba(255, 255, 255, 0.7);
+  margin: 9px 9px 0;
 }
 #new-ad-modal .message {
   display: block;

@@ -2980,6 +2980,7 @@
 
     })();
     UINewAdModal = (function() {
+      var MESSAGE_LENGTH;
 
       __extends(UINewAdModal, UIModal);
 
@@ -2987,17 +2988,54 @@
         UINewAdModal.__super__.constructor.apply(this, arguments);
       }
 
+      MESSAGE_LENGTH = 400;
+
       UINewAdModal.prototype.events = {
-        'click .close': 'on_close'
+        'click .close': 'on_close',
+        'keyup .message': 'on_keyup',
+        'keydown': 'on_keydown'
       };
 
       UINewAdModal.prototype.initialize = function(options) {
-        return UINewAdModal.__super__.initialize.call(this, options);
+        UINewAdModal.__super__.initialize.call(this, options);
+        this.messageInput = this.$('.message');
+        this.counterEl = this.$('.counter');
+        return this.submitButton = this.$('.submit');
       };
 
       UINewAdModal.prototype.on_close = function() {
         this.trigger('close', this);
         return false;
+      };
+
+      UINewAdModal.prototype.on_submit = function() {
+        this.trigger('submit', this);
+        return false;
+      };
+
+      UINewAdModal.prototype.on_keydown = function(e) {
+        var result;
+        result = false;
+        if (e.keyCode === 27) {
+          this.on_close();
+        } else if (e.keyCode === 13 && e.shiftKey) {
+          this.on_submit();
+        } else {
+          result = true;
+        }
+        return result;
+      };
+
+      UINewAdModal.prototype.on_keyup = function(e) {
+        var len;
+        len = this.messageInput.val().length;
+        this.counterEl.html(MESSAGE_LENGTH - len);
+        if (len === 0 || len > 400) {
+          this.submitButton.addClass('disabled');
+        } else {
+          this.submitButton.removeClass('disabled');
+        }
+        return true;
       };
 
       return UINewAdModal;
@@ -3012,7 +3050,7 @@
       }
 
       UIModalUnderlay.prototype.events = {
-        'click': 'on_click'
+        "click": "on_click"
       };
 
       UIModalUnderlay.prototype.initialize = function(options) {

@@ -7,19 +7,23 @@ module.exports = exports = ->
           # div '.x.close', ''
           form ->
             fieldset ->
-              textarea '.message', ''
+              textarea '#message.message', ''
               ul ->
-                li ->
+                li '.input', ->
                   label for: 'price', 'Price:'
-                  input '.price', name: 'price', maxlength: '5'
+                  input '#price-input', name: 'price', maxlength: '5'
                   text 'руб.'
-                # li ->
-                #   label for: 'count', 'Count:'
-                #   input '.count', name: 'count'
-                li '.right.photo-btn', 'v'
-                li '.right.video-btn', 'V'
+                li '.input', ->
+                  label for: 'count', 'Quantity:'
+                  input '#quantity-input', name: 'count', maxlength: '5'
+                  text 'items'
+                li '.button.right', ->           
+                  a '#photo-button', href: '#', ''
+                li '.button.right', ->           
+                  a '#video-button', href: '#', ''
         div '.footer', ->
           button '.submit.right.btn.primary.disabled', 'Create'
+          div '.counter.right', '400'
           button '.close.left.btn', 'Cancel'
   ul '#toolbar.toolbar.autoload', data: {class: 'UIToolbar'}, ->
     li '.toolbar-logo', data: {class: 'UIToolbarLogo'}, ->

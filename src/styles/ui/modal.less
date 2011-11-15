@@ -73,26 +73,46 @@
       font-size: 12px;
       font-family: @ui-font;
     }
-    label {
-      margin-right: 5px
-    }
-    .price, .count {
-      border: none;
-      border-bottom: 1px solid #999;
+    #price-input {
       width: 42px;
-      color: #333;
-      font-family: @body-font;
-      font-size: 14px;
-      text-align: right;
     }
-    .photo-btn, .video-btn {
-      cursor: pointer;
-      position: relative;
-      top: -6px;
-      font-family: Pictos !important;
-      font-size: 24px !important;
-      line-height: 16px;
-      margin-left: 8px;
+    #quantity-input {
+      width: 28px;
+    }
+    #photo-button {
+      &:before { content: 'v' }
+    }
+    #video-button {
+      &:before { content: 'V' }
+    }
+    .input {
+      input {
+        border: none;
+        border-bottom: 1px solid #999;
+        color: #333;
+        font-size: 14px;
+        font-family: @body-font;
+        text-align: right;
+        margin: 0 1px;
+      }
+      label {
+        margin-right: 5px
+      }
+      margin-right: 12px;
+    }
+    .button {
+      a {
+        position: relative;
+        top: -5px;
+        font-family: Pictos;
+        font-size: 20px;
+        line-height: 16px;
+        text-decoration: none;
+        color: inherit;
+        &:hover { color: #555; }
+      }
+      height: 16px;
+      margin-left: 10px;
     }
   }
   
@@ -100,6 +120,13 @@
     border-top: 1px solid #f0f0f0;
     padding: 5px 8px;
     .clearfix();
+    .counter {
+      font-size: 13px;
+      font-family: @ui-font;
+      color: #999;
+      text-shadow: 0px 1px 0px rgba(255,255,255,70%);
+      margin: 9px 9px 0;
+    }
   }
   
   .message {
