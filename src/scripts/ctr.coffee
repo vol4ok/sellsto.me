@@ -9,6 +9,8 @@ namespace "sm.ctr", (exports) ->
   class AdListCollection extends Collection
     model: AdModel
     url: expandApiURL('/ads')
+    parse: (res) -> 
+      return if _.isString(res) then JSON.parse(res) else res
   
   class AdListCtr extends Controller
     initialize: ->
@@ -26,6 +28,8 @@ namespace "sm.ctr", (exports) ->
       @ads.fetch success: =>
         @list.hideSpinner() #setTimeout (=> ), 1200
         @list.render(@ads)
+      , error: (a,b,c) => alert('Featch failed!')
+      , dataType: 'jsonp'
         
   class ModalController extends Controller
     initialize: (options) ->
