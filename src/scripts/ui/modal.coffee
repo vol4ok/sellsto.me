@@ -32,12 +32,13 @@ namespace "sm.ui", (exports) ->
       @trigger('close', this)
       return false
     on_submit: ->
+      console.log 'submit'
       @trigger('submit', this)
       return false
     on_keydown: (e) ->
       result = false;
       if e.keyCode is 27 then @on_close()
-      else if e.keyCode is 13 and e.shiftKey then @on_submit()
+      else if e.keyCode is 13 and (e.shiftKey or e.ctrlKey) then @on_submit()
       else result = true
       return result
     on_keyup: (e) ->
