@@ -7,7 +7,7 @@ module.exports = exports = ->
           # div '.x.close', ''
           form ->
             fieldset ->
-              textarea '#message.message', ''
+              textarea '#message.message', name: 'message', autofocus: yes, '\n\n\n'
               ul ->
                 li '.input', ->
                   label for: 'price', 'Price:'
@@ -47,7 +47,8 @@ module.exports = exports = ->
     li '#search-sidebar-button.sidebar-button', data: {class: 'UISidebarButton', 'content-block': 'search-block'}
   ul '#content-view.content-view.autoload', data: {class: 'UIContentView'}, ->
     li '#list-block.content-block', data: {class: 'UIContentBlock'}, ->
-      div '#ad-list.ad-list.autoload', data: {class: 'UIAdList'}
+      div '.ad-list-wrap', ->
+        ul '#ad-list.ad-list.autoload', data: {class: 'UIAdList'}
       div '#ad-list-map.map.autoload', data: {class: 'UIMap'}
     li '#mine-block.content-block', data: {class: 'UIContentBlock'}, ->
       div '.fish', ->

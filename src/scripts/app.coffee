@@ -3,6 +3,8 @@
 #require cfg
 #require mvc
 #require ctr
+#require jquery.mousewheel
+#require jquery.jscrollpane
 #require ui/toolbar
 #require ui/sidebar
 #require ui/content
@@ -86,5 +88,8 @@ namespace "sm", (exports) ->
       
   exports.App = App
 
+# if (window.addEventListener)
+#   window.addEventListener('DOMMouseScroll', wheel, false)
+# window.onmousewheel = document.onmousewheel = wheel
 new sm.App
 Backbone.history.start(pushState: yes);

@@ -25,18 +25,26 @@ namespace "sm.ui", (exports) ->
       super(options)
       @collection = options.collection
       @template = options.template
+      $(@el).jScrollPane
+        autoReinitialise: yes
+        verticalDragMinHeight: 20
+        
+      @contentPane = $(@el).data('jsp')
     showSpinner: ->
       @spinner = new UISpinner unless @spinner?
-      $(@el).html(@spinner.render())
+      @contentPane.getContentPane().html(@spinner.render())
     hideSpinner: ->
-      @$('.spinner').fadeOut 150, (e) -> $(this).remove()
+      @$('.spinner').fadeOut 150, (e) -> 
+        $(this).remove()
     render: (collection) ->
       @collection = collection if collection?
       return unless @collection?
       @collection.each (model) =>
         view = new UIAdEntry(model: model)
         console.log view, model
-        $(@el).append(view.render())
+        @contentPane.getContentPane().append(view.render())
+        #$(@el).append(view.render())
+      @contentPane.reinitialise()
     
       
   exports extends {UIAdList}

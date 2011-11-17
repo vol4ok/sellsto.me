@@ -28,7 +28,8 @@ namespace "sm.ctr", (exports) ->
       @ads.fetch success: =>
         @list.hideSpinner() #setTimeout (=> ), 1200
         @list.render(@ads)
-      , error: (a,b,c) => alert('Featch failed!')
+      , error: => 
+        alert('Featch failed!')
       , dataType: 'jsonp'
         
   class ModalController extends Controller

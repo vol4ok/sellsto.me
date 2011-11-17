@@ -32,7 +32,6 @@ namespace "sm.ui", (exports) ->
       @trigger('close', this)
       return false
     on_submit: ->
-      console.log 'submit'
       @trigger('submit', this)
       return false
     on_keydown: (e) ->
