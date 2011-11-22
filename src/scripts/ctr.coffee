@@ -13,8 +13,8 @@ namespace "sm.ctr", (exports) ->
       return if _.isString(res) then JSON.parse(res) else res
   
   class AdListCtr extends Controller
-    initialize: ->
-      console.log 'AdListCtr'
+    initialize: (options) ->
+      super(options)
       $app.bind('views-loaded', @on_viewsLoaded, this)
       @state = 0
     on_viewsLoaded: ->
@@ -32,8 +32,9 @@ namespace "sm.ctr", (exports) ->
         alert('Featch failed!')
       , dataType: 'jsonp'
         
-  class ModalController extends Controller
+  class ModalCtr extends Controller
     initialize: (options) ->
+      super(options)
       @buttonCid = options.button
       @modalCid  = options.modal
       $app.bind('views-loaded', @on_viewsLoaded, this)
@@ -58,4 +59,4 @@ namespace "sm.ctr", (exports) ->
       @toolbar.switch(null)
       
     
-  exports extends {AdListCtr, ModalController}
+  exports extends {AdListCtr, SearchCtr, ModalCtr}
