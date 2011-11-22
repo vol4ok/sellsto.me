@@ -49,6 +49,14 @@ namespace "sm.ui", (exports) ->
         @submitButton.removeClass('disabled')
       return true
       
+  class UIPrefModal extends UIModal
+    initialize: (options) ->
+      super(options)
+      
+  class UIFollowersModal extends UIModal
+    initialize: (options) ->
+      super(options)
+      
   class UIModalUnderlay extends UIView
     events: 
       "click": "on_click"
@@ -61,4 +69,4 @@ namespace "sm.ui", (exports) ->
     on_click: ->
       @trigger('click', this)
           
-  exports extends {UIModal, UINewAdModal, UIModalUnderlay}
+  exports extends {UIModal, UINewAdModal, UIModalUnderlay, UIPrefModal, UIFollowersModal}

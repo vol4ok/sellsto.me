@@ -32,7 +32,12 @@ namespace "sm", (exports) ->
       'new-ad-controller': 
         class: 'ModalController'
         options: {modal: 'new-ad-modal', button: 'new-ad-button'}
-      
+      'pref-controller': 
+        class: 'ModalController'
+        options: {modal: 'pref-modal', button: 'pref-button'}
+      'followers-controller': 
+        class: 'ModalController'
+        options: {modal: 'followers-modal', button: 'followers-button'}
     initialize: (options = {}) ->
       @cid = 'app'
       super(options)

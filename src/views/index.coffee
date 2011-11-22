@@ -25,6 +25,8 @@ module.exports = exports = ->
           button '.submit.right.btn.primary.disabled', 'Create'
           div '.counter.right', '400'
           button '.close.left.btn', 'Cancel'
+      div '#pref-modal.modal.autoload', data: { class: 'UIPrefModal' }
+      div '#followers-modal.modal.autoload', data: { class: 'UIFollowersModal' }
   ul '#toolbar.toolbar.autoload', data: {class: 'UIToolbar'}, ->
     li '.toolbar-logo', data: {class: 'UIToolbarLogo'}, ->
       h1 ->

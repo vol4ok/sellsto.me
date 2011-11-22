@@ -14041,7 +14041,7 @@ function handler(event) {
   });
 
   namespace("sm.ui", function(exports) {
-    var UIModal, UIModalUnderlay, UINewAdModal, UIView, ui;
+    var UIFollowersModal, UIModal, UIModalUnderlay, UINewAdModal, UIPrefModal, UIView, ui;
     ui = sm.ui;
     UIView = ui.UIView;
     UIModal = (function() {
@@ -14132,6 +14132,36 @@ function handler(event) {
       return UINewAdModal;
 
     })();
+    UIPrefModal = (function() {
+
+      __extends(UIPrefModal, UIModal);
+
+      function UIPrefModal() {
+        UIPrefModal.__super__.constructor.apply(this, arguments);
+      }
+
+      UIPrefModal.prototype.initialize = function(options) {
+        return UIPrefModal.__super__.initialize.call(this, options);
+      };
+
+      return UIPrefModal;
+
+    })();
+    UIFollowersModal = (function() {
+
+      __extends(UIFollowersModal, UIModal);
+
+      function UIFollowersModal() {
+        UIFollowersModal.__super__.constructor.apply(this, arguments);
+      }
+
+      UIFollowersModal.prototype.initialize = function(options) {
+        return UIFollowersModal.__super__.initialize.call(this, options);
+      };
+
+      return UIFollowersModal;
+
+    })();
     UIModalUnderlay = (function() {
 
       __extends(UIModalUnderlay, UIView);
@@ -14166,7 +14196,9 @@ function handler(event) {
     return __extends(exports, {
       UIModal: UIModal,
       UINewAdModal: UINewAdModal,
-      UIModalUnderlay: UIModalUnderlay
+      UIModalUnderlay: UIModalUnderlay,
+      UIPrefModal: UIPrefModal,
+      UIFollowersModal: UIFollowersModal
     });
   });
 
@@ -14203,6 +14235,20 @@ function handler(event) {
           options: {
             modal: 'new-ad-modal',
             button: 'new-ad-button'
+          }
+        },
+        'pref-controller': {
+          "class": 'ModalController',
+          options: {
+            modal: 'pref-modal',
+            button: 'pref-button'
+          }
+        },
+        'followers-controller': {
+          "class": 'ModalController',
+          options: {
+            modal: 'followers-modal',
+            button: 'followers-button'
           }
         }
       };
