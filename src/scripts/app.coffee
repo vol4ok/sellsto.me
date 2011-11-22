@@ -30,13 +30,13 @@ namespace "sm", (exports) ->
         class: 'AdListCtr'
         options: {}
       'new-ad-controller': 
-        class: 'ModalController'
+        class: 'ModalCtr'
         options: {modal: 'new-ad-modal', button: 'new-ad-button'}
       'pref-controller': 
-        class: 'ModalController'
+        class: 'ModalCtr'
         options: {modal: 'pref-modal', button: 'pref-button'}
       'followers-controller': 
-        class: 'ModalController'
+        class: 'ModalCtr'
         options: {modal: 'followers-modal', button: 'followers-button'}
     initialize: (options = {}) ->
       @cid = 'app'
