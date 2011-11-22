@@ -7,7 +7,7 @@ module.exports = exports = ->
           # div '.x.close', ''
           form ->
             fieldset ->
-              textarea '#message.message', name: 'message', autofocus: yes, '\n\n\n'
+              textarea '#message.message', name: 'message', autofocus: yes, ''
               ul ->
                 li '.input', ->
                   label for: 'price', 'Price:'
@@ -17,9 +17,9 @@ module.exports = exports = ->
                   label for: 'count', 'Quantity:'
                   input '#quantity-input', name: 'count', maxlength: '5'
                   text 'items'
-                li '.button.right', ->           
+                li '.button.right', rel: 'twipsy', 'data-original-title': 'Drag photos here', ->           
                   a '#photo-button', href: '#', ''
-                li '.button.right', ->           
+                li '.button.right', rel: 'twipsy', 'data-original-title': 'Add video URL', ->           
                   a '#video-button', href: '#', ''
         div '.footer', ->
           button '.submit.right.btn.primary.disabled', 'Create'

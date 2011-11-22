@@ -43,7 +43,7 @@ root.getTemplate = (klass,data) ->
   else
     $__templates[klass](data)
     
-SERVER_HOSTNAME = '192.168.1.2' #window.location.hostname
+SERVER_HOSTNAME = 'localhost' #window.location.hostname
 REQUEST_PROTOCOL = window.location.protocol
 API_SERVER_HOSTNAME = SERVER_HOSTNAME
 API_PORT = 4000

@@ -5,6 +5,7 @@
 #require ctr
 #require jquery.mousewheel
 #require jquery.jscrollpane
+#require bootstrap-twipsy
 #require ui/toolbar
 #require ui/sidebar
 #require ui/content
@@ -78,6 +79,7 @@ namespace "sm", (exports) ->
       @content = $$('content-view')
       
       @trigger('views-loaded')
+      $("[rel=twipsy]").twipsy(live: true, trigger: 'hover') 
       
     on_toolbarItemClick: (item) ->
       @toolbar.switch(item.cid)
