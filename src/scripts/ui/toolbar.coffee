@@ -13,7 +13,7 @@ namespace "sm.ui", (exports) ->
       @state.current = null
       @_initItems()      
     switch: (id) ->
-      @items[@state.current].deselect() if @state.current?
+      @items[@state.current].deselect(silent: yes) if @state.current?
       if @state.current != id and id?
         @state.current = id
         item = @items[id].select()
@@ -28,8 +28,23 @@ namespace "sm.ui", (exports) ->
         @count++
         @on_itemSelect(item) if el.hasClass('selected')
         item.bind('click', @on_itemClick, this)
+        item.bind('select', @on_itemSelect, this)
+        item.bind('deselect', @on_itemDeselect, this)
     on_itemClick: (item) ->
       @trigger('click', item)
+    on_itemSelect: (item) ->
+      if not @lock and @state.current != item.cid
+        @lock = on
+        @items[@state.current].deselect(yes) if @state.current?
+        @lock = off
+        @state.current = item.cid
+      @trigger('select', item)
+    on_itemDeselect: (item) ->
+      if not @lock and @state.current == item.cid
+        @lock = on
+        item.deselect(yes)
+        @lock = off
+      @trigger('deselect', item)
       
   class UIToolbarButton extends UIClickableItem
     events:

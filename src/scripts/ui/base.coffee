@@ -20,12 +20,13 @@ namespace "sm.ui", (exports) ->
       
   class UIClickableItem extends UIItem
     initialize: (options) ->
-      super(options)
+      super(options)     
+      @state.selected = if $(@el).hasClass('selected') then yes else no
     select: ->
       $(@el).addClass('selected')
       @state.selected = yes
-      @trigger('select', this)
-    deselect: ->
+      @trigger('select', this) 
+    deselect: (silent = no) ->
       $(@el).removeClass('selected')
       @state.selected = no
       @trigger('deselect', this)

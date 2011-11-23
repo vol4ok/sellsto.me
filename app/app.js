@@ -13457,7 +13457,6 @@ function handler(event) {
       };
 
       SearchCtr.prototype.on_toolbarButtonClick = function() {
-        this.sidebar["switch"]('search-sidebar-button');
         return this.content["switch"]('search-block');
       };
 
@@ -13573,7 +13572,8 @@ function handler(event) {
       }
 
       UIClickableItem.prototype.initialize = function(options) {
-        return UIClickableItem.__super__.initialize.call(this, options);
+        UIClickableItem.__super__.initialize.call(this, options);
+        return this.state.selected = $(this.el).hasClass('selected') ? true : false;
       };
 
       UIClickableItem.prototype.select = function() {
@@ -13582,7 +13582,8 @@ function handler(event) {
         return this.trigger('select', this);
       };
 
-      UIClickableItem.prototype.deselect = function() {
+      UIClickableItem.prototype.deselect = function(silent) {
+        if (silent == null) silent = false;
         $(this.el).removeClass('selected');
         this.state.selected = false;
         return this.trigger('deselect', this);
@@ -13624,7 +13625,11 @@ function handler(event) {
 
       UIToolbar.prototype["switch"] = function(id) {
         var item;
-        if (this.state.current != null) this.items[this.state.current].deselect();
+        if (this.state.current != null) {
+          this.items[this.state.current].deselect({
+            silent: true
+          });
+        }
         if (this.state.current !== id && (id != null)) {
           this.state.current = id;
           return item = this.items[id].select();
@@ -13646,12 +13651,35 @@ function handler(event) {
           _this.items[_this.count] = item;
           _this.count++;
           if (el.hasClass('selected')) _this.on_itemSelect(item);
-          return item.bind('click', _this.on_itemClick, _this);
+          item.bind('click', _this.on_itemClick, _this);
+          item.bind('select', _this.on_itemSelect, _this);
+          return item.bind('deselect', _this.on_itemDeselect, _this);
         });
       };
 
       UIToolbar.prototype.on_itemClick = function(item) {
         return this.trigger('click', item);
+      };
+
+      UIToolbar.prototype.on_itemSelect = function(item) {
+        if (!this.lock && this.state.current !== item.cid) {
+          this.lock = true;
+          if (this.state.current != null) {
+            this.items[this.state.current].deselect(true);
+          }
+          this.lock = false;
+          this.state.current = item.cid;
+        }
+        return this.trigger('select', item);
+      };
+
+      UIToolbar.prototype.on_itemDeselect = function(item) {
+        if (!this.lock && this.state.current === item.cid) {
+          this.lock = true;
+          item.deselect(true);
+          this.lock = false;
+        }
+        return this.trigger('deselect', item);
       };
 
       return UIToolbar;
@@ -13813,15 +13841,41 @@ function handler(event) {
           _this.items[item.cid] = item;
           _this.items[_this.count] = item;
           _this.count++;
-          _.defer(function() {
-            if (el.hasClass('selected')) return _this.on_itemClick(item);
-          });
-          return item.bind('click', _this.on_itemClick, _this);
+          if (el.hasClass('selected')) {
+            _this.state.current = item.cid;
+            _.defer(function() {
+              return _this.on_itemClick(item);
+            });
+          }
+          item.bind('click', _this.on_itemClick, _this);
+          item.bind('select', _this.on_itemSelect, _this);
+          return item.bind('deselect', _this.on_itemDeselect, _this);
         });
       };
 
       UISidebar.prototype.on_itemClick = function(item) {
         return this.trigger('click', item);
+      };
+
+      UISidebar.prototype.on_itemSelect = function(item) {
+        if (!this.lock && this.state.current !== item.cid) {
+          this.lock = true;
+          if (this.state.current != null) {
+            this.items[this.state.current].deselect(true);
+          }
+          this.lock = false;
+          this.state.current = item.cid;
+        }
+        return this.trigger('select', item);
+      };
+
+      UISidebar.prototype.on_itemDeselect = function(item) {
+        if (!this.lock && this.state.current === item.cid) {
+          this.lock = true;
+          item.deselect(true);
+          this.lock = false;
+        }
+        return this.trigger('deselect', item);
       };
 
       return UISidebar;
@@ -13842,7 +13896,12 @@ function handler(event) {
       UISidebarButton.prototype.initialize = function(options) {
         if (options == null) options = {};
         UISidebarButton.__super__.initialize.call(this, options);
-        return this.contentBlock = $(this.el).data('content-block');
+        this.contentBlock = $(this.el).data('content-block');
+        return $app.bind('views-loaded', this.on_viewsLoaded, this);
+      };
+
+      UISidebarButton.prototype.on_viewsLoaded = function() {
+        return $$(this.contentBlock).bind('show', this.select, this);
       };
 
       return UISidebarButton;
@@ -14289,6 +14348,10 @@ function handler(event) {
         return $(this.el).addClass('disabled');
       };
 
+      UISelectBox.prototype.enable = function() {
+        return $(this.el).removeClass('enabled');
+      };
+
       UISelectBox.prototype.on_selectChange = function(e) {
         return this.value.text(this.$("option:selected").text());
       };
@@ -14321,7 +14384,8 @@ function handler(event) {
 
       App.prototype.bindings = {
         'toolbar:click': 'app:on_toolbarItemClick',
-        'sidebar:click': 'app:on_sidebarItemClick'
+        'sidebar:click': 'app:on_sidebarItemClick',
+        'search-block:show': 'search:select'
       };
 
       App.prototype.controllers = {
@@ -14432,7 +14496,6 @@ function handler(event) {
       };
 
       App.prototype.on_sidebarItemClick = function(item) {
-        this.sidebar["switch"](item.cid);
         return this.content["switch"](item.contentBlock);
       };
 

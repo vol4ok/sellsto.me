@@ -45,7 +45,7 @@ namespace "sm.ctr", (exports) ->
       @block.bind('show', @on_blockShow, this)
       @toolbtn.bind('click', @on_toolbarButtonClick, this)
     on_toolbarButtonClick: ->
-      @sidebar.switch('search-sidebar-button')
+      #@sidebar.switch('search-sidebar-button')
       @content.switch('search-block')
     on_blockShow: (block) ->
       console.log 'search-block show'

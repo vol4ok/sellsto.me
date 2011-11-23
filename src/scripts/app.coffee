@@ -26,6 +26,7 @@ namespace "sm", (exports) ->
     bindings:
       'toolbar:click': 'app:on_toolbarItemClick'
       'sidebar:click': 'app:on_sidebarItemClick'
+      'search-block:show': 'search:select'
     controllers: 
       'ad-list-controller': 
         class: 'AdListCtr'
@@ -97,7 +98,7 @@ namespace "sm", (exports) ->
       @toolbar.switch(item.cid)
       
     on_sidebarItemClick: (item) ->
-      @sidebar.switch(item.cid)
+      #@sidebar.switch(item.cid)
       @content.switch(item.contentBlock)
       
   exports.App = App
