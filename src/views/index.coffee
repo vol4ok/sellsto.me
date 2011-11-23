@@ -30,12 +30,12 @@ module.exports = exports = ->
         div 'ui-textedit', ->
           input type: 'text'
         br()
-        div '.ui-select', ->
+        div '.ui-select.autoload', data: { class: 'UISelectBox' }, ->
           span 'Select data'
           select -> 
-            option value: 'never', 'never'
-            option value: 'auto', 'auto'
-            option value: 'manual', 'manual'
+            option value: 'never', 'Never'
+            option value: 'auto', 'Auto'
+            option value: 'manual', 'Manual'
         br()
         div '.ui-upload', ->
           span 'Upload'

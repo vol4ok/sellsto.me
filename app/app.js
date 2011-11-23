@@ -14262,6 +14262,45 @@ function handler(event) {
     });
   });
 
+  namespace("sm.ui", function(exports) {
+    var UIClickableItem, UIItem, UISelectBox, UIView, ui;
+    ui = sm.ui;
+    UIView = ui.UIView, UIItem = ui.UIItem, UIClickableItem = ui.UIClickableItem;
+    UISelectBox = (function() {
+
+      __extends(UISelectBox, UIView);
+
+      function UISelectBox() {
+        UISelectBox.__super__.constructor.apply(this, arguments);
+      }
+
+      UISelectBox.prototype.events = {
+        'change select': 'on_selectChange'
+      };
+
+      UISelectBox.prototype.initialize = function(options) {
+        UISelectBox.__super__.initialize.call(this, options);
+        this.select = this.$('select');
+        this.value = this.$('span');
+        return this.value.text(this.$("option:selected").text());
+      };
+
+      UISelectBox.prototype.disable = function() {
+        return $(this.el).addClass('disabled');
+      };
+
+      UISelectBox.prototype.on_selectChange = function(e) {
+        return this.value.text(this.$("option:selected").text());
+      };
+
+      return UISelectBox;
+
+    })();
+    return __extends(exports, {
+      UISelectBox: UISelectBox
+    });
+  });
+
   namespace("sm", function(exports) {
     var App, Collection, Controller, Model, Router, View, _ref;
     _ref = sm.mvc, Controller = _ref.Controller, View = _ref.View, Model = _ref.Model, Collection = _ref.Collection, Router = _ref.Router;

@@ -12,6 +12,7 @@
 #require ui/ad
 #require ui/map
 #require ui/modal
+#require ui/controls
 
 namespace "sm", (exports) ->
   
