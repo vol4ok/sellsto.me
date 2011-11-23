@@ -40,15 +40,35 @@ namespace "sm.ui", (exports) ->
   class UIToolbarSearch extends UIItem
     events:
       'click .search-button': 'on_click'
+      'keydown .search-input': 'on_keydown'
+      'keyup .search-input': 'on_keyup'
     initialize: (options) ->
       super(options)
       @query = ''
       @input = $('.search-input')
-      @event = $(@el).data('event') || null
-      console.log @event
+      @button = $('.search-button')
+    #2DO: refactor with finstal state machine
     on_click: ->
       @query = @input.val()
+      return false if @query.length == 0
       @trigger('click', this)
+      @trigger('search', @query)
+      @button.removeClass('glow')
+      return false
+    on_keydown: (e) ->
+      if @input.val().length == 0
+        @button.addClass('disabled')
+        @button.removeClass('glow')
+      else
+        @button.removeClass('disabled')
+        @button.addClass('glow')
+      if e.keyCode is 13
+        @on_click()
+        return false
+      else 
+        return true
+    on_keyup: (e) ->
+    # override methods
     select: ->
     deselect: ->
       

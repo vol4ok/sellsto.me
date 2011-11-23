@@ -31,7 +31,25 @@ namespace "sm.ctr", (exports) ->
       , error: => 
         alert('Featch failed!')
       , dataType: 'jsonp'
-        
+      
+  class SearchCtr extends Controller
+    initialize: (options) ->
+      super(options)
+      $app.bind('views-loaded', @on_viewsLoaded, this)
+      @state = 0
+    on_viewsLoaded: ->
+      @block   = $$('search-block')
+      @sidebar = $$('sidebar')
+      @toolbtn = $$('search')
+      @content = $$('content-view')
+      @block.bind('show', @on_blockShow, this)
+      @toolbtn.bind('click', @on_toolbarButtonClick, this)
+    on_toolbarButtonClick: ->
+      @sidebar.switch('search-sidebar-button')
+      @content.switch('search-block')
+    on_blockShow: (block) ->
+      console.log 'search-block show'
+          
   class ModalCtr extends Controller
     initialize: (options) ->
       super(options)

@@ -29,6 +29,9 @@ namespace "sm", (exports) ->
       'ad-list-controller': 
         class: 'AdListCtr'
         options: {}
+      'search-controller': 
+        class: 'SearchCtr'
+        options: {}
       'new-ad-controller': 
         class: 'ModalCtr'
         options: {modal: 'new-ad-modal', button: 'new-ad-button'}

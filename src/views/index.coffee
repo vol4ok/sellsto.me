@@ -31,13 +31,13 @@ module.exports = exports = ->
     li '.toolbar-logo', data: {class: 'UIToolbarLogo'}, ->
       h1 ->
         a href: '/', 'Sellsto.me'
-    li '#new-ad-button.toolbar-button', data: {class: 'UIToolbarButton', event: 'new-ad'}
+    li '#new-ad-button.toolbar-button', data: {class: 'UIToolbarButton'}
     li '.toolbar-separator', data: {class: 'UIToolbarSeparator'}
-    li '#search.toolbar-search', data: {class: 'UIToolbarSearch', event: 'search'}, ->
+    li '#search.toolbar-search', data: {class: 'UIToolbarSearch'}, ->
       input '.search-input', type: 'text', name: 'search', value: '', placeholder: 'Search'
-      div '#search-button.search-button', ''
-    li '#pref-button.toolbar-button.right', data: {class: 'UIToolbarButton', event: 'pref'}
-    li '#followers-button.toolbar-button.right', data: {class: 'UIToolbarButton', event: 'followers'}
+      div '#search-button.search-button.disabled', ''
+    li '#pref-button.toolbar-button.right', data: {class: 'UIToolbarButton'}
+    li '#followers-button.toolbar-button.right', data: {class: 'UIToolbarButton'}
   ul '#sidebar.sidebar.autoload', data: {class: 'UISidebar', 'content-view': 'content-view'}, ->
     li '#list-sidebar-button.sidebar-button.selected', data: {class: 'UISidebarButton', 'content-block': 'list-block'}
     li '#mine-sidebar-button.sidebar-button', data: {class: 'UISidebarButton', 'content-block': 'mine-block'}

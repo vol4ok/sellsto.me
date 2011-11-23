@@ -78,12 +78,18 @@
       top: -2px;
       z-index: 101;
       color: #858585;
-      font-size: 22px;
-      line-height: 22px;
+      font-size: 21px;
+      line-height: 21px;
       font-family: Pictos;
       text-align: center;
-      text-shadow: 0px 1px 0px rgba(255,255,255,50%);
       cursor: pointer;
+      &.glow {
+        color: #01B3F2;
+        text-shadow: 0px 0px 2px #01B3F2;
+      }
+      &.disabled {
+        color: #ddd;
+      }
     }
     .search-input {
       .border-box();
