@@ -41,6 +41,7 @@ namespace "sm", (exports) ->
       'followers-controller': 
         class: 'ModalCtr'
         options: {modal: 'followers-modal', button: 'followers-button'}
+        
     initialize: (options = {}) ->
       @cid = 'app'
       super(options)
@@ -74,6 +75,7 @@ namespace "sm", (exports) ->
       root.__initialize_maps = _.bind(@_initGoogleMapsCompletion, this)
       $.getScript "#{cfg.GMAP_JS_URL}&callback=__initialize_maps", (data,status) =>
         throw 'google map load failed' unless status is 'success'
+        
     _initGoogleMapsCompletion: ->
       delete root.__initialize_maps
       @trigger('gmap-load', google.maps)
@@ -85,8 +87,9 @@ namespace "sm", (exports) ->
       @toolbar = $$('toolbar')
       @sidebar = $$('sidebar')
       @content = $$('content-view')
-      
+      # notify controllers
       @trigger('views-loaded')
+      #2DO init tips on theirs views
       $("[rel=twipsy]").twipsy(live: true, trigger: 'hover') 
       
     on_toolbarItemClick: (item) ->
@@ -98,8 +101,5 @@ namespace "sm", (exports) ->
       
   exports.App = App
 
-# if (window.addEventListener)
-#   window.addEventListener('DOMMouseScroll', wheel, false)
-# window.onmousewheel = document.onmousewheel = wheel
 new sm.App
 Backbone.history.start(pushState: yes);

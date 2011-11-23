@@ -13357,7 +13357,7 @@ function handler(event) {
   });
 
   namespace("sm.ctr", function(exports) {
-    var AdListCollection, AdListCtr, AdModel, Collection, Controller, ModalController, Model, Router, View, _ref;
+    var AdListCollection, AdListCtr, AdModel, Collection, Controller, ModalCtr, Model, Router, SearchCtr, View, _ref;
     _ref = sm.mvc, Controller = _ref.Controller, View = _ref.View, Model = _ref.Model, Collection = _ref.Collection, Router = _ref.Router;
     AdModel = (function() {
 
@@ -13401,8 +13401,8 @@ function handler(event) {
         AdListCtr.__super__.constructor.apply(this, arguments);
       }
 
-      AdListCtr.prototype.initialize = function() {
-        console.log('AdListCtr');
+      AdListCtr.prototype.initialize = function(options) {
+        AdListCtr.__super__.initialize.call(this, options);
         $app.bind('views-loaded', this.on_viewsLoaded, this);
         return this.state = 0;
       };
@@ -13433,21 +13433,57 @@ function handler(event) {
       return AdListCtr;
 
     })();
-    ModalController = (function() {
+    SearchCtr = (function() {
 
-      __extends(ModalController, Controller);
+      __extends(SearchCtr, Controller);
 
-      function ModalController() {
-        ModalController.__super__.constructor.apply(this, arguments);
+      function SearchCtr() {
+        SearchCtr.__super__.constructor.apply(this, arguments);
       }
 
-      ModalController.prototype.initialize = function(options) {
+      SearchCtr.prototype.initialize = function(options) {
+        SearchCtr.__super__.initialize.call(this, options);
+        $app.bind('views-loaded', this.on_viewsLoaded, this);
+        return this.state = 0;
+      };
+
+      SearchCtr.prototype.on_viewsLoaded = function() {
+        this.block = $$('search-block');
+        this.sidebar = $$('sidebar');
+        this.toolbtn = $$('search');
+        this.content = $$('content-view');
+        this.block.bind('show', this.on_blockShow, this);
+        return this.toolbtn.bind('click', this.on_toolbarButtonClick, this);
+      };
+
+      SearchCtr.prototype.on_toolbarButtonClick = function() {
+        this.sidebar["switch"]('search-sidebar-button');
+        return this.content["switch"]('search-block');
+      };
+
+      SearchCtr.prototype.on_blockShow = function(block) {
+        return console.log('search-block show');
+      };
+
+      return SearchCtr;
+
+    })();
+    ModalCtr = (function() {
+
+      __extends(ModalCtr, Controller);
+
+      function ModalCtr() {
+        ModalCtr.__super__.constructor.apply(this, arguments);
+      }
+
+      ModalCtr.prototype.initialize = function(options) {
+        ModalCtr.__super__.initialize.call(this, options);
         this.buttonCid = options.button;
         this.modalCid = options.modal;
         return $app.bind('views-loaded', this.on_viewsLoaded, this);
       };
 
-      ModalController.prototype.on_viewsLoaded = function() {
+      ModalCtr.prototype.on_viewsLoaded = function() {
         this.toolbar = $$('toolbar');
         this.underlay = $$('modal-underlay');
         this.button = $$(this.buttonCid);
@@ -13458,28 +13494,29 @@ function handler(event) {
         return this.underlay.bind('click', this.on_modal_close, this);
       };
 
-      ModalController.prototype.on_select = function(item) {
+      ModalCtr.prototype.on_select = function(item) {
         this.underlay.show();
         return this.modal.show();
       };
 
-      ModalController.prototype.on_deselect = function(item) {
+      ModalCtr.prototype.on_deselect = function(item) {
         this.underlay.hide();
         return this.modal.hide();
       };
 
-      ModalController.prototype.on_modal_close = function() {
+      ModalCtr.prototype.on_modal_close = function() {
         this.underlay.hide();
         this.modal.hide();
         return this.toolbar["switch"](null);
       };
 
-      return ModalController;
+      return ModalCtr;
 
     })();
     return __extends(exports, {
       AdListCtr: AdListCtr,
-      ModalController: ModalController
+      SearchCtr: SearchCtr,
+      ModalCtr: ModalCtr
     });
   });
 
@@ -13648,21 +13685,44 @@ function handler(event) {
       }
 
       UIToolbarSearch.prototype.events = {
-        'click .search-button': 'on_click'
+        'click .search-button': 'on_click',
+        'keydown .search-input': 'on_keydown',
+        'keyup .search-input': 'on_keyup'
       };
 
       UIToolbarSearch.prototype.initialize = function(options) {
         UIToolbarSearch.__super__.initialize.call(this, options);
         this.query = '';
         this.input = $('.search-input');
-        this.event = $(this.el).data('event') || null;
-        return console.log(this.event);
+        return this.button = $('.search-button');
       };
 
       UIToolbarSearch.prototype.on_click = function() {
         this.query = this.input.val();
-        return this.trigger('click', this);
+        if (this.query.length === 0) return false;
+        this.trigger('click', this);
+        this.trigger('search', this.query);
+        this.button.removeClass('glow');
+        return false;
       };
+
+      UIToolbarSearch.prototype.on_keydown = function(e) {
+        if (this.input.val().length === 0) {
+          this.button.addClass('disabled');
+          this.button.removeClass('glow');
+        } else {
+          this.button.removeClass('disabled');
+          this.button.addClass('glow');
+        }
+        if (e.keyCode === 13) {
+          this.on_click();
+          return false;
+        } else {
+          return true;
+        }
+      };
+
+      UIToolbarSearch.prototype.on_keyup = function(e) {};
 
       UIToolbarSearch.prototype.select = function() {};
 
@@ -14230,22 +14290,26 @@ function handler(event) {
           "class": 'AdListCtr',
           options: {}
         },
+        'search-controller': {
+          "class": 'SearchCtr',
+          options: {}
+        },
         'new-ad-controller': {
-          "class": 'ModalController',
+          "class": 'ModalCtr',
           options: {
             modal: 'new-ad-modal',
             button: 'new-ad-button'
           }
         },
         'pref-controller': {
-          "class": 'ModalController',
+          "class": 'ModalCtr',
           options: {
             modal: 'pref-modal',
             button: 'pref-button'
           }
         },
         'followers-controller': {
-          "class": 'ModalController',
+          "class": 'ModalCtr',
           options: {
             modal: 'followers-modal',
             button: 'followers-button'

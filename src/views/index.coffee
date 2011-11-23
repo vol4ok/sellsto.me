@@ -25,7 +25,21 @@ module.exports = exports = ->
           button '.submit.right.btn.primary.disabled', 'Create'
           div '.counter.right', '400'
           button '.close.left.btn', 'Cancel'
-      div '#pref-modal.modal.autoload', data: { class: 'UIPrefModal' }
+      div '#pref-modal.modal.autoload', data: { class: 'UIPrefModal' }, ->
+        
+        div 'ui-textedit', ->
+          input type: 'text'
+        br()
+        div '.ui-select', ->
+          span 'Select data'
+          select -> 
+            option value: 'never', 'never'
+            option value: 'auto', 'auto'
+            option value: 'manual', 'manual'
+        br()
+        div '.ui-upload', ->
+          span 'Upload'
+          input type: 'file'
       div '#followers-modal.modal.autoload', data: { class: 'UIFollowersModal' }
   ul '#toolbar.toolbar.autoload', data: {class: 'UIToolbar'}, ->
     li '.toolbar-logo', data: {class: 'UIToolbarLogo'}, ->
