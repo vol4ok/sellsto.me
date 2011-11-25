@@ -26,4 +26,8 @@ namespace "sm.ui", (exports) ->
         disableDefaultUI: true
       @map = new @gmap.Map($(@el).get(0), options)
       
+    refrash: ->
+      return unless @gmap
+      @gmap.event.trigger(@map, 'resize')
+      
   exports extends {UIMap}

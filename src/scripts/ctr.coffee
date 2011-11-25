@@ -20,17 +20,23 @@ namespace "sm.ctr", (exports) ->
     on_viewsLoaded: ->
       @block = $$('list-block')
       @list = $$('ad-list')
-      @block.bind('show', @on_blockShow, this)
-    on_blockShow: (block) ->
-      console.log 'on_blockShow', block.cid
+      @map = $$('ad-list-map')
+      @block.bind('show', @on_blockShowFirst, this)
+    on_blockShowFirst: (block) ->
       @ads = new AdListCollection
       @list.showSpinner()
       @ads.fetch success: =>
         @list.hideSpinner() #setTimeout (=> ), 1200
         @list.render(@ads)
+        @block.unbind('show', @on_blockShowFirst, this)
+        @block.bind('show', @on_blockShow, this)
       , error: => 
         alert('Featch failed!')
       , dataType: 'jsonp'
+    on_blockShow: (block) ->
+      #@map.refrash()
+      #console.log 'map refrash'
+      
       
   class SearchCtr extends Controller
     initialize: (options) ->
@@ -40,15 +46,16 @@ namespace "sm.ctr", (exports) ->
     on_viewsLoaded: ->
       @block   = $$('search-block')
       @sidebar = $$('sidebar')
-      @toolbtn = $$('search')
+      @seatchItem = $$('search')
       @content = $$('content-view')
-      @block.bind('show', @on_blockShow, this)
-      @toolbtn.bind('click', @on_toolbarButtonClick, this)
-    on_toolbarButtonClick: ->
-      #@sidebar.switch('search-sidebar-button')
+      @block.bind('show', @on_searchBlockShow, this)
+      @seatchItem.bind('click', @on_seatchItemClick, this)
+    on_seatchItemClick: ->
       @content.switch('search-block')
-    on_blockShow: (block) ->
-      console.log 'search-block show'
+    on_searchBlockShow: (block) ->
+      @seatchItem.select()
+      
+      
           
   class ModalCtr extends Controller
     initialize: (options) ->
@@ -61,10 +68,13 @@ namespace "sm.ctr", (exports) ->
       @underlay = $$('modal-underlay')
       @button = $$(@buttonCid)
       @modal  = $$(@modalCid)
+      @button.bind('click', @on_click, this)
       @button.bind('select', @on_select, this)
       @button.bind('deselect', @on_deselect, this)
       @modal.bind('close', @on_modal_close, this)
       @underlay.bind('click', @on_modal_close, this)
+    on_click: (item) ->
+      item.select()
     on_select: (item) ->
       @underlay.show()
       @modal.show()        
@@ -74,7 +84,7 @@ namespace "sm.ctr", (exports) ->
     on_modal_close: ->
       @underlay.hide()
       @modal.hide()
-      @toolbar.switch(null)
+      @button.deselect()
       
     
   exports extends {AdListCtr, SearchCtr, ModalCtr}

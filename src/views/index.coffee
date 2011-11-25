@@ -53,7 +53,7 @@ module.exports = exports = ->
     li '#pref-button.toolbar-button.right', data: {class: 'UIToolbarButton'}
     li '#followers-button.toolbar-button.right', data: {class: 'UIToolbarButton'}
   ul '#sidebar.sidebar.autoload', data: {class: 'UISidebar', 'content-view': 'content-view'}, ->
-    li '#list-sidebar-button.sidebar-button.selected', data: {class: 'UISidebarButton', 'content-block': 'list-block'}
+    li '#list-sidebar-button.sidebar-button', data: {class: 'UISidebarButton', 'content-block': 'list-block'}
     li '#mine-sidebar-button.sidebar-button', data: {class: 'UISidebarButton', 'content-block': 'mine-block'}
     li '.sidebar-separator', data: {class: 'UISidebarSeparator'}
     li '#messages-sidebar-button.sidebar-button', data: {class: 'UISidebarButton', 'content-block': 'messages-block'}
@@ -62,7 +62,7 @@ module.exports = exports = ->
     li '.sidebar-separator', data: {class: 'UISidebarSeparator'}
     li '#search-sidebar-button.sidebar-button', data: {class: 'UISidebarButton', 'content-block': 'search-block'}
   ul '#content-view.content-view.autoload', data: {class: 'UIContentView'}, ->
-    li '#list-block.content-block', data: {class: 'UIContentBlock'}, ->
+    li '#list-block.content-block.default', data: {class: 'UIContentBlock'}, ->
       div '.ad-list-wrap', ->
         ul '#ad-list.ad-list.autoload', data: {class: 'UIAdList'}
       div '#ad-list-map.map.autoload', data: {class: 'UIMap'}

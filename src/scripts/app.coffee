@@ -8,7 +8,6 @@
 #require bootstrap-twipsy
 #require ui/toolbar
 #require ui/sidebar
-#require ui/content
 #require ui/ad
 #require ui/map
 #require ui/modal
@@ -24,8 +23,6 @@ namespace "sm", (exports) ->
     routes:
       '*path': 'routeTo'
     bindings:
-      'toolbar:click': 'app:on_toolbarItemClick'
-      'sidebar:click': 'app:on_sidebarItemClick'
       'search-block:show': 'search:select'
     controllers: 
       'ad-list-controller': 
@@ -93,13 +90,6 @@ namespace "sm", (exports) ->
       @trigger('views-loaded')
       #2DO init tips on theirs views
       $("[rel=twipsy]").twipsy(live: true, trigger: 'hover') 
-      
-    on_toolbarItemClick: (item) ->
-      @toolbar.switch(item.cid)
-      
-    on_sidebarItemClick: (item) ->
-      #@sidebar.switch(item.cid)
-      @content.switch(item.contentBlock)
       
   exports.App = App
 

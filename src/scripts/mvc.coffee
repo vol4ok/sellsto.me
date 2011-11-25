@@ -12,6 +12,7 @@ namespace "sm.mvc", (exports) ->
     initialize: (options = {}) -> 
       @cid = options.cid if options.cid?
       registerObject(@cid, this)
+      @state = {}
       
   class View extends Backbone.View
     initialize: (options) ->
