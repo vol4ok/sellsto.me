@@ -4,7 +4,7 @@ _ = require 'underscore'
 async = require 'async'
 cfg = require './config'
 require 'colors'
-CoffeeScript = require './coffee-script/lib/coffee-script'
+CoffeeScript = require 'coffee-script' #./coffee-script/lib/
 {compile} = CoffeeScript
 {inspect} = require 'util'
 stylus = require 'stylus'
