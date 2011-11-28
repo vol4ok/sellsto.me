@@ -28,6 +28,6 @@ namespace "sm.ui", (exports) ->
       
     refrash: ->
       return unless @gmap
-      @gmap.event.trigger(@map, 'resize')
-      
+      _.defer => @gmap.event.trigger(@map, 'resize')
+
   exports extends {UIMap}

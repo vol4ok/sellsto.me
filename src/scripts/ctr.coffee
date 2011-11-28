@@ -34,8 +34,7 @@ namespace "sm.ctr", (exports) ->
         alert('Featch failed!')
       , dataType: 'jsonp'
     on_blockShow: (block) ->
-      #@map.refrash()
-      #console.log 'map refrash'
+      @map.refrash()
       
       
   class SearchCtr extends Controller
@@ -48,13 +47,14 @@ namespace "sm.ctr", (exports) ->
       @sidebar = $$('sidebar')
       @seatchItem = $$('search')
       @content = $$('content-view')
-      @block.bind('show', @on_searchBlockShow, this)
-      @seatchItem.bind('click', @on_seatchItemClick, this)
-    on_seatchItemClick: ->
+      @map = $$('search-list-map')
+      @block.bind('show', @on_blockShow, this)
+      @seatchItem.bind('click', @on_itemClick, this)
+    on_itemClick: ->
       @content.switch('search-block')
-    on_searchBlockShow: (block) ->
+    on_blockShow: (block) ->
       @seatchItem.select()
-      
+      @map.refrash()
       
           
   class ModalCtr extends Controller

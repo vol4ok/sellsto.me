@@ -80,4 +80,6 @@ module.exports = exports = ->
         h1 '5 - like page'
     li '#search-block.content-block', data: {class: 'UIContentBlock'}, ->
       div '.fish', ->
-        h1 '6 — search page'
+        div '.ad-list-wrap', ->
+          ul '#search-list.ad-list.autoload', data: {class: 'UIAdList'}
+        div '#search-list-map.map.autoload', data: {class: 'UIMap'}

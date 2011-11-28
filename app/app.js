@@ -13433,7 +13433,9 @@ function handler(event) {
         });
       };
 
-      AdListCtr.prototype.on_blockShow = function(block) {};
+      AdListCtr.prototype.on_blockShow = function(block) {
+        return this.map.refrash();
+      };
 
       return AdListCtr;
 
@@ -13457,16 +13459,18 @@ function handler(event) {
         this.sidebar = $$('sidebar');
         this.seatchItem = $$('search');
         this.content = $$('content-view');
-        this.block.bind('show', this.on_searchBlockShow, this);
-        return this.seatchItem.bind('click', this.on_seatchItemClick, this);
+        this.map = $$('search-list-map');
+        this.block.bind('show', this.on_blockShow, this);
+        return this.seatchItem.bind('click', this.on_itemClick, this);
       };
 
-      SearchCtr.prototype.on_seatchItemClick = function() {
+      SearchCtr.prototype.on_itemClick = function() {
         return this.content["switch"]('search-block');
       };
 
-      SearchCtr.prototype.on_searchBlockShow = function(block) {
-        return this.seatchItem.select();
+      SearchCtr.prototype.on_blockShow = function(block) {
+        this.seatchItem.select();
+        return this.map.refrash();
       };
 
       return SearchCtr;
@@ -14185,8 +14189,11 @@ function handler(event) {
       };
 
       UIMap.prototype.refrash = function() {
+        var _this = this;
         if (!this.gmap) return;
-        return this.gmap.event.trigger(this.map, 'resize');
+        return _.defer(function() {
+          return _this.gmap.event.trigger(_this.map, 'resize');
+        });
       };
 
       return UIMap;
