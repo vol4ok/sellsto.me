@@ -1,0 +1,141 @@
+@import "../common/mixins";
+@import "../common/config";
+
+#Arrow {
+  .above(@arrowWidth: 5px) {
+    bottom: 0;
+    left: 50%;
+    margin-left: -@arrowWidth;
+    border-left: @arrowWidth solid transparent;
+    border-right: @arrowWidth solid transparent;
+    border-top: @arrowWidth solid black;
+  }
+  .left(@arrowWidth: 5px) {
+    top: 50%;
+    right: 0;
+    margin-top: -@arrowWidth;
+    border-top: @arrowWidth solid transparent;
+    border-bottom: @arrowWidth solid transparent;
+    border-left: @arrowWidth solid black;
+  }
+  .below(@arrowWidth: 5px) {
+    top: 0;
+    left: 50%;
+    margin-left: -@arrowWidth;
+    border-left: @arrowWidth solid transparent;
+    border-right: @arrowWidth solid transparent;
+    border-bottom: @arrowWidth solid black;
+  }
+  .right(@arrowWidth: 5px) {
+    top: 50%;
+    left: 0;
+    margin-top: -@arrowWidth;
+    border-top: @arrowWidth solid transparent;
+    border-bottom: @arrowWidth solid transparent;
+    border-right: @arrowWidth solid black;
+  }
+}
+
+.tooltip {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  padding: 5px;
+  
+  &.above .arrow { #Arrow > .above(); }
+  &.left  .arrow { #Arrow > .left();  }
+  &.below .arrow { #Arrow > .below(); }
+  &.right .arrow { #Arrow > .right(); }
+  .arrow {
+    position: absolute;
+    width: 0;
+    height: 0;
+  }
+  opacity: 0.75;
+  &.fade {
+    .transition(opacity .15s linear);
+    opacity: 0;
+    &.in {
+      opacity: 0.75;
+    }
+  }
+  .inner {
+    font-size: 11px;
+    font-family: @ui-font;
+    text-align: center;
+    padding: 3px 8px;
+    max-width: 200px;
+    min-width: 12px;
+    min-height: 12px;
+    color: white;
+    background: black;
+    overflow: hidden;
+    .border-radius(4px);
+    .box-shadow(0 3px 7px rgba(0,0,0,0.3));
+  } 
+}
+
+.popover {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  padding: 5px;
+  
+  &.above .arrow { #Arrow > .above(); }
+  &.left  .arrow { #Arrow > .left();  }
+  &.below .arrow { #Arrow > .below(); }
+  &.right .arrow { #Arrow > .right(); }
+  .arrow {
+    position: absolute;
+    width: 0;
+    height: 0;
+  }
+  opacity: 0.75;
+  &.fade {
+    -webkit-animation: scaleOut .25s linear;
+    .transition(opacity .25s linear);
+    opacity: 0;
+    &.in {
+      -webkit-animation: scaleIn .25s linear;
+      opacity: 0.75;
+    }
+  }
+  .inner {
+    font-size: 11px;
+    font-family: @ui-font;
+    text-align: center;
+    padding: 3px 8px;
+    max-width: 200px;
+    min-width: 12px;
+    min-height: 12px;
+    color: white;
+    background: black;
+    overflow: hidden;
+    .border-radius(4px);
+    .box-shadow(0 3px 7px rgba(0,0,0,0.3));
+  } 
+  ul {
+    list-style: none;
+    padding: 2px;
+    margin: 0;
+  }
+  li {
+    float: left;
+    margin: 0;
+    padding: 0 5px;
+    line-height: 24px;
+    font-family: @ui-font;
+    font-size: 15px;
+    a {
+      color: white;
+      text-decoration: none;
+      &:hover {
+        color: gold;
+      }
+    }
+  }
+}

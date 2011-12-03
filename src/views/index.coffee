@@ -12,14 +12,14 @@ module.exports = exports = ->
                 li '.input', ->
                   label for: 'price', 'Price:'
                   input '#price-input', name: 'price', maxlength: '5'
-                  text 'руб.'
+                  a '.inherit', href:'#', rel: 'UIPopover', data: { popover: 'UIСurrencyPopover' }, 'руб.'
                 li '.input', ->
                   label for: 'count', 'Quantity:'
                   input '#quantity-input', name: 'count', maxlength: '5'
                   text 'items'
-                li '.button.right', rel: 'twipsy', 'data-original-title': 'Drag photos here', ->           
+                li '.button.right', rel: 'UITooltip', 'data-title': 'Drag photos here', ->           
                   a '#photo-button', href: '#', ''
-                li '.button.right', rel: 'twipsy', 'data-original-title': 'Add video URL', ->           
+                li '.button.right', rel: 'UITooltip', 'data-title': 'Add video URL', ->           
                   a '#video-button', href: '#', ''
         div '.footer', ->
           button '.submit.right.btn.primary.disabled', 'Create'

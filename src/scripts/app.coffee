@@ -5,13 +5,13 @@
 #require ctr
 #require jquery.mousewheel
 #require jquery.jscrollpane
-#require bootstrap-twipsy
 #require ui/toolbar
 #require ui/sidebar
 #require ui/ad
 #require ui/map
 #require ui/modal
 #require ui/controls
+#require ui/popovers
 
 namespace "sm", (exports) ->
   
@@ -89,7 +89,11 @@ namespace "sm", (exports) ->
       # notify controllers
       @trigger('views-loaded')
       #2DO init tips on theirs views
-      $("[rel=twipsy]").twipsy(live: true, trigger: 'hover') 
+      #$("[rel=twipsy]").twipsy(live: true, trigger: 'hover') 
+      $("[rel=UITooltip]").each (i,v) ->
+        new ui.UITooltip target: v
+      $("[rel=UIPopover]").each (i,v) ->
+        new ui.UIPopover target: v, template: $(v).data('popover')
       
   exports.App = App
 
