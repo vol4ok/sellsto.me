@@ -1,5 +1,5 @@
-#require underscore
-#require backbone
+#require vendor/underscore
+#require vendor/backbone
 
 namespace "sm.mvc", (exports) ->
   

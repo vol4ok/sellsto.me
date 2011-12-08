@@ -1,6 +1,3 @@
-#require jquery
-#require prop-test
-
 window.root = window
 
 __ns = root.namespace = (target, name, block) ->
@@ -32,7 +29,6 @@ if Object.defineProperty
   Object.defineProperty Function.prototype, "implements", value: implements
 else
   Function::implements = implements
-  
   
 root.$__objects = {}
 root.registerObject = (id, object) -> $__objects[id] = object

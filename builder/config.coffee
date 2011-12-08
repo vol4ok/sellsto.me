@@ -1,12 +1,17 @@
 {resolve} = require 'path'
 ROOT = resolve(__dirname,'../')
-
-module.exports = exports = 
-  'include-dirs': ["#{ROOT}/src/scripts"]
-  'output-dir': "#{ROOT}/app"
-  'targets': ['app']
-  'prerequired': ['jquery','core'] # this modeles will be included in all compiled files
-  'style-dir': "#{ROOT}/src/styles"
-  'targets-style': ['app']
-  'view-dir': "#{ROOT}/src/views"
   
+module.exports = exports = 
+  script: 
+    includes: ["#{ROOT}/src/scripts"]
+    output: "#{ROOT}/app"
+    resident: ['core_utils','vendor/jquery','core'] # this modeles will be included in all compiled files
+    targets: ['app']
+  style:
+    includes: ["#{ROOT}/src/styles"]
+    targets: ['app']
+    output: "#{ROOT}/app"
+  view:
+    builder: "#{ROOT}/src/views/build.coffee"
+    output: "#{ROOT}/app"
+    targets: ['index']

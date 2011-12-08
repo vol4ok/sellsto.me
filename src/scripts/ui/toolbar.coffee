@@ -1,3 +1,4 @@
+#require vendor/underscore
 #require ui/base
 
 namespace "sm.ui", (exports) ->

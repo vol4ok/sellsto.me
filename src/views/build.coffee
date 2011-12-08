@@ -11,8 +11,8 @@ exports.index = (options) ->
 
   js = '$__templates = {\n'
   for key,val of tpls
-    console.log ck.render(val)
-    console.log _.template(ck.render(val)).toString()
+    # console.log ck.render(val)
+    #     console.log _.template(ck.render(val)).toString()
     tpl = _.template(ck.render(val)).toString() #.replace(/^function anonymous/, 'function')
     #console.log tpl
     js += "'#{key}': #{tpl},\n"
