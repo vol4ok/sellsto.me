@@ -2,37 +2,37 @@
 @import "../common/config";
 
 #Arrow {
-  .above(@arrowWidth: 5px) {
+  .above(@arrowWidth: 5px, @color: black) {
     bottom: 0;
     left: 50%;
     margin-left: -@arrowWidth;
     border-left: @arrowWidth solid transparent;
     border-right: @arrowWidth solid transparent;
-    border-top: @arrowWidth solid black;
+    border-top: @arrowWidth solid @color;
   }
-  .left(@arrowWidth: 5px) {
+  .left(@arrowWidth: 5px, @color: black) {
     top: 50%;
     right: 0;
     margin-top: -@arrowWidth;
     border-top: @arrowWidth solid transparent;
     border-bottom: @arrowWidth solid transparent;
-    border-left: @arrowWidth solid black;
+    border-left: @arrowWidth solid @color;
   }
-  .below(@arrowWidth: 5px) {
+  .below(@arrowWidth: 5px, @color: black) {
     top: 0;
     left: 50%;
     margin-left: -@arrowWidth;
     border-left: @arrowWidth solid transparent;
     border-right: @arrowWidth solid transparent;
-    border-bottom: @arrowWidth solid black;
+    border-bottom: @arrowWidth solid @color;
   }
-  .right(@arrowWidth: 5px) {
+  .right(@arrowWidth: 5px, @color: black) {
     top: 50%;
     left: 0;
     margin-top: -@arrowWidth;
     border-top: @arrowWidth solid transparent;
     border-bottom: @arrowWidth solid transparent;
-    border-right: @arrowWidth solid black;
+    border-right: @arrowWidth solid @color;
   }
 }
 
@@ -85,10 +85,10 @@
   z-index: 1000;
   padding: 5px;
   
-  &.above .arrow { #Arrow > .above(); }
-  &.left  .arrow { #Arrow > .left();  }
-  &.below .arrow { #Arrow > .below(); }
-  &.right .arrow { #Arrow > .right(); }
+  &.above .arrow { #Arrow > .above(5px, white); }
+  &.left  .arrow { #Arrow > .left(5px, white);  }
+  &.below .arrow { #Arrow > .below(5px, white); }
+  &.right .arrow { #Arrow > .right(5px, white); }
   .arrow {
     position: absolute;
     width: 0;
@@ -112,11 +112,11 @@
     max-width: 200px;
     min-width: 12px;
     min-height: 12px;
-    color: white;
-    background: black;
+    //color: black;
+    background: #f0f0f0;
     overflow: hidden;
     .border-radius(4px);
-    .box-shadow(0 3px 7px rgba(0,0,0,0.3));
+    .box-shadow(0 3px 8px rgba(0,0,0,0.5));
   } 
   ul {
     list-style: none;
@@ -131,10 +131,10 @@
     font-family: @ui-font;
     font-size: 15px;
     a {
-      color: white;
+      color: lighten(#000, 20%);
       text-decoration: none;
       &:hover {
-        color: gold;
+        color: black;
       }
     }
   }

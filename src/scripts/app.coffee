@@ -1,10 +1,10 @@
-#require underscore
-#require backbone
+#require vendor/underscore
+#require vendor/backbone
 #require cfg
 #require mvc
 #require ctr
-#require jquery.mousewheel
-#require jquery.jscrollpane
+#require vendor/jquery.mousewheel
+#require vendor/jquery.jscrollpane
 #require ui/toolbar
 #require ui/sidebar
 #require ui/ad

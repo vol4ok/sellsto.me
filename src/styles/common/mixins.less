@@ -89,6 +89,18 @@
           box-shadow: @shadow;
 }
 
+.box-shadow-2(@shadow-1, @shadow-2) {
+  -webkit-box-shadow: @shadow-1, @shadow-2;
+     -moz-box-shadow: @shadow-1, @shadow-2;
+          box-shadow: @shadow-1, @shadow-2;
+}
+
+.box-shadow-3(@shadow-1, @shadow-2, @shadow-3) {
+  -webkit-box-shadow: @shadow-1, @shadow-2, @shadow-3;
+     -moz-box-shadow: @shadow-1, @shadow-2, @shadow-3;
+          box-shadow: @shadow-1, @shadow-2, @shadow-3;
+}
+
 .user-select(@param: none) {
 	-webkit-user-select: @param;
 	   -moz-user-select: @param;

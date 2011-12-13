@@ -1,4 +1,8 @@
-/*!
+var __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; },
+__bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+__indexOf = Array.prototype.indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (__hasProp.call(this, i) && this[i] === item) return i; } return -1; },
+__hasProp = Object.prototype.hasOwnProperty,
+__slice = Array.prototype.slice;/*!
  * jQuery JavaScript Library v1.7.1
  * http://jquery.com/
  *
@@ -9263,9 +9267,81 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
 
 
 
-})( window );
+})( window );var API_PORT, API_SERVER_HOSTNAME, REQUEST_PROTOCOL, SERVER_HOSTNAME, expandApiURL, implements, __ns;
 
+window.root = window;
 
+__ns = root.namespace = function(target, name, block) {
+  var item, top, _i, _len, _ref, _ref2;
+  if (arguments.length < 3) {
+    _ref = [(typeof exports !== 'undefined' ? exports : window)].concat(__slice.call(arguments)), target = _ref[0], name = _ref[1], block = _ref[2];
+  }
+  top = target;
+  _ref2 = name.split('.');
+  for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
+    item = _ref2[_i];
+    target = target[item] || (target[item] = {});
+  }
+  return block(target, top);
+};
+
+implements = function() {
+  var classes, klass, prop, _i, _len;
+  classes = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+  for (_i = 0, _len = classes.length; _i < _len; _i++) {
+    klass = classes[_i];
+    for (prop in klass) {
+      if (prop === 'prototype') continue;
+      this[prop] = klass[prop];
+    }
+    for (prop in klass.prototype) {
+      this.prototype[prop] = klass.prototype[prop];
+    }
+  }
+  return this;
+};
+
+if (Object.defineProperty) {
+  Object.defineProperty(Function.prototype, "implements", {
+    value: implements
+  });
+} else {
+  Function.prototype.implements = implements;
+}
+
+root.$__objects = {};
+
+root.registerObject = function(id, object) {
+  return $__objects[id] = object;
+};
+
+root.$$ = root.getObjectById = function(id) {
+  return $__objects[id];
+};
+
+root.getTemplate = function(klass, data) {
+  if (arguments.length === 1) {
+    return $__templates[klass];
+  } else {
+    return $__templates[klass](data);
+  }
+};
+
+SERVER_HOSTNAME = 'localhost';
+
+REQUEST_PROTOCOL = window.location.protocol;
+
+API_SERVER_HOSTNAME = SERVER_HOSTNAME;
+
+API_PORT = 4000;
+
+expandApiURL = function(relativePath) {
+  var expandedPath;
+  if (!_.isString(relativePath)) throw new Error("Invalid argument");
+  if (relativePath.indexOf("/") !== 0) relativePath = "/" + relativePath;
+  expandedPath = REQUEST_PROTOCOL + "//" + API_SERVER_HOSTNAME + ":" + API_PORT + relativePath;
+  return expandedPath;
+};
 
 //     Underscore.js 1.2.1
 //     (c) 2011 Jeremy Ashkenas, DocumentCloud Inc.
@@ -10225,8 +10301,6 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
   };
 
 })();
-
-
 //     Backbone.js 0.5.3
 //     (c) 2010 Jeremy Ashkenas, DocumentCloud Inc.
 //     Backbone may be freely distributed under the MIT license.
@@ -11386,7 +11460,263 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
 
 }).call(this);
 
+namespace("sm.cfg", function(exports) {
+  var GMAP_API_KEY;
+  GMAP_API_KEY = 'ABQIAAAAYUB6q4UJksDvp1TvGGHG_BQNYqpsCpiTg7NWK5aiP4T3BBIq-RRZOwE9ta7QktesY-NgAnSC2S6aiw';
+  return __extends(exports, {
+    GMAP_JS_URL: "http://maps.google.com/maps/api/js?sensor=false&key=" + GMAP_API_KEY
+  });
+});
 
+namespace("sm.mvc", function(exports) {
+  var Collection, Controller, Model, Router, View;
+  Controller = function(options) {
+    this.cid = _.uniqueId('ctr');
+    this.initialize.call(this, options);
+  };
+  _.extend(Controller.prototype, Backbone.Events, {
+    initialize: function(options) {
+      if (options == null) options = {};
+      if (options.cid != null) this.cid = options.cid;
+      registerObject(this.cid, this);
+      return this.state = {};
+    }
+  });
+  View = (function() {
+
+    __extends(View, Backbone.View);
+
+    function View() {
+      View.__super__.constructor.apply(this, arguments);
+    }
+
+    View.prototype.initialize = function(options) {
+      return registerObject(this.cid, this);
+    };
+
+    return View;
+
+  })();
+  Model = (function() {
+
+    __extends(Model, Backbone.Model);
+
+    function Model() {
+      Model.__super__.constructor.apply(this, arguments);
+    }
+
+    return Model;
+
+  })();
+  Collection = (function() {
+
+    __extends(Collection, Backbone.Collection);
+
+    function Collection() {
+      Collection.__super__.constructor.apply(this, arguments);
+    }
+
+    return Collection;
+
+  })();
+  Router = (function() {
+
+    __extends(Router, Backbone.Router);
+
+    function Router() {
+      Router.__super__.constructor.apply(this, arguments);
+    }
+
+    Router.prototype.initialize = function(options) {
+      return registerObject(this.cid, this);
+    };
+
+    return Router;
+
+  })();
+  return __extends(exports, {
+    Controller: Controller,
+    View: View,
+    Model: Model,
+    Collection: Collection,
+    Router: Router
+  });
+});
+namespace("sm.ctr", function(exports) {
+  var AdListCollection, AdListCtr, AdModel, Collection, Controller, ModalCtr, Model, Router, SearchCtr, View, _ref;
+  _ref = sm.mvc, Controller = _ref.Controller, View = _ref.View, Model = _ref.Model, Collection = _ref.Collection, Router = _ref.Router;
+  AdModel = (function() {
+
+    __extends(AdModel, Model);
+
+    function AdModel() {
+      AdModel.__super__.constructor.apply(this, arguments);
+    }
+
+    return AdModel;
+
+  })();
+  AdListCollection = (function() {
+
+    __extends(AdListCollection, Collection);
+
+    function AdListCollection() {
+      AdListCollection.__super__.constructor.apply(this, arguments);
+    }
+
+    AdListCollection.prototype.model = AdModel;
+
+    AdListCollection.prototype.url = expandApiURL('/ads');
+
+    AdListCollection.prototype.parse = function(res) {
+      if (_.isString(res)) {
+        return JSON.parse(res);
+      } else {
+        return res;
+      }
+    };
+
+    return AdListCollection;
+
+  })();
+  AdListCtr = (function() {
+
+    __extends(AdListCtr, Controller);
+
+    function AdListCtr() {
+      AdListCtr.__super__.constructor.apply(this, arguments);
+    }
+
+    AdListCtr.prototype.initialize = function(options) {
+      AdListCtr.__super__.initialize.call(this, options);
+      $app.bind('views-loaded', this.on_viewsLoaded, this);
+      return this.state = 0;
+    };
+
+    AdListCtr.prototype.on_viewsLoaded = function() {
+      this.block = $$('list-block');
+      this.list = $$('ad-list');
+      this.map = $$('ad-list-map');
+      return this.block.bind('show', this.on_blockShowFirst, this);
+    };
+
+    AdListCtr.prototype.on_blockShowFirst = function(block) {
+      var _this = this;
+      this.ads = new AdListCollection;
+      this.list.showSpinner();
+      return this.ads.fetch({
+        success: function() {
+          _this.list.hideSpinner();
+          _this.list.render(_this.ads);
+          _this.block.unbind('show', _this.on_blockShowFirst, _this);
+          return _this.block.bind('show', _this.on_blockShow, _this);
+        },
+        error: function() {
+          return alert('Featch failed!');
+        },
+        dataType: 'jsonp'
+      });
+    };
+
+    AdListCtr.prototype.on_blockShow = function(block) {
+      return this.map.refrash();
+    };
+
+    return AdListCtr;
+
+  })();
+  SearchCtr = (function() {
+
+    __extends(SearchCtr, Controller);
+
+    function SearchCtr() {
+      SearchCtr.__super__.constructor.apply(this, arguments);
+    }
+
+    SearchCtr.prototype.initialize = function(options) {
+      SearchCtr.__super__.initialize.call(this, options);
+      $app.bind('views-loaded', this.on_viewsLoaded, this);
+      return this.state = 0;
+    };
+
+    SearchCtr.prototype.on_viewsLoaded = function() {
+      this.block = $$('search-block');
+      this.sidebar = $$('sidebar');
+      this.seatchItem = $$('search');
+      this.content = $$('content-view');
+      this.map = $$('search-list-map');
+      this.block.bind('show', this.on_blockShow, this);
+      return this.seatchItem.bind('click', this.on_itemClick, this);
+    };
+
+    SearchCtr.prototype.on_itemClick = function() {
+      return this.content["switch"]('search-block');
+    };
+
+    SearchCtr.prototype.on_blockShow = function(block) {
+      this.seatchItem.select();
+      return this.map.refrash();
+    };
+
+    return SearchCtr;
+
+  })();
+  ModalCtr = (function() {
+
+    __extends(ModalCtr, Controller);
+
+    function ModalCtr() {
+      ModalCtr.__super__.constructor.apply(this, arguments);
+    }
+
+    ModalCtr.prototype.initialize = function(options) {
+      ModalCtr.__super__.initialize.call(this, options);
+      this.buttonCid = options.button;
+      this.modalCid = options.modal;
+      return $app.bind('views-loaded', this.on_viewsLoaded, this);
+    };
+
+    ModalCtr.prototype.on_viewsLoaded = function() {
+      this.toolbar = $$('toolbar');
+      this.underlay = $$('modal-underlay');
+      this.button = $$(this.buttonCid);
+      this.modal = $$(this.modalCid);
+      this.button.bind('click', this.on_click, this);
+      this.button.bind('select', this.on_select, this);
+      this.button.bind('deselect', this.on_deselect, this);
+      this.modal.bind('close', this.on_modal_close, this);
+      return this.underlay.bind('click', this.on_modal_close, this);
+    };
+
+    ModalCtr.prototype.on_click = function(item) {
+      return item.select();
+    };
+
+    ModalCtr.prototype.on_select = function(item) {
+      this.underlay.show();
+      return this.modal.show();
+    };
+
+    ModalCtr.prototype.on_deselect = function(item) {
+      this.underlay.hide();
+      return this.modal.hide();
+    };
+
+    ModalCtr.prototype.on_modal_close = function() {
+      this.underlay.hide();
+      this.modal.hide();
+      return this.button.deselect();
+    };
+
+    return ModalCtr;
+
+  })();
+  return __extends(exports, {
+    AdListCtr: AdListCtr,
+    SearchCtr: SearchCtr,
+    ModalCtr: ModalCtr
+  });
+});
 /*! Copyright (c) 2010 Brandon Aaron (http://brandonaaron.net)
  * Licensed under the MIT License (LICENSE.txt).
  *
@@ -11465,8 +11795,6 @@ function handler(event) {
 }
 
 })(jQuery);
-
-
 /*!
  * jScrollPane - v2.0.0beta10 - 2011-04-17
  * http://jscrollpane.kelvinluck.com/
@@ -12857,1750 +13185,1400 @@ function handler(event) {
 })(jQuery,this);
 
 
-(function() {
-  var API_PORT, API_SERVER_HOSTNAME, REQUEST_PROTOCOL, SERVER_HOSTNAME, expandApiURL, implements, __ns;
-  var __slice = Array.prototype.slice, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
+namespace("sm.ui", function(exports) {
+  var Collection, Controller, Model, Router, UIClickableItem, UIItem, UIItemList, UIView, View, ui, _ref;
+  ui = sm.ui;
+  _ref = sm.mvc, Controller = _ref.Controller, View = _ref.View, Model = _ref.Model, Collection = _ref.Collection, Router = _ref.Router;
+  UIView = (function() {
 
-  window.root = window;
+    __extends(UIView, View);
 
-  __ns = root.namespace = function(target, name, block) {
-    var item, top, _i, _len, _ref, _ref2;
-    if (arguments.length < 3) {
-      _ref = [(typeof exports !== 'undefined' ? exports : window)].concat(__slice.call(arguments)), target = _ref[0], name = _ref[1], block = _ref[2];
+    function UIView() {
+      UIView.__super__.constructor.apply(this, arguments);
     }
-    top = target;
-    _ref2 = name.split('.');
-    for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
-      item = _ref2[_i];
-      target = target[item] || (target[item] = {});
-    }
-    return block(target, top);
-  };
 
-  implements = function() {
-    var classes, klass, prop, _i, _len;
-    classes = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-    for (_i = 0, _len = classes.length; _i < _len; _i++) {
-      klass = classes[_i];
-      for (prop in klass) {
-        if (prop === 'prototype') continue;
-        this[prop] = klass[prop];
-      }
-      for (prop in klass.prototype) {
-        this.prototype[prop] = klass.prototype[prop];
-      }
-    }
-    return this;
-  };
-
-  if (Object.defineProperty) {
-    Object.defineProperty(Function.prototype, "implements", {
-      value: implements
-    });
-  } else {
-    Function.prototype.implements = implements;
-  }
-
-  root.$__objects = {};
-
-  root.registerObject = function(id, object) {
-    return $__objects[id] = object;
-  };
-
-  root.$$ = root.getObjectById = function(id) {
-    return $__objects[id];
-  };
-
-  root.getTemplate = function(klass, data) {
-    if (arguments.length === 1) {
-      return $__templates[klass];
-    } else {
-      return $__templates[klass](data);
-    }
-  };
-
-  SERVER_HOSTNAME = 'localhost';
-
-  REQUEST_PROTOCOL = window.location.protocol;
-
-  API_SERVER_HOSTNAME = SERVER_HOSTNAME;
-
-  API_PORT = 4000;
-
-  expandApiURL = function(relativePath) {
-    var expandedPath;
-    if (!_.isString(relativePath)) throw new Error("Invalid argument");
-    if (relativePath.indexOf("/") !== 0) relativePath = "/" + relativePath;
-    expandedPath = REQUEST_PROTOCOL + "//" + API_SERVER_HOSTNAME + ":" + API_PORT + relativePath;
-    return expandedPath;
-  };
-
-  namespace("sm.cfg", function(exports) {
-    var GMAP_API_KEY;
-    GMAP_API_KEY = 'ABQIAAAAYUB6q4UJksDvp1TvGGHG_BQNYqpsCpiTg7NWK5aiP4T3BBIq-RRZOwE9ta7QktesY-NgAnSC2S6aiw';
-    return __extends(exports, {
-      GMAP_JS_URL: "http://maps.google.com/maps/api/js?sensor=false&key=" + GMAP_API_KEY
-    });
-  });
-
-  namespace("sm.mvc", function(exports) {
-    var Collection, Controller, Model, Router, View;
-    Controller = function(options) {
-      this.cid = _.uniqueId('ctr');
-      this.initialize.call(this, options);
+    UIView.prototype.initialize = function(options) {
+      this.state = {};
+      if ($(this.el).attr('id') != null) this.cid = $(this.el).attr('id');
+      return UIView.__super__.initialize.call(this, options);
     };
-    _.extend(Controller.prototype, Backbone.Events, {
-      initialize: function(options) {
-        if (options == null) options = {};
-        if (options.cid != null) this.cid = options.cid;
-        registerObject(this.cid, this);
-        return this.state = {};
-      }
-    });
-    View = (function() {
 
-      __extends(View, Backbone.View);
+    return UIView;
 
-      function View() {
-        View.__super__.constructor.apply(this, arguments);
-      }
+  })();
+  UIItem = (function() {
 
-      View.prototype.initialize = function(options) {
-        return registerObject(this.cid, this);
-      };
+    __extends(UIItem, UIView);
 
-      return View;
+    function UIItem() {
+      UIItem.__super__.constructor.apply(this, arguments);
+    }
 
-    })();
-    Model = (function() {
+    UIItem.prototype.index = null;
 
-      __extends(Model, Backbone.Model);
+    UIItem.prototype.initialize = function(options) {
+      if (options == null) options = {};
+      UIItem.__super__.initialize.call(this, options);
+      if (options.index) return this.index = options.index;
+    };
 
-      function Model() {
-        Model.__super__.constructor.apply(this, arguments);
-      }
+    return UIItem;
 
-      return Model;
+  })();
+  UIClickableItem = (function() {
 
-    })();
-    Collection = (function() {
+    __extends(UIClickableItem, UIItem);
 
-      __extends(Collection, Backbone.Collection);
+    function UIClickableItem() {
+      UIClickableItem.__super__.constructor.apply(this, arguments);
+    }
 
-      function Collection() {
-        Collection.__super__.constructor.apply(this, arguments);
-      }
-
-      return Collection;
-
-    })();
-    Router = (function() {
-
-      __extends(Router, Backbone.Router);
-
-      function Router() {
-        Router.__super__.constructor.apply(this, arguments);
-      }
-
-      Router.prototype.initialize = function(options) {
-        return registerObject(this.cid, this);
-      };
-
-      return Router;
-
-    })();
-    return __extends(exports, {
-      Controller: Controller,
-      View: View,
-      Model: Model,
-      Collection: Collection,
-      Router: Router
-    });
-  });
-
-  namespace("sm.ctr", function(exports) {
-    var AdListCollection, AdListCtr, AdModel, Collection, Controller, ModalCtr, Model, Router, SearchCtr, View, _ref;
-    _ref = sm.mvc, Controller = _ref.Controller, View = _ref.View, Model = _ref.Model, Collection = _ref.Collection, Router = _ref.Router;
-    AdModel = (function() {
-
-      __extends(AdModel, Model);
-
-      function AdModel() {
-        AdModel.__super__.constructor.apply(this, arguments);
-      }
-
-      return AdModel;
-
-    })();
-    AdListCollection = (function() {
-
-      __extends(AdListCollection, Collection);
-
-      function AdListCollection() {
-        AdListCollection.__super__.constructor.apply(this, arguments);
-      }
-
-      AdListCollection.prototype.model = AdModel;
-
-      AdListCollection.prototype.url = expandApiURL('/ads');
-
-      AdListCollection.prototype.parse = function(res) {
-        if (_.isString(res)) {
-          return JSON.parse(res);
-        } else {
-          return res;
-        }
-      };
-
-      return AdListCollection;
-
-    })();
-    AdListCtr = (function() {
-
-      __extends(AdListCtr, Controller);
-
-      function AdListCtr() {
-        AdListCtr.__super__.constructor.apply(this, arguments);
-      }
-
-      AdListCtr.prototype.initialize = function(options) {
-        AdListCtr.__super__.initialize.call(this, options);
-        $app.bind('views-loaded', this.on_viewsLoaded, this);
-        return this.state = 0;
-      };
-
-      AdListCtr.prototype.on_viewsLoaded = function() {
-        this.block = $$('list-block');
-        this.list = $$('ad-list');
-        this.map = $$('ad-list-map');
-        return this.block.bind('show', this.on_blockShowFirst, this);
-      };
-
-      AdListCtr.prototype.on_blockShowFirst = function(block) {
-        var _this = this;
-        this.ads = new AdListCollection;
-        this.list.showSpinner();
-        return this.ads.fetch({
-          success: function() {
-            _this.list.hideSpinner();
-            _this.list.render(_this.ads);
-            _this.block.unbind('show', _this.on_blockShowFirst, _this);
-            return _this.block.bind('show', _this.on_blockShow, _this);
-          },
-          error: function() {
-            return alert('Featch failed!');
-          },
-          dataType: 'jsonp'
+    UIClickableItem.prototype.initialize = function(options) {
+      var _this = this;
+      UIClickableItem.__super__.initialize.call(this, options);
+      if ($(this.el).hasClass('selected')) {
+        _.defer(function() {
+          _this.state.selected = true;
+          return _this.trigger('select', _this);
         });
-      };
-
-      AdListCtr.prototype.on_blockShow = function(block) {
-        return this.map.refrash();
-      };
-
-      return AdListCtr;
-
-    })();
-    SearchCtr = (function() {
-
-      __extends(SearchCtr, Controller);
-
-      function SearchCtr() {
-        SearchCtr.__super__.constructor.apply(this, arguments);
-      }
-
-      SearchCtr.prototype.initialize = function(options) {
-        SearchCtr.__super__.initialize.call(this, options);
-        $app.bind('views-loaded', this.on_viewsLoaded, this);
-        return this.state = 0;
-      };
-
-      SearchCtr.prototype.on_viewsLoaded = function() {
-        this.block = $$('search-block');
-        this.sidebar = $$('sidebar');
-        this.seatchItem = $$('search');
-        this.content = $$('content-view');
-        this.map = $$('search-list-map');
-        this.block.bind('show', this.on_blockShow, this);
-        return this.seatchItem.bind('click', this.on_itemClick, this);
-      };
-
-      SearchCtr.prototype.on_itemClick = function() {
-        return this.content["switch"]('search-block');
-      };
-
-      SearchCtr.prototype.on_blockShow = function(block) {
-        this.seatchItem.select();
-        return this.map.refrash();
-      };
-
-      return SearchCtr;
-
-    })();
-    ModalCtr = (function() {
-
-      __extends(ModalCtr, Controller);
-
-      function ModalCtr() {
-        ModalCtr.__super__.constructor.apply(this, arguments);
-      }
-
-      ModalCtr.prototype.initialize = function(options) {
-        ModalCtr.__super__.initialize.call(this, options);
-        this.buttonCid = options.button;
-        this.modalCid = options.modal;
-        return $app.bind('views-loaded', this.on_viewsLoaded, this);
-      };
-
-      ModalCtr.prototype.on_viewsLoaded = function() {
-        this.toolbar = $$('toolbar');
-        this.underlay = $$('modal-underlay');
-        this.button = $$(this.buttonCid);
-        this.modal = $$(this.modalCid);
-        this.button.bind('click', this.on_click, this);
-        this.button.bind('select', this.on_select, this);
-        this.button.bind('deselect', this.on_deselect, this);
-        this.modal.bind('close', this.on_modal_close, this);
-        return this.underlay.bind('click', this.on_modal_close, this);
-      };
-
-      ModalCtr.prototype.on_click = function(item) {
-        return item.select();
-      };
-
-      ModalCtr.prototype.on_select = function(item) {
-        this.underlay.show();
-        return this.modal.show();
-      };
-
-      ModalCtr.prototype.on_deselect = function(item) {
-        this.underlay.hide();
-        return this.modal.hide();
-      };
-
-      ModalCtr.prototype.on_modal_close = function() {
-        this.underlay.hide();
-        this.modal.hide();
-        return this.button.deselect();
-      };
-
-      return ModalCtr;
-
-    })();
-    return __extends(exports, {
-      AdListCtr: AdListCtr,
-      SearchCtr: SearchCtr,
-      ModalCtr: ModalCtr
-    });
-  });
-
-  namespace("sm.ui", function(exports) {
-    var Collection, Controller, Model, Router, UIClickableItem, UIItem, UIItemList, UIView, View, ui, _ref;
-    ui = sm.ui;
-    _ref = sm.mvc, Controller = _ref.Controller, View = _ref.View, Model = _ref.Model, Collection = _ref.Collection, Router = _ref.Router;
-    UIView = (function() {
-
-      __extends(UIView, View);
-
-      function UIView() {
-        UIView.__super__.constructor.apply(this, arguments);
-      }
-
-      UIView.prototype.initialize = function(options) {
-        this.state = {};
-        if ($(this.el).attr('id') != null) this.cid = $(this.el).attr('id');
-        return UIView.__super__.initialize.call(this, options);
-      };
-
-      return UIView;
-
-    })();
-    UIItem = (function() {
-
-      __extends(UIItem, UIView);
-
-      function UIItem() {
-        UIItem.__super__.constructor.apply(this, arguments);
-      }
-
-      UIItem.prototype.index = null;
-
-      UIItem.prototype.initialize = function(options) {
-        if (options == null) options = {};
-        UIItem.__super__.initialize.call(this, options);
-        if (options.index) return this.index = options.index;
-      };
-
-      return UIItem;
-
-    })();
-    UIClickableItem = (function() {
-
-      __extends(UIClickableItem, UIItem);
-
-      function UIClickableItem() {
-        UIClickableItem.__super__.constructor.apply(this, arguments);
-      }
-
-      UIClickableItem.prototype.initialize = function(options) {
-        var _this = this;
-        UIClickableItem.__super__.initialize.call(this, options);
-        if ($(this.el).hasClass('selected')) {
-          _.defer(function() {
-            _this.state.selected = true;
-            return _this.trigger('select', _this);
-          });
-        } else {
-          this.state.selected = false;
-        }
-        if ($(this.el).hasClass('disabled')) {
-          return _.defer(function() {
-            _this.state.disabled = true;
-            return _this.trigger('disable', _this);
-          });
-        } else {
-          return this.state.disabled = false;
-        }
-      };
-
-      UIClickableItem.prototype.select = function() {
-        $(this.el).addClass('selected');
-        this.state.selected = true;
-        return this.trigger('select', this);
-      };
-
-      UIClickableItem.prototype.deselect = function(silent) {
-        if (silent == null) silent = false;
-        $(this.el).removeClass('selected');
+      } else {
         this.state.selected = false;
-        return this.trigger('deselect', this);
-      };
-
-      UIClickableItem.prototype.disable = function() {
-        $(this.el).addClass('disabled');
-        this.state.disabled = true;
-        return this.trigger('disable', this);
-      };
-
-      UIClickableItem.prototype.enable = function() {
-        $(this.el).removeClass('disabled');
-        this.state.disabled = false;
-        return this.trigger('enable', this);
-      };
-
-      UIClickableItem.prototype.on_click = function() {
-        if (this.state.disabled) return;
-        return this.trigger('click', this);
-      };
-
-      UIClickableItem.prototype.on_mouseenter = function() {
-        if (this.state.disabled) return;
-        $(this.el).addClass('hover');
-        this.state.hover = true;
-        return this.trigger('enter', this);
-      };
-
-      UIClickableItem.prototype.on_mouseleave = function() {
-        if (this.state.disabled) return;
-        $(this.el).removeClass('hover');
-        this.state.selected = false;
-        return this.trigger('leave', this);
-      };
-
-      return UIClickableItem;
-
-    })();
-    UIItemList = (function() {
-
-      __extends(UIItemList, UIView);
-
-      function UIItemList() {
-        UIItemList.__super__.constructor.apply(this, arguments);
       }
-
-      UIItemList.prototype.initialize = function(options) {
-        UIItemList.__super__.initialize.call(this, options);
-        this.itemsByCid = {};
-        this.itemsByOrder = {};
-        this.count = 0;
-        return this._initItems();
-      };
-
-      UIItemList.prototype._initItems = function() {
-        var _this = this;
-        return $(this.el).children().each(function(i, _el) {
-          var el, item;
-          el = $(_el);
-          item = new ui[el.data('class')]({
-            el: _el,
-            order: _this.count
-          });
-          _this.itemsByCid[item.cid] = item;
-          _this.itemsByOrder[_this.count] = item;
-          _this.count++;
-          item.bind('click', _this.on_itemClick, _this);
-          item.bind('select', _this.on_itemSelect, _this);
-          item.bind('deselect', _this.on_itemDeselect, _this);
-          item.bind('disable', _this.on_itemDisable, _this);
-          item.bind('enable', _this.on_itemEnable, _this);
-          item.bind('enter', _this.on_itemEnter, _this);
-          return item.bind('leave', _this.on_itemLeave, _this);
-        });
-      };
-
-      UIItemList.prototype.addItem = function(item) {};
-
-      UIItemList.prototype.removeItem = function(id) {};
-
-      UIItemList.prototype.hasItem = function(id) {};
-
-      UIItemList.prototype.on_itemClick = function(item) {
-        return this.trigger('click', item);
-      };
-
-      UIItemList.prototype.on_itemSelect = function(item) {
-        return this.trigger('select', item);
-      };
-
-      UIItemList.prototype.on_itemDeselect = function(item) {
-        return this.trigger('deselect', item);
-      };
-
-      UIItemList.prototype.on_itemDisable = function(item) {
-        return this.trigger('disable', item);
-      };
-
-      UIItemList.prototype.on_itemEnable = function(item) {
-        return this.trigger('enable', item);
-      };
-
-      UIItemList.prototype.on_itemEnter = function(item) {
-        return this.trigger('enter', item);
-      };
-
-      UIItemList.prototype.on_itemLeave = function(item) {
-        return this.trigger('leave', item);
-      };
-
-      return UIItemList;
-
-    })();
-    return __extends(exports, {
-      UIView: UIView,
-      UIItem: UIItem,
-      UIClickableItem: UIClickableItem,
-      UIItemList: UIItemList
-    });
-  });
-
-  namespace("sm.ui", function(exports) {
-    var UIClickableItem, UIItem, UIItemList, UIToolbar, UIToolbarButton, UIToolbarLogo, UIToolbarSearch, UIToolbarSeparator, UIView, ui;
-    ui = sm.ui;
-    UIView = ui.UIView, UIItem = ui.UIItem, UIClickableItem = ui.UIClickableItem, UIItemList = ui.UIItemList;
-    UIToolbar = (function() {
-
-      __extends(UIToolbar, UIItemList);
-
-      function UIToolbar() {
-        UIToolbar.__super__.constructor.apply(this, arguments);
-      }
-
-      UIToolbar.prototype.initialize = function(options) {
-        return UIToolbar.__super__.initialize.call(this, options);
-      };
-
-      UIToolbar.prototype.deselectAll = function() {
-        return _.each(this.itemsByCid, function(item) {
-          if (item.state.selected) return item.deselect;
-        });
-      };
-
-      return UIToolbar;
-
-    })();
-    UIToolbarButton = (function() {
-
-      __extends(UIToolbarButton, UIClickableItem);
-
-      function UIToolbarButton() {
-        UIToolbarButton.__super__.constructor.apply(this, arguments);
-      }
-
-      UIToolbarButton.prototype.events = {
-        'click': 'on_click',
-        'mouseenter': 'on_mouseenter',
-        'mouseleave': 'on_mouseleave'
-      };
-
-      UIToolbarButton.prototype.initialize = function(options) {
-        return UIToolbarButton.__super__.initialize.call(this, options);
-      };
-
-      return UIToolbarButton;
-
-    })();
-    UIToolbarSearch = (function() {
-
-      __extends(UIToolbarSearch, UIItem);
-
-      function UIToolbarSearch() {
-        UIToolbarSearch.__super__.constructor.apply(this, arguments);
-      }
-
-      UIToolbarSearch.prototype.events = {
-        'click .search-button': 'on_click',
-        'keydown .search-input': 'on_keydown'
-      };
-
-      UIToolbarSearch.prototype.initialize = function(options) {
-        UIToolbarSearch.__super__.initialize.call(this, options);
-        this.query = '';
-        this.input = $('.search-input');
-        return this.button = $('.search-button');
-      };
-
-      UIToolbarSearch.prototype.on_click = function() {
-        if (this.state.disabled) return;
-        this.query = this.input.val();
-        if (this.query.length === 0) return false;
-        this.trigger('click', this);
-        this.trigger('search', this.query);
-        this.button.removeClass('glow');
-        return false;
-      };
-
-      UIToolbarSearch.prototype.on_keydown = function(e) {
-        if (this.input.val().length === 0) {
-          this.button.addClass('disabled');
-          this.button.removeClass('glow');
-        } else {
-          this.button.removeClass('disabled');
-          this.button.addClass('glow');
-        }
-        if (e.keyCode === 13) {
-          this.on_click();
-          return false;
-        } else {
-          return true;
-        }
-      };
-
-      UIToolbarSearch.prototype.select = function() {};
-
-      UIToolbarSearch.prototype.deselect = function() {};
-
-      return UIToolbarSearch;
-
-    })();
-    UIToolbarSeparator = (function() {
-
-      __extends(UIToolbarSeparator, UIItem);
-
-      function UIToolbarSeparator() {
-        UIToolbarSeparator.__super__.constructor.apply(this, arguments);
-      }
-
-      UIToolbarSeparator.prototype.initialize = function(options) {
-        return UIToolbarSeparator.__super__.initialize.call(this, options);
-      };
-
-      return UIToolbarSeparator;
-
-    })();
-    UIToolbarLogo = (function() {
-
-      __extends(UIToolbarLogo, UIItem);
-
-      function UIToolbarLogo() {
-        UIToolbarLogo.__super__.constructor.apply(this, arguments);
-      }
-
-      UIToolbarLogo.prototype.initialize = function(options) {
-        return UIToolbarLogo.__super__.initialize.call(this, options);
-      };
-
-      return UIToolbarLogo;
-
-    })();
-    return __extends(exports, {
-      UIToolbar: UIToolbar,
-      UIToolbarButton: UIToolbarButton,
-      UIToolbarSearch: UIToolbarSearch,
-      UIToolbarSeparator: UIToolbarSeparator,
-      UIToolbarLogo: UIToolbarLogo
-    });
-  });
-
-  namespace("sm.ui", function(exports) {
-    var Controller, UIClickableItem, UIContentBlock, UIContentView, UIItem, UIItemList, UISidebar, UISidebarButton, UISidebarSeparator, UIView, ui;
-    ui = sm.ui;
-    UIView = ui.UIView, UIItem = ui.UIItem, UIClickableItem = ui.UIClickableItem, UIItemList = ui.UIItemList;
-    Controller = sm.mvc.Controller;
-    UISidebar = (function() {
-
-      __extends(UISidebar, UIItemList);
-
-      function UISidebar() {
-        UISidebar.__super__.constructor.apply(this, arguments);
-      }
-
-      UISidebar.prototype.initialize = function(options) {
-        UISidebar.__super__.initialize.call(this, options);
-        return this.contentViewId = $(this.el).data('content-view');
-      };
-
-      return UISidebar;
-
-    })();
-    UISidebarButton = (function() {
-
-      __extends(UISidebarButton, UIClickableItem);
-
-      function UISidebarButton() {
-        UISidebarButton.__super__.constructor.apply(this, arguments);
-      }
-
-      UISidebarButton.prototype.events = {
-        'click': 'on_click',
-        'mouseenter': 'on_mouseenter',
-        'mouseleave': 'on_mouseleave'
-      };
-
-      UISidebarButton.prototype.initialize = function(options) {
-        if (options == null) options = {};
-        UISidebarButton.__super__.initialize.call(this, options);
-        this.blockId = $(this.el).data('content-block');
-        return $app.bind('views-loaded', this.on_viewsLoaded, this);
-      };
-
-      UISidebarButton.prototype.on_viewsLoaded = function() {
-        this.block = $$(this.blockId);
-        this.block.bind('show', this.select, this);
-        return this.block.bind('hide', this.deselect, this);
-      };
-
-      UISidebarButton.prototype.on_click = function() {
-        return this.block["switch"]();
-      };
-
-      return UISidebarButton;
-
-    })();
-    UISidebarSeparator = (function() {
-
-      __extends(UISidebarSeparator, UIItem);
-
-      function UISidebarSeparator() {
-        UISidebarSeparator.__super__.constructor.apply(this, arguments);
-      }
-
-      UISidebarSeparator.prototype.initialize = function(options) {
-        return UISidebarSeparator.__super__.initialize.call(this, options);
-      };
-
-      return UISidebarSeparator;
-
-    })();
-    UIContentBlock = (function() {
-
-      __extends(UIContentBlock, UIView);
-
-      function UIContentBlock() {
-        UIContentBlock.__super__.constructor.apply(this, arguments);
-      }
-
-      UIContentBlock.prototype.initialize = function(options) {
-        var _this = this;
-        UIContentBlock.__super__.initialize.call(this, options);
-        this.switchTimeout = options.switchTimeout || 150;
-        if ($(this.el).hasClass('default')) {
-          return _.defer(function() {
-            return _this["switch"]();
-          });
-        }
-      };
-
-      UIContentBlock.prototype["switch"] = function() {
-        return this.trigger('switch', this);
-      };
-
-      UIContentBlock.prototype.show = function(callback) {
-        this.trigger('show', this);
-        return $(this.el).fadeIn(this.switchTimeout, callback);
-      };
-
-      UIContentBlock.prototype.hide = function(callback) {
-        this.trigger('hide', this);
-        return $(this.el).fadeOut(this.switchTimeout, callback);
-      };
-
-      return UIContentBlock;
-
-    })();
-    UIContentView = (function() {
-
-      __extends(UIContentView, UIView);
-
-      function UIContentView() {
-        UIContentView.__super__.constructor.apply(this, arguments);
-      }
-
-      UIContentView.prototype.initialize = function(options) {
-        UIContentView.__super__.initialize.call(this, options);
-        this.blocks = {};
-        this.count = 0;
-        this.state.current = null;
-        return this._initBlocks();
-      };
-
-      UIContentView.prototype["switch"] = function(id) {
-        var _this = this;
-        if (this.state.current !== id) {
-          if (this.state.current != null) {
-            this.blocks[this.state.current].hide(function() {
-              _this.state.current = id;
-              return _this.blocks[id].show();
-            });
-          } else {
-            this.state.current = id;
-            this.blocks[id].show();
-          }
-          return this.trigger('switch', id);
-        }
-      };
-
-      UIContentView.prototype._initBlocks = function() {
-        var _this = this;
-        return $(this.el).children().each(function(i, _el) {
-          var block, el;
-          el = $(_el);
-          block = new ui[el.data('class')]({
-            el: _el
-          });
-          _this.blocks[block.cid] = block;
-          _this.count++;
-          block.bind('switch', _this.on_switch, _this);
-          block.bind('show', _this.on_show, _this);
-          return block.bind('hide', _this.on_hide, _this);
-        });
-      };
-
-      UIContentView.prototype.on_switch = function(block) {
-        return this["switch"](block.cid);
-      };
-
-      UIContentView.prototype.on_show = function(block) {
-        return this.trigger('show', block);
-      };
-
-      UIContentView.prototype.on_hide = function(block) {
-        return this.trigger('hide', block);
-      };
-
-      return UIContentView;
-
-    })();
-    return __extends(exports, {
-      UISidebar: UISidebar,
-      UISidebarButton: UISidebarButton,
-      UISidebarSeparator: UISidebarSeparator,
-      UIContentView: UIContentView,
-      UIContentBlock: UIContentBlock
-    });
-  });
-
-  namespace("sm.ui", function(exports) {
-    var ISelectableItem, UIAdEntry, UIAdList, UIItem, UISidebar, UISpinner, UIView, ui;
-    ui = sm.ui;
-    UIView = ui.UIView, UIItem = ui.UIItem, ISelectableItem = ui.ISelectableItem, UISidebar = ui.UISidebar;
-    UIAdEntry = (function() {
-
-      __extends(UIAdEntry, UIView);
-
-      function UIAdEntry() {
-        UIAdEntry.__super__.constructor.apply(this, arguments);
-      }
-
-      UIAdEntry.prototype.tagName = 'li';
-
-      UIAdEntry.prototype.initialize = function(options) {
-        UIAdEntry.__super__.initialize.call(this, options);
-        return $(this.el).html(getTemplate('UIAdEntry', this.model.toJSON()));
-      };
-
-      UIAdEntry.prototype.render = function() {
-        return this.el;
-      };
-
-      return UIAdEntry;
-
-    })();
-    UISpinner = (function() {
-
-      __extends(UISpinner, UIView);
-
-      function UISpinner() {
-        UISpinner.__super__.constructor.apply(this, arguments);
-      }
-
-      UISpinner.prototype.tagName = 'li';
-
-      UISpinner.prototype.className = 'spinner';
-
-      UISpinner.prototype.initialize = function(options) {
-        UISpinner.__super__.initialize.call(this, options);
-        return $(this.el).html(getTemplate('UISpinner'));
-      };
-
-      UISpinner.prototype.render = function() {
-        return this.el;
-      };
-
-      return UISpinner;
-
-    })();
-    UIAdList = (function() {
-
-      __extends(UIAdList, UISidebar);
-
-      function UIAdList() {
-        UIAdList.__super__.constructor.apply(this, arguments);
-      }
-
-      UIAdList.prototype.initialize = function(options) {
-        if (options == null) options = {};
-        UIAdList.__super__.initialize.call(this, options);
-        this.collection = options.collection;
-        this.template = options.template;
-        $(this.el).jScrollPane({
-          autoReinitialise: true,
-          verticalDragMinHeight: 20
-        });
-        return this.contentPane = $(this.el).data('jsp');
-      };
-
-      UIAdList.prototype.showSpinner = function() {
-        if (this.spinner == null) this.spinner = new UISpinner;
-        return this.contentPane.getContentPane().html(this.spinner.render());
-      };
-
-      UIAdList.prototype.hideSpinner = function() {
-        return this.$('.spinner').fadeOut(150, function(e) {
-          return $(this).remove();
-        });
-      };
-
-      UIAdList.prototype.render = function(collection) {
-        var _this = this;
-        if (collection != null) this.collection = collection;
-        if (this.collection == null) return;
-        this.collection.each(function(model) {
-          var view;
-          view = new UIAdEntry({
-            model: model
-          });
-          console.log(view, model);
-          return _this.contentPane.getContentPane().append(view.render());
-        });
-        return this.contentPane.reinitialise();
-      };
-
-      return UIAdList;
-
-    })();
-    return __extends(exports, {
-      UIAdList: UIAdList
-    });
-  });
-
-  namespace("sm.ui", function(exports) {
-    var UIMap, UIView, ui;
-    ui = sm.ui;
-    UIView = ui.UIView;
-    UIMap = (function() {
-
-      __extends(UIMap, UIView);
-
-      function UIMap() {
-        UIMap.__super__.constructor.apply(this, arguments);
-      }
-
-      UIMap.prototype.initialize = function(options) {
-        UIMap.__super__.initialize.call(this, options);
-        console.log('initialize UIMap');
-        return $app.bind('gmap-load', this._initializeCompletion, this);
-      };
-
-      UIMap.prototype._initializeCompletion = function(gmap) {
-        this.gmap = gmap;
-        return this.renderMap();
-      };
-
-      UIMap.prototype.renderMap = function() {
-        var mapCenterPosition, options;
-        console.log('renderMap');
-        mapCenterPosition = new this.gmap.LatLng(53.902257, 27.561640);
-        options = {
-          zoom: 12,
-          center: mapCenterPosition,
-          mapTypeId: this.gmap.MapTypeId.ROADMAP,
-          disableDefaultUI: true
-        };
-        return this.map = new this.gmap.Map($(this.el).get(0), options);
-      };
-
-      UIMap.prototype.refrash = function() {
-        var _this = this;
-        if (!this.gmap) return;
+      if ($(this.el).hasClass('disabled')) {
         return _.defer(function() {
-          return _this.gmap.event.trigger(_this.map, 'resize');
+          _this.state.disabled = true;
+          return _this.trigger('disable', _this);
         });
-      };
+      } else {
+        return this.state.disabled = false;
+      }
+    };
 
-      return UIMap;
+    UIClickableItem.prototype.select = function() {
+      $(this.el).addClass('selected');
+      this.state.selected = true;
+      return this.trigger('select', this);
+    };
 
-    })();
-    return __extends(exports, {
-      UIMap: UIMap
-    });
+    UIClickableItem.prototype.deselect = function(silent) {
+      if (silent == null) silent = false;
+      $(this.el).removeClass('selected');
+      this.state.selected = false;
+      return this.trigger('deselect', this);
+    };
+
+    UIClickableItem.prototype.disable = function() {
+      $(this.el).addClass('disabled');
+      this.state.disabled = true;
+      return this.trigger('disable', this);
+    };
+
+    UIClickableItem.prototype.enable = function() {
+      $(this.el).removeClass('disabled');
+      this.state.disabled = false;
+      return this.trigger('enable', this);
+    };
+
+    UIClickableItem.prototype.on_click = function() {
+      if (this.state.disabled) return;
+      return this.trigger('click', this);
+    };
+
+    UIClickableItem.prototype.on_mouseenter = function() {
+      if (this.state.disabled) return;
+      $(this.el).addClass('hover');
+      this.state.hover = true;
+      return this.trigger('enter', this);
+    };
+
+    UIClickableItem.prototype.on_mouseleave = function() {
+      if (this.state.disabled) return;
+      $(this.el).removeClass('hover');
+      this.state.selected = false;
+      return this.trigger('leave', this);
+    };
+
+    return UIClickableItem;
+
+  })();
+  UIItemList = (function() {
+
+    __extends(UIItemList, UIView);
+
+    function UIItemList() {
+      UIItemList.__super__.constructor.apply(this, arguments);
+    }
+
+    UIItemList.prototype.initialize = function(options) {
+      UIItemList.__super__.initialize.call(this, options);
+      this.itemsByCid = {};
+      this.itemsByOrder = {};
+      this.count = 0;
+      return this._initItems();
+    };
+
+    UIItemList.prototype._initItems = function() {
+      var _this = this;
+      return $(this.el).children().each(function(i, _el) {
+        var el, item;
+        el = $(_el);
+        item = new ui[el.data('class')]({
+          el: _el,
+          order: _this.count
+        });
+        _this.itemsByCid[item.cid] = item;
+        _this.itemsByOrder[_this.count] = item;
+        _this.count++;
+        item.bind('click', _this.on_itemClick, _this);
+        item.bind('select', _this.on_itemSelect, _this);
+        item.bind('deselect', _this.on_itemDeselect, _this);
+        item.bind('disable', _this.on_itemDisable, _this);
+        item.bind('enable', _this.on_itemEnable, _this);
+        item.bind('enter', _this.on_itemEnter, _this);
+        return item.bind('leave', _this.on_itemLeave, _this);
+      });
+    };
+
+    UIItemList.prototype.addItem = function(item) {};
+
+    UIItemList.prototype.removeItem = function(id) {};
+
+    UIItemList.prototype.hasItem = function(id) {};
+
+    UIItemList.prototype.on_itemClick = function(item) {
+      return this.trigger('click', item);
+    };
+
+    UIItemList.prototype.on_itemSelect = function(item) {
+      return this.trigger('select', item);
+    };
+
+    UIItemList.prototype.on_itemDeselect = function(item) {
+      return this.trigger('deselect', item);
+    };
+
+    UIItemList.prototype.on_itemDisable = function(item) {
+      return this.trigger('disable', item);
+    };
+
+    UIItemList.prototype.on_itemEnable = function(item) {
+      return this.trigger('enable', item);
+    };
+
+    UIItemList.prototype.on_itemEnter = function(item) {
+      return this.trigger('enter', item);
+    };
+
+    UIItemList.prototype.on_itemLeave = function(item) {
+      return this.trigger('leave', item);
+    };
+
+    return UIItemList;
+
+  })();
+  return __extends(exports, {
+    UIView: UIView,
+    UIItem: UIItem,
+    UIClickableItem: UIClickableItem,
+    UIItemList: UIItemList
   });
+});
+namespace("sm.ui", function(exports) {
+  var UIClickableItem, UIItem, UIItemList, UIToolbar, UIToolbarButton, UIToolbarLogo, UIToolbarSearch, UIToolbarSeparator, UIView, ui;
+  ui = sm.ui;
+  UIView = ui.UIView, UIItem = ui.UIItem, UIClickableItem = ui.UIClickableItem, UIItemList = ui.UIItemList;
+  UIToolbar = (function() {
 
-  namespace("sm.ui", function(exports) {
-    var UIFollowersModal, UIModal, UIModalUnderlay, UINewAdModal, UIPrefModal, UIView, ui;
-    ui = sm.ui;
-    UIView = ui.UIView;
-    UIModal = (function() {
+    __extends(UIToolbar, UIItemList);
 
-      __extends(UIModal, UIView);
+    function UIToolbar() {
+      UIToolbar.__super__.constructor.apply(this, arguments);
+    }
 
-      function UIModal() {
-        UIModal.__super__.constructor.apply(this, arguments);
-      }
+    UIToolbar.prototype.initialize = function(options) {
+      return UIToolbar.__super__.initialize.call(this, options);
+    };
 
-      UIModal.prototype.initialize = function(options) {
-        return UIModal.__super__.initialize.call(this, options);
-      };
+    UIToolbar.prototype.deselectAll = function() {
+      return _.each(this.itemsByCid, function(item) {
+        if (item.state.selected) return item.deselect;
+      });
+    };
 
-      UIModal.prototype.show = function() {
-        console.log('show modal');
-        this.trigger('show', this);
-        return $(this.el).fadeIn(150);
-      };
+    return UIToolbar;
 
-      UIModal.prototype.hide = function() {
-        this.trigger('hide', this);
-        return $(this.el).fadeOut(150);
-      };
+  })();
+  UIToolbarButton = (function() {
 
-      return UIModal;
+    __extends(UIToolbarButton, UIClickableItem);
 
-    })();
-    UINewAdModal = (function() {
-      var MESSAGE_LENGTH;
+    function UIToolbarButton() {
+      UIToolbarButton.__super__.constructor.apply(this, arguments);
+    }
 
-      __extends(UINewAdModal, UIModal);
+    UIToolbarButton.prototype.events = {
+      'click': 'on_click',
+      'mouseenter': 'on_mouseenter',
+      'mouseleave': 'on_mouseleave'
+    };
 
-      function UINewAdModal() {
-        UINewAdModal.__super__.constructor.apply(this, arguments);
-      }
+    UIToolbarButton.prototype.initialize = function(options) {
+      return UIToolbarButton.__super__.initialize.call(this, options);
+    };
 
-      MESSAGE_LENGTH = 400;
+    return UIToolbarButton;
 
-      UINewAdModal.prototype.events = {
-        'click .close': 'on_close',
-        'keyup .message': 'on_keyup',
-        'keydown': 'on_keydown'
-      };
+  })();
+  UIToolbarSearch = (function() {
 
-      UINewAdModal.prototype.initialize = function(options) {
-        UINewAdModal.__super__.initialize.call(this, options);
-        this.messageInput = this.$('.message');
-        this.counterEl = this.$('.counter');
-        return this.submitButton = this.$('.submit');
-      };
+    __extends(UIToolbarSearch, UIItem);
 
-      UINewAdModal.prototype.on_close = function() {
-        this.trigger('close', this);
-        return false;
-      };
+    function UIToolbarSearch() {
+      UIToolbarSearch.__super__.constructor.apply(this, arguments);
+    }
 
-      UINewAdModal.prototype.on_submit = function() {
-        this.trigger('submit', this);
-        return false;
-      };
+    UIToolbarSearch.prototype.events = {
+      'click .search-button': 'on_click',
+      'keydown .search-input': 'on_keydown'
+    };
 
-      UINewAdModal.prototype.on_keydown = function(e) {
-        var result;
-        result = false;
-        if (e.keyCode === 27) {
-          this.on_close();
-        } else if (e.keyCode === 13 && (e.shiftKey || e.ctrlKey)) {
-          this.on_submit();
-        } else {
-          result = true;
-        }
-        return result;
-      };
+    UIToolbarSearch.prototype.initialize = function(options) {
+      UIToolbarSearch.__super__.initialize.call(this, options);
+      this.query = '';
+      this.input = $('.search-input');
+      return this.button = $('.search-button');
+    };
 
-      UINewAdModal.prototype.on_keyup = function(e) {
-        var len;
-        len = this.messageInput.val().length;
-        this.counterEl.html(MESSAGE_LENGTH - len);
-        if (len === 0 || len > 400) {
-          this.submitButton.addClass('disabled');
-        } else {
-          this.submitButton.removeClass('disabled');
-        }
-        return true;
-      };
-
-      return UINewAdModal;
-
-    })();
-    UIPrefModal = (function() {
-
-      __extends(UIPrefModal, UIModal);
-
-      function UIPrefModal() {
-        UIPrefModal.__super__.constructor.apply(this, arguments);
-      }
-
-      UIPrefModal.prototype.initialize = function(options) {
-        return UIPrefModal.__super__.initialize.call(this, options);
-      };
-
-      return UIPrefModal;
-
-    })();
-    UIFollowersModal = (function() {
-
-      __extends(UIFollowersModal, UIModal);
-
-      function UIFollowersModal() {
-        UIFollowersModal.__super__.constructor.apply(this, arguments);
-      }
-
-      UIFollowersModal.prototype.initialize = function(options) {
-        return UIFollowersModal.__super__.initialize.call(this, options);
-      };
-
-      return UIFollowersModal;
-
-    })();
-    UIModalUnderlay = (function() {
-
-      __extends(UIModalUnderlay, UIView);
-
-      function UIModalUnderlay() {
-        UIModalUnderlay.__super__.constructor.apply(this, arguments);
-      }
-
-      UIModalUnderlay.prototype.events = {
-        "click": "on_click"
-      };
-
-      UIModalUnderlay.prototype.initialize = function(options) {
-        return UIModalUnderlay.__super__.initialize.call(this, options);
-      };
-
-      UIModalUnderlay.prototype.show = function() {
-        return $(this.el).fadeIn(200);
-      };
-
-      UIModalUnderlay.prototype.hide = function() {
-        return $(this.el).fadeOut(200);
-      };
-
-      UIModalUnderlay.prototype.on_click = function() {
-        return this.trigger('click', this);
-      };
-
-      return UIModalUnderlay;
-
-    })();
-    return __extends(exports, {
-      UIModal: UIModal,
-      UINewAdModal: UINewAdModal,
-      UIModalUnderlay: UIModalUnderlay,
-      UIPrefModal: UIPrefModal,
-      UIFollowersModal: UIFollowersModal
-    });
-  });
-
-  namespace("sm.ui", function(exports) {
-    var UIClickableItem, UIItem, UISelectBox, UIView, ui;
-    ui = sm.ui;
-    UIView = ui.UIView, UIItem = ui.UIItem, UIClickableItem = ui.UIClickableItem;
-    UISelectBox = (function() {
-
-      __extends(UISelectBox, UIView);
-
-      function UISelectBox() {
-        UISelectBox.__super__.constructor.apply(this, arguments);
-      }
-
-      UISelectBox.prototype.events = {
-        'change select': 'on_selectChange'
-      };
-
-      UISelectBox.prototype.initialize = function(options) {
-        UISelectBox.__super__.initialize.call(this, options);
-        this.select = this.$('select');
-        this.value = this.$('span');
-        return this.value.text(this.$("option:selected").text());
-      };
-
-      UISelectBox.prototype.disable = function() {
-        return $(this.el).addClass('disabled');
-      };
-
-      UISelectBox.prototype.enable = function() {
-        return $(this.el).removeClass('enabled');
-      };
-
-      UISelectBox.prototype.on_selectChange = function(e) {
-        return this.value.text(this.$("option:selected").text());
-      };
-
-      return UISelectBox;
-
-    })();
-    return __extends(exports, {
-      UISelectBox: UISelectBox
-    });
-  });
-
-  namespace("sm.helpers", function(exports) {
-    var getTransitionEnd;
-    getTransitionEnd = function() {
-      var support, thisBody, thisStyle, transitionEnd;
-      thisBody = document.body || document.documentElement;
-      thisStyle = thisBody.style;
-      support = thisStyle.transition !== void 0 || thisStyle.WebkitTransition !== void 0 || thisStyle.MozTransition !== void 0 || thisStyle.MsTransition !== void 0 || thisStyle.OTransition !== void 0;
-      if (support) {
-        transitionEnd = "TransitionEnd";
-        if ($.browser.webkit) {
-          transitionEnd = "webkitTransitionEnd";
-        } else if ($.browser.mozilla) {
-          transitionEnd = "transitionend";
-        } else if ($.browser.opera) {
-          transitionEnd = "oTransitionEnd";
-        }
-        return transitionEnd;
-      }
+    UIToolbarSearch.prototype.on_click = function() {
+      if (this.state.disabled) return;
+      this.query = this.input.val();
+      if (this.query.length === 0) return false;
+      this.trigger('click', this);
+      this.trigger('search', this.query);
+      this.button.removeClass('glow');
       return false;
     };
-    return __extends(exports, {
-      getTransitionEnd: getTransitionEnd
-    });
-  });
 
-  namespace("sm.ui", function(exports) {
-    var UIPopable, UIPopover, UITooltip, UIView, helpers, ui;
-    ui = sm.ui, helpers = sm.helpers;
-    UIView = ui.UIView;
-    UIPopable = (function() {
-
-      __extends(UIPopable, UIView);
-
-      function UIPopable() {
-        UIPopable.__super__.constructor.apply(this, arguments);
+    UIToolbarSearch.prototype.on_keydown = function(e) {
+      if (this.input.val().length === 0) {
+        this.button.addClass('disabled');
+        this.button.removeClass('glow');
+      } else {
+        this.button.removeClass('disabled');
+        this.button.addClass('glow');
       }
+      if (e.keyCode === 13) {
+        this.on_click();
+        return false;
+      } else {
+        return true;
+      }
+    };
 
-      UIPopable.prototype.initialize = function() {
-        UIPopable.__super__.initialize.call(this);
-        this.target = $(this.options.target);
-        console.log(this.cid, this.target);
-        this.holder = $("#" + this.options.holderId);
-        if (this.holder.length === 0) this.holder = this._createHolder();
-        this.transitionEnd = helpers.getTransitionEnd();
-        this.state = {
-          disabled: false,
-          active: false
+    UIToolbarSearch.prototype.select = function() {};
+
+    UIToolbarSearch.prototype.deselect = function() {};
+
+    return UIToolbarSearch;
+
+  })();
+  UIToolbarSeparator = (function() {
+
+    __extends(UIToolbarSeparator, UIItem);
+
+    function UIToolbarSeparator() {
+      UIToolbarSeparator.__super__.constructor.apply(this, arguments);
+    }
+
+    UIToolbarSeparator.prototype.initialize = function(options) {
+      return UIToolbarSeparator.__super__.initialize.call(this, options);
+    };
+
+    return UIToolbarSeparator;
+
+  })();
+  UIToolbarLogo = (function() {
+
+    __extends(UIToolbarLogo, UIItem);
+
+    function UIToolbarLogo() {
+      UIToolbarLogo.__super__.constructor.apply(this, arguments);
+    }
+
+    UIToolbarLogo.prototype.initialize = function(options) {
+      return UIToolbarLogo.__super__.initialize.call(this, options);
+    };
+
+    return UIToolbarLogo;
+
+  })();
+  return __extends(exports, {
+    UIToolbar: UIToolbar,
+    UIToolbarButton: UIToolbarButton,
+    UIToolbarSearch: UIToolbarSearch,
+    UIToolbarSeparator: UIToolbarSeparator,
+    UIToolbarLogo: UIToolbarLogo
+  });
+});
+namespace("sm.ui", function(exports) {
+  var Controller, UIClickableItem, UIContentBlock, UIContentView, UIItem, UIItemList, UISidebar, UISidebarButton, UISidebarSeparator, UIView, ui;
+  ui = sm.ui;
+  UIView = ui.UIView, UIItem = ui.UIItem, UIClickableItem = ui.UIClickableItem, UIItemList = ui.UIItemList;
+  Controller = sm.mvc.Controller;
+  UISidebar = (function() {
+
+    __extends(UISidebar, UIItemList);
+
+    function UISidebar() {
+      UISidebar.__super__.constructor.apply(this, arguments);
+    }
+
+    UISidebar.prototype.initialize = function(options) {
+      UISidebar.__super__.initialize.call(this, options);
+      return this.contentViewId = $(this.el).data('content-view');
+    };
+
+    return UISidebar;
+
+  })();
+  UISidebarButton = (function() {
+
+    __extends(UISidebarButton, UIClickableItem);
+
+    function UISidebarButton() {
+      UISidebarButton.__super__.constructor.apply(this, arguments);
+    }
+
+    UISidebarButton.prototype.events = {
+      'click': 'on_click',
+      'mouseenter': 'on_mouseenter',
+      'mouseleave': 'on_mouseleave'
+    };
+
+    UISidebarButton.prototype.initialize = function(options) {
+      if (options == null) options = {};
+      UISidebarButton.__super__.initialize.call(this, options);
+      this.blockId = $(this.el).data('content-block');
+      return $app.bind('views-loaded', this.on_viewsLoaded, this);
+    };
+
+    UISidebarButton.prototype.on_viewsLoaded = function() {
+      this.block = $$(this.blockId);
+      this.block.bind('show', this.select, this);
+      return this.block.bind('hide', this.deselect, this);
+    };
+
+    UISidebarButton.prototype.on_click = function() {
+      return this.block["switch"]();
+    };
+
+    return UISidebarButton;
+
+  })();
+  UISidebarSeparator = (function() {
+
+    __extends(UISidebarSeparator, UIItem);
+
+    function UISidebarSeparator() {
+      UISidebarSeparator.__super__.constructor.apply(this, arguments);
+    }
+
+    UISidebarSeparator.prototype.initialize = function(options) {
+      return UISidebarSeparator.__super__.initialize.call(this, options);
+    };
+
+    return UISidebarSeparator;
+
+  })();
+  UIContentBlock = (function() {
+
+    __extends(UIContentBlock, UIView);
+
+    function UIContentBlock() {
+      UIContentBlock.__super__.constructor.apply(this, arguments);
+    }
+
+    UIContentBlock.prototype.initialize = function(options) {
+      var _this = this;
+      UIContentBlock.__super__.initialize.call(this, options);
+      this.switchTimeout = options.switchTimeout || 150;
+      if ($(this.el).hasClass('default')) {
+        return _.defer(function() {
+          return _this["switch"]();
+        });
+      }
+    };
+
+    UIContentBlock.prototype["switch"] = function() {
+      return this.trigger('switch', this);
+    };
+
+    UIContentBlock.prototype.show = function(callback) {
+      this.trigger('show', this);
+      return $(this.el).fadeIn(this.switchTimeout, callback);
+    };
+
+    UIContentBlock.prototype.hide = function(callback) {
+      this.trigger('hide', this);
+      return $(this.el).fadeOut(this.switchTimeout, callback);
+    };
+
+    return UIContentBlock;
+
+  })();
+  UIContentView = (function() {
+
+    __extends(UIContentView, UIView);
+
+    function UIContentView() {
+      UIContentView.__super__.constructor.apply(this, arguments);
+    }
+
+    UIContentView.prototype.initialize = function(options) {
+      UIContentView.__super__.initialize.call(this, options);
+      this.blocks = {};
+      this.count = 0;
+      this.state.current = null;
+      return this._initBlocks();
+    };
+
+    UIContentView.prototype["switch"] = function(id) {
+      var _this = this;
+      if (this.state.current !== id) {
+        if (this.state.current != null) {
+          this.blocks[this.state.current].hide(function() {
+            _this.state.current = id;
+            return _this.blocks[id].show();
+          });
+        } else {
+          this.state.current = id;
+          this.blocks[id].show();
+        }
+        return this.trigger('switch', id);
+      }
+    };
+
+    UIContentView.prototype._initBlocks = function() {
+      var _this = this;
+      return $(this.el).children().each(function(i, _el) {
+        var block, el;
+        el = $(_el);
+        block = new ui[el.data('class')]({
+          el: _el
+        });
+        _this.blocks[block.cid] = block;
+        _this.count++;
+        block.bind('switch', _this.on_switch, _this);
+        block.bind('show', _this.on_show, _this);
+        return block.bind('hide', _this.on_hide, _this);
+      });
+    };
+
+    UIContentView.prototype.on_switch = function(block) {
+      return this["switch"](block.cid);
+    };
+
+    UIContentView.prototype.on_show = function(block) {
+      return this.trigger('show', block);
+    };
+
+    UIContentView.prototype.on_hide = function(block) {
+      return this.trigger('hide', block);
+    };
+
+    return UIContentView;
+
+  })();
+  return __extends(exports, {
+    UISidebar: UISidebar,
+    UISidebarButton: UISidebarButton,
+    UISidebarSeparator: UISidebarSeparator,
+    UIContentView: UIContentView,
+    UIContentBlock: UIContentBlock
+  });
+});
+namespace("sm.ui", function(exports) {
+  var ISelectableItem, UIAdEntry, UIAdList, UIItem, UISidebar, UISpinner, UIView, ui;
+  ui = sm.ui;
+  UIView = ui.UIView, UIItem = ui.UIItem, ISelectableItem = ui.ISelectableItem, UISidebar = ui.UISidebar;
+  UIAdEntry = (function() {
+
+    __extends(UIAdEntry, UIView);
+
+    function UIAdEntry() {
+      UIAdEntry.__super__.constructor.apply(this, arguments);
+    }
+
+    UIAdEntry.prototype.tagName = 'li';
+
+    UIAdEntry.prototype.initialize = function(options) {
+      UIAdEntry.__super__.initialize.call(this, options);
+      return $(this.el).html(getTemplate('UIAdEntry', this.model.toJSON()));
+    };
+
+    UIAdEntry.prototype.render = function() {
+      return this.el;
+    };
+
+    return UIAdEntry;
+
+  })();
+  UISpinner = (function() {
+
+    __extends(UISpinner, UIView);
+
+    function UISpinner() {
+      UISpinner.__super__.constructor.apply(this, arguments);
+    }
+
+    UISpinner.prototype.tagName = 'li';
+
+    UISpinner.prototype.className = 'spinner';
+
+    UISpinner.prototype.initialize = function(options) {
+      UISpinner.__super__.initialize.call(this, options);
+      return $(this.el).html(getTemplate('UISpinner'));
+    };
+
+    UISpinner.prototype.render = function() {
+      return this.el;
+    };
+
+    return UISpinner;
+
+  })();
+  UIAdList = (function() {
+
+    __extends(UIAdList, UISidebar);
+
+    function UIAdList() {
+      UIAdList.__super__.constructor.apply(this, arguments);
+    }
+
+    UIAdList.prototype.initialize = function(options) {
+      if (options == null) options = {};
+      UIAdList.__super__.initialize.call(this, options);
+      this.collection = options.collection;
+      this.template = options.template;
+      $(this.el).jScrollPane({
+        autoReinitialise: true,
+        verticalDragMinHeight: 20
+      });
+      return this.contentPane = $(this.el).data('jsp');
+    };
+
+    UIAdList.prototype.showSpinner = function() {
+      if (this.spinner == null) this.spinner = new UISpinner;
+      return this.contentPane.getContentPane().html(this.spinner.render());
+    };
+
+    UIAdList.prototype.hideSpinner = function() {
+      return this.$('.spinner').fadeOut(150, function(e) {
+        return $(this).remove();
+      });
+    };
+
+    UIAdList.prototype.render = function(collection) {
+      var _this = this;
+      if (collection != null) this.collection = collection;
+      if (this.collection == null) return;
+      this.collection.each(function(model) {
+        var view;
+        view = new UIAdEntry({
+          model: model
+        });
+        console.log(view, model);
+        return _this.contentPane.getContentPane().append(view.render());
+      });
+      return this.contentPane.reinitialise();
+    };
+
+    return UIAdList;
+
+  })();
+  return __extends(exports, {
+    UIAdList: UIAdList
+  });
+});
+namespace("sm.ui", function(exports) {
+  var UIMap, UIView, ui;
+  ui = sm.ui;
+  UIView = ui.UIView;
+  UIMap = (function() {
+
+    __extends(UIMap, UIView);
+
+    function UIMap() {
+      UIMap.__super__.constructor.apply(this, arguments);
+    }
+
+    UIMap.prototype.initialize = function(options) {
+      UIMap.__super__.initialize.call(this, options);
+      console.log('initialize UIMap');
+      return $app.bind('gmap-load', this._initializeCompletion, this);
+    };
+
+    UIMap.prototype._initializeCompletion = function(gmap) {
+      this.gmap = gmap;
+      return this.renderMap();
+    };
+
+    UIMap.prototype.renderMap = function() {
+      var mapCenterPosition, options;
+      console.log('renderMap');
+      mapCenterPosition = new this.gmap.LatLng(53.902257, 27.561640);
+      options = {
+        zoom: 12,
+        center: mapCenterPosition,
+        mapTypeId: this.gmap.MapTypeId.ROADMAP,
+        disableDefaultUI: true
+      };
+      return this.map = new this.gmap.Map($(this.el).get(0), options);
+    };
+
+    UIMap.prototype.refrash = function() {
+      var _this = this;
+      if (!this.gmap) return;
+      return _.defer(function() {
+        return _this.gmap.event.trigger(_this.map, 'resize');
+      });
+    };
+
+    return UIMap;
+
+  })();
+  return __extends(exports, {
+    UIMap: UIMap
+  });
+});
+namespace("sm.ui", function(exports) {
+  var UIFollowersModal, UIModal, UIModalUnderlay, UINewAdModal, UIPrefModal, UIView, ui;
+  ui = sm.ui;
+  UIView = ui.UIView;
+  UIModal = (function() {
+
+    __extends(UIModal, UIView);
+
+    function UIModal() {
+      UIModal.__super__.constructor.apply(this, arguments);
+    }
+
+    UIModal.prototype.initialize = function(options) {
+      return UIModal.__super__.initialize.call(this, options);
+    };
+
+    UIModal.prototype.show = function() {
+      console.log('show modal');
+      this.trigger('show', this);
+      return $(this.el).fadeIn(150);
+    };
+
+    UIModal.prototype.hide = function() {
+      this.trigger('hide', this);
+      return $(this.el).fadeOut(150);
+    };
+
+    return UIModal;
+
+  })();
+  UINewAdModal = (function() {
+    var MESSAGE_LENGTH;
+
+    __extends(UINewAdModal, UIModal);
+
+    function UINewAdModal() {
+      UINewAdModal.__super__.constructor.apply(this, arguments);
+    }
+
+    MESSAGE_LENGTH = 400;
+
+    UINewAdModal.prototype.events = {
+      'click .close': 'on_close',
+      'keyup .message': 'on_keyup',
+      'keydown': 'on_keydown'
+    };
+
+    UINewAdModal.prototype.initialize = function(options) {
+      UINewAdModal.__super__.initialize.call(this, options);
+      this.messageInput = this.$('.message');
+      this.counterEl = this.$('.counter');
+      return this.submitButton = this.$('.submit');
+    };
+
+    UINewAdModal.prototype.on_close = function() {
+      this.trigger('close', this);
+      return false;
+    };
+
+    UINewAdModal.prototype.on_submit = function() {
+      this.trigger('submit', this);
+      return false;
+    };
+
+    UINewAdModal.prototype.on_keydown = function(e) {
+      var result;
+      result = false;
+      if (e.keyCode === 27) {
+        this.on_close();
+      } else if (e.keyCode === 13 && (e.shiftKey || e.ctrlKey)) {
+        this.on_submit();
+      } else {
+        result = true;
+      }
+      return result;
+    };
+
+    UINewAdModal.prototype.on_keyup = function(e) {
+      var len;
+      len = this.messageInput.val().length;
+      this.counterEl.html(MESSAGE_LENGTH - len);
+      if (len === 0 || len > 400) {
+        this.submitButton.addClass('disabled');
+      } else {
+        this.submitButton.removeClass('disabled');
+      }
+      return true;
+    };
+
+    return UINewAdModal;
+
+  })();
+  UIPrefModal = (function() {
+
+    __extends(UIPrefModal, UIModal);
+
+    function UIPrefModal() {
+      UIPrefModal.__super__.constructor.apply(this, arguments);
+    }
+
+    UIPrefModal.prototype.initialize = function(options) {
+      return UIPrefModal.__super__.initialize.call(this, options);
+    };
+
+    return UIPrefModal;
+
+  })();
+  UIFollowersModal = (function() {
+
+    __extends(UIFollowersModal, UIModal);
+
+    function UIFollowersModal() {
+      UIFollowersModal.__super__.constructor.apply(this, arguments);
+    }
+
+    UIFollowersModal.prototype.initialize = function(options) {
+      return UIFollowersModal.__super__.initialize.call(this, options);
+    };
+
+    return UIFollowersModal;
+
+  })();
+  UIModalUnderlay = (function() {
+
+    __extends(UIModalUnderlay, UIView);
+
+    function UIModalUnderlay() {
+      UIModalUnderlay.__super__.constructor.apply(this, arguments);
+    }
+
+    UIModalUnderlay.prototype.events = {
+      "click": "on_click"
+    };
+
+    UIModalUnderlay.prototype.initialize = function(options) {
+      return UIModalUnderlay.__super__.initialize.call(this, options);
+    };
+
+    UIModalUnderlay.prototype.show = function() {
+      return $(this.el).fadeIn(200);
+    };
+
+    UIModalUnderlay.prototype.hide = function() {
+      return $(this.el).fadeOut(200);
+    };
+
+    UIModalUnderlay.prototype.on_click = function() {
+      return this.trigger('click', this);
+    };
+
+    return UIModalUnderlay;
+
+  })();
+  return __extends(exports, {
+    UIModal: UIModal,
+    UINewAdModal: UINewAdModal,
+    UIModalUnderlay: UIModalUnderlay,
+    UIPrefModal: UIPrefModal,
+    UIFollowersModal: UIFollowersModal
+  });
+});
+namespace("sm.ui", function(exports) {
+  var UIClickableItem, UIItem, UISelectBox, UIView, ui;
+  ui = sm.ui;
+  UIView = ui.UIView, UIItem = ui.UIItem, UIClickableItem = ui.UIClickableItem;
+  UISelectBox = (function() {
+
+    __extends(UISelectBox, UIView);
+
+    function UISelectBox() {
+      UISelectBox.__super__.constructor.apply(this, arguments);
+    }
+
+    UISelectBox.prototype.events = {
+      'change select': 'on_selectChange'
+    };
+
+    UISelectBox.prototype.initialize = function(options) {
+      UISelectBox.__super__.initialize.call(this, options);
+      this.select = this.$('select');
+      this.value = this.$('span');
+      return this.value.text(this.$("option:selected").text());
+    };
+
+    UISelectBox.prototype.disable = function() {
+      return $(this.el).addClass('disabled');
+    };
+
+    UISelectBox.prototype.enable = function() {
+      return $(this.el).removeClass('enabled');
+    };
+
+    UISelectBox.prototype.on_selectChange = function(e) {
+      return this.value.text(this.$("option:selected").text());
+    };
+
+    return UISelectBox;
+
+  })();
+  return __extends(exports, {
+    UISelectBox: UISelectBox
+  });
+});
+namespace("sm.helpers", function(exports) {
+  var getTransitionEnd;
+  getTransitionEnd = function() {
+    var support, thisBody, thisStyle, transitionEnd;
+    thisBody = document.body || document.documentElement;
+    thisStyle = thisBody.style;
+    support = thisStyle.transition !== void 0 || thisStyle.WebkitTransition !== void 0 || thisStyle.MozTransition !== void 0 || thisStyle.MsTransition !== void 0 || thisStyle.OTransition !== void 0;
+    if (support) {
+      transitionEnd = "TransitionEnd";
+      if ($.browser.webkit) {
+        transitionEnd = "webkitTransitionEnd";
+      } else if ($.browser.mozilla) {
+        transitionEnd = "transitionend";
+      } else if ($.browser.opera) {
+        transitionEnd = "oTransitionEnd";
+      }
+      return transitionEnd;
+    }
+    return false;
+  };
+  return __extends(exports, {
+    getTransitionEnd: getTransitionEnd
+  });
+});
+namespace("sm.ui", function(exports) {
+  var UIPopable, UIPopover, UITooltip, UIView, helpers, ui;
+  ui = sm.ui, helpers = sm.helpers;
+  UIView = ui.UIView;
+  UIPopable = (function() {
+
+    __extends(UIPopable, UIView);
+
+    function UIPopable() {
+      UIPopable.__super__.constructor.apply(this, arguments);
+    }
+
+    UIPopable.prototype.initialize = function() {
+      UIPopable.__super__.initialize.call(this);
+      this.target = $(this.options.target);
+      console.log(this.cid, this.target);
+      this.holder = $("#" + this.options.holderId);
+      if (this.holder.length === 0) this.holder = this._createHolder();
+      this.transitionEnd = helpers.getTransitionEnd();
+      this.state = {
+        disabled: false,
+        active: false
+      };
+      this.render = getTemplate(this.options.template);
+      this.options.data = _.extend({}, this.options.data, this.target.data());
+      return $(this.el).html(this.render(this.options.data));
+    };
+
+    UIPopable.prototype._createHolder = function() {
+      return $(document.createElement('DIV')).attr('id', this.options.holderId).css({
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        bottom: 0,
+        right: 0
+      }).prependTo(document.body);
+    };
+
+    UIPopable.prototype._calculatePlacement = function(p) {
+      var b, f, ff, fp, h, k, l, o, oh, ow, p2n, pn, r, t, tr, w, wr, _i, _j, _len, _len2, _ref;
+      tr = _.extend({}, this.target.offset(), {
+        width: this.target[0].offsetWidth,
+        height: this.target[0].offsetHeight
+      });
+      tr.right = tr.left + tr.width;
+      tr.bottom = tr.top + tr.height;
+      w = this.el.offsetWidth;
+      h = this.el.offsetHeight;
+      if (this.options.autoplacement) {
+        wr = {
+          top: $(window).scrollTop(),
+          left: $(window).scrollLeft(),
+          width: $(window).width(),
+          height: $(window).height()
         };
-        this.render = getTemplate(this.options.template);
-        this.options.data = _.extend({}, this.options.data, this.target.data());
-        return $(this.el).html(this.render(this.options.data));
-      };
-
-      UIPopable.prototype._createHolder = function() {
-        return $(document.createElement('DIV')).attr('id', this.options.holderId).css({
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          bottom: 0,
-          right: 0
-        }).prependTo(document.body);
-      };
-
-      UIPopable.prototype._calculatePlacement = function(p) {
-        var b, f, ff, fp, h, k, l, o, oh, ow, p2n, pn, r, t, tr, w, wr, _i, _j, _len, _len2, _ref;
-        tr = _.extend({}, this.target.offset(), {
-          width: this.target[0].offsetWidth,
-          height: this.target[0].offsetHeight
-        });
-        tr.right = tr.left + tr.width;
-        tr.bottom = tr.top + tr.height;
-        w = this.el.offsetWidth;
-        h = this.el.offsetHeight;
-        if (this.options.autoplacement) {
-          wr = {
-            top: $(window).scrollTop(),
-            left: $(window).scrollLeft(),
-            width: $(window).width(),
-            height: $(window).height()
-          };
-          wr.right = wr.left + wr.width;
-          wr.bottom = wr.top + wr.height;
-          t = tr.top - wr.top;
-          r = wr.right - tr.right;
-          b = wr.bottom - tr.bottom;
-          l = tr.left - wr.left;
-          ow = Math.max((w - tr.width) / 2, 0);
-          oh = Math.max((h - tr.height) / 2, 0);
-          ff = [t > h, r > w, b > h, l > w];
-          k = 0;
-          for (_i = 0, _len = ff.length; _i < _len; _i++) {
-            f = ff[_i];
-            k <<= 1;
-            k |= f ? 1 : 0;
-          }
-          p2n = {
-            above: 8,
-            right: 4,
-            below: 2,
-            left: 1
-          };
-          _ref = this.options.forbiddenPlacement;
-          for (_j = 0, _len2 = _ref.length; _j < _len2; _j++) {
-            fp = _ref[_j];
-            if (p2n[fp] != null) k &= ~p2n[fp];
-          }
-          pn = p2n[p];
-          p = (function() {
-            switch (k) {
-              case 7:
-                if (pn & 5 && t > oh) {
-                  return p;
-                } else {
-                  return 'below';
-                }
-              case 3:
-                if (r > w || r - ow >= t - oh) {
-                  return 'below';
-                } else {
-                  return 'left';
-                }
-              case 11:
-                if (pn & 10 && r > ow) {
-                  return p;
-                } else {
-                  return 'left';
-                }
-              case 9:
-                if (r > w || r - ow >= b - oh) {
-                  return 'above';
-                } else {
-                  return 'left';
-                }
-              case 13:
-                if (pn & 5 && b > oh) {
-                  return p;
-                } else {
-                  return 'above';
-                }
-              case 12:
-                if (l > w || l - ow >= b - oh) {
-                  return 'above';
-                } else {
-                  return 'right';
-                }
-              case 14:
-                if (pn & 10 && l > ow) {
-                  return p;
-                } else {
-                  return 'right';
-                }
-              case 6:
-                if (l > w || l - ow >= t - oh) {
-                  return 'below';
-                } else {
-                  return 'right';
-                }
-              case 8:
-                return 'above';
-              case 4:
-                return 'right';
-              case 2:
-                return 'below';
-              case 1:
-                return 'left';
-              case 5:
-                if (pn & 5) {
-                  return p;
-                } else {
-                  return 'right';
-                }
-              case 10:
-                if (pn & 10) {
-                  return p;
-                } else {
-                  return 'above';
-                }
-              case 0:
-                return false;
-              default:
+        wr.right = wr.left + wr.width;
+        wr.bottom = wr.top + wr.height;
+        t = tr.top - wr.top;
+        r = wr.right - tr.right;
+        b = wr.bottom - tr.bottom;
+        l = tr.left - wr.left;
+        ow = Math.max((w - tr.width) / 2, 0);
+        oh = Math.max((h - tr.height) / 2, 0);
+        ff = [t > h, r > w, b > h, l > w];
+        k = 0;
+        for (_i = 0, _len = ff.length; _i < _len; _i++) {
+          f = ff[_i];
+          k <<= 1;
+          k |= f ? 1 : 0;
+        }
+        p2n = {
+          above: 8,
+          right: 4,
+          below: 2,
+          left: 1
+        };
+        _ref = this.options.forbiddenPlacement;
+        for (_j = 0, _len2 = _ref.length; _j < _len2; _j++) {
+          fp = _ref[_j];
+          if (p2n[fp] != null) k &= ~p2n[fp];
+        }
+        pn = p2n[p];
+        p = (function() {
+          switch (k) {
+            case 7:
+              if (pn & 5 && t > oh) {
                 return p;
-            }
-          })();
-        }
-        o = (function() {
-          switch (p) {
-            case 'below':
-              return {
-                top: tr.bottom + this.options.offset,
-                left: tr.left + (tr.width - w) / 2
-              };
-            case 'above':
-              return {
-                top: tr.top - h - this.options.offset,
-                left: tr.left + (tr.width - w) / 2
-              };
-            case 'left':
-              return {
-                top: tr.top + (tr.height - h) / 2,
-                left: tr.left - w - this.options.offset
-              };
-            case 'right':
-              return {
-                top: tr.top + (tr.height - h) / 2,
-                left: tr.right + this.options.offset
-              };
+              } else {
+                return 'below';
+              }
+            case 3:
+              if (r > w || r - ow >= t - oh) {
+                return 'below';
+              } else {
+                return 'left';
+              }
+            case 11:
+              if (pn & 10 && r > ow) {
+                return p;
+              } else {
+                return 'left';
+              }
+            case 9:
+              if (r > w || r - ow >= b - oh) {
+                return 'above';
+              } else {
+                return 'left';
+              }
+            case 13:
+              if (pn & 5 && b > oh) {
+                return p;
+              } else {
+                return 'above';
+              }
+            case 12:
+              if (l > w || l - ow >= b - oh) {
+                return 'above';
+              } else {
+                return 'right';
+              }
+            case 14:
+              if (pn & 10 && l > ow) {
+                return p;
+              } else {
+                return 'right';
+              }
+            case 6:
+              if (l > w || l - ow >= t - oh) {
+                return 'below';
+              } else {
+                return 'right';
+              }
+            case 8:
+              return 'above';
+            case 4:
+              return 'right';
+            case 2:
+              return 'below';
+            case 1:
+              return 'left';
+            case 5:
+              if (pn & 5) {
+                return p;
+              } else {
+                return 'right';
+              }
+            case 10:
+              if (pn & 10) {
+                return p;
+              } else {
+                return 'above';
+              }
+            case 0:
+              return false;
             default:
-              return {};
+              return p;
           }
-        }).call(this);
-        return [o, p];
-      };
-
-      UIPopable.prototype.show = function() {
-        var el, offset, placement, _ref;
-        el = $(this.el);
-        el.remove().attr('class', this.className).prependTo(this.holder);
-        if (this.options.animate) el.addClass('fade');
-        _ref = this._calculatePlacement(this.options.placement), offset = _ref[0], placement = _ref[1];
-        if (!placement) return;
-        el.css(offset).addClass(placement).addClass('in');
-        return this.state.active = true;
-      };
-
-      UIPopable.prototype.hide = function() {
-        var el;
-        var _this = this;
-        el = $(this.el);
-        el.removeClass('in');
-        if ((this.transitionEnd != null) && this.options.animate) {
-          el.bind(this.transitionEnd, function() {
-            return el.remove();
-          });
-        } else {
-          el.remove();
+        })();
+      }
+      o = (function() {
+        switch (p) {
+          case 'below':
+            return {
+              top: tr.bottom + this.options.offset,
+              left: tr.left + (tr.width - w) / 2
+            };
+          case 'above':
+            return {
+              top: tr.top - h - this.options.offset,
+              left: tr.left + (tr.width - w) / 2
+            };
+          case 'left':
+            return {
+              top: tr.top + (tr.height - h) / 2,
+              left: tr.left - w - this.options.offset
+            };
+          case 'right':
+            return {
+              top: tr.top + (tr.height - h) / 2,
+              left: tr.right + this.options.offset
+            };
+          default:
+            return {};
         }
-        return this.state.active = false;
-      };
+      }).call(this);
+      return [o, p];
+    };
 
-      UIPopable.prototype.enable = function() {
-        return this.state.disabled = false;
-      };
+    UIPopable.prototype.show = function() {
+      var el, offset, placement, _ref;
+      el = $(this.el);
+      el.remove().attr('class', this.className).prependTo(this.holder);
+      if (this.options.animate) el.addClass('fade');
+      _ref = this._calculatePlacement(this.options.placement), offset = _ref[0], placement = _ref[1];
+      if (!placement) return;
+      el.css(offset).addClass(placement).addClass('in');
+      return this.state.active = true;
+    };
 
-      UIPopable.prototype.disable = function() {
-        this.state.disabled = true;
-        this.state.active = false;
+    UIPopable.prototype.hide = function() {
+      var el;
+      var _this = this;
+      el = $(this.el);
+      el.removeClass('in');
+      if ((this.transitionEnd != null) && this.options.animate) {
+        el.bind(this.transitionEnd, function() {
+          return el.remove();
+        });
+      } else {
+        el.remove();
+      }
+      return this.state.active = false;
+    };
+
+    UIPopable.prototype.enable = function() {
+      return this.state.disabled = false;
+    };
+
+    UIPopable.prototype.disable = function() {
+      this.state.disabled = true;
+      this.state.active = false;
+      return this.hide();
+    };
+
+    return UIPopable;
+
+  })();
+  /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  */
+  UITooltip = (function() {
+
+    __extends(UITooltip, UIPopable);
+
+    function UITooltip() {
+      UITooltip.__super__.constructor.apply(this, arguments);
+    }
+
+    UITooltip.prototype.tagName = 'div';
+
+    UITooltip.prototype.className = 'tooltip';
+
+    UITooltip.prototype.defaults = {
+      animate: true,
+      delayIn: 0,
+      delayOut: 0,
+      autoplacement: true,
+      placement: 'above',
+      live: true,
+      offset: 0,
+      trigger: 'hover',
+      template: 'UITooltip',
+      target: null,
+      holderId: 'popover-holder',
+      data: {},
+      forbiddenPlacement: []
+    };
+
+    UITooltip.prototype.initialize = function(options) {
+      var binder, eventIn, eventOut;
+      this.options = _.extend({}, this.defaults, options);
+      UITooltip.__super__.initialize.call(this);
+      this.state.hover = false;
+      binder = this.options.live ? 'live' : 'bind';
+      eventIn = this.options.trigger === 'hover' ? 'mouseenter' : 'focus';
+      eventOut = this.options.trigger === 'hover' ? 'mouseleave' : 'blur';
+      this.target[binder](eventIn, _.bind(this.on_enter, this));
+      return this.target[binder](eventOut, _.bind(this.on_leave, this));
+    };
+
+    UITooltip.prototype.on_enter = function() {
+      var _this = this;
+      if (this.state.disabled) return;
+      this.state.hover = true;
+      if (this.options.delayIn) {
+        return setTimeout((function() {
+          if (_this.state.hover) return _this.show();
+        }), this.options.delayIn);
+      } else {
+        return this.show();
+      }
+    };
+
+    UITooltip.prototype.on_leave = function() {
+      var _this = this;
+      if (this.state.disabled) return;
+      this.state.hover = false;
+      if (this.options.delayOut) {
+        return setTimeout((function() {
+          if (!_this.state.hover) return _this.hide();
+        }), this.options.delayOut);
+      } else {
         return this.hide();
-      };
-
-      return UIPopable;
-
-    })();
-    /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    */
-    UITooltip = (function() {
-
-      __extends(UITooltip, UIPopable);
-
-      function UITooltip() {
-        UITooltip.__super__.constructor.apply(this, arguments);
       }
+    };
 
-      UITooltip.prototype.tagName = 'div';
+    return UITooltip;
 
-      UITooltip.prototype.className = 'tooltip';
+  })();
+  /* **********************************************************************
+  */
+  UIPopover = (function() {
 
-      UITooltip.prototype.defaults = {
-        animate: true,
-        delayIn: 0,
-        delayOut: 0,
-        autoplacement: true,
-        placement: 'above',
-        live: true,
-        offset: 0,
-        trigger: 'hover',
-        template: 'UITooltip',
-        target: null,
-        holderId: 'popover-holder',
-        data: {},
-        forbiddenPlacement: []
-      };
+    __extends(UIPopover, UIPopable);
 
-      UITooltip.prototype.initialize = function(options) {
-        var binder, eventIn, eventOut;
-        this.options = _.extend({}, this.defaults, options);
-        UITooltip.__super__.initialize.call(this);
-        this.state.hover = false;
-        binder = this.options.live ? 'live' : 'bind';
-        eventIn = this.options.trigger === 'hover' ? 'mouseenter' : 'focus';
-        eventOut = this.options.trigger === 'hover' ? 'mouseleave' : 'blur';
-        this.target[binder](eventIn, _.bind(this.on_enter, this));
-        return this.target[binder](eventOut, _.bind(this.on_leave, this));
-      };
+    function UIPopover() {
+      UIPopover.__super__.constructor.apply(this, arguments);
+    }
 
-      UITooltip.prototype.on_enter = function() {
-        var _this = this;
-        if (this.state.disabled) return;
-        this.state.hover = true;
-        if (this.options.delayIn) {
-          return setTimeout((function() {
-            if (_this.state.hover) return _this.show();
-          }), this.options.delayIn);
-        } else {
-          return this.show();
-        }
-      };
+    UIPopover.prototype.tagName = 'div';
 
-      UITooltip.prototype.on_leave = function() {
-        var _this = this;
-        if (this.state.disabled) return;
-        this.state.hover = false;
-        if (this.options.delayOut) {
-          return setTimeout((function() {
-            if (!_this.state.hover) return _this.hide();
-          }), this.options.delayOut);
-        } else {
-          return this.hide();
-        }
-      };
+    UIPopover.prototype.className = 'popover';
 
-      return UITooltip;
+    UIPopover.prototype.defaults = {
+      animate: true,
+      dynamic: true,
+      delayIn: 0,
+      delayOut: 0,
+      autoplacement: true,
+      placement: 'above',
+      offset: 0,
+      trigger: 'hover',
+      template: 'UIPopover',
+      target: null,
+      holderId: 'popover-holder',
+      forbiddenPlacement: []
+    };
 
-    })();
-    /* **********************************************************************
-    */
-    UIPopover = (function() {
+    UIPopover.prototype.initialize = function(options) {
+      this.options = _.extend({}, this.defaults, options);
+      UIPopover.__super__.initialize.call(this);
+      return this.target.click(_.bind(this.on_click, this));
+    };
 
-      __extends(UIPopover, UIPopable);
-
-      function UIPopover() {
-        UIPopover.__super__.constructor.apply(this, arguments);
-      }
-
-      UIPopover.prototype.tagName = 'div';
-
-      UIPopover.prototype.className = 'popover';
-
-      UIPopover.prototype.defaults = {
-        animate: true,
-        dynamic: true,
-        delayIn: 0,
-        delayOut: 0,
-        autoplacement: true,
-        placement: 'above',
-        offset: 0,
-        trigger: 'hover',
-        template: 'UIPopover',
-        target: null,
-        holderId: 'popover-holder',
-        forbiddenPlacement: []
-      };
-
-      UIPopover.prototype.initialize = function(options) {
-        this.options = _.extend({}, this.defaults, options);
-        UIPopover.__super__.initialize.call(this);
-        return this.target.click(_.bind(this.on_click, this));
-      };
-
-      UIPopover.prototype.show = function() {
-        var _this = this;
-        UIPopover.__super__.show.call(this);
-        $('html').one('click', function(e) {
-          return _this.hide();
-        });
-        return $(this.el).click(function(e) {
-          return e.stopPropagation();
-        });
-      };
-
-      UIPopover.prototype.on_click = function(e) {
-        if (this.state.disabled) return;
-        if (this.state.active) {
-          this.hide();
-        } else {
-          this.show();
-        }
+    UIPopover.prototype.show = function() {
+      var _this = this;
+      UIPopover.__super__.show.call(this);
+      $('html').one('click', function(e) {
+        return _this.hide();
+      });
+      return $(this.el).click(function(e) {
         return e.stopPropagation();
-      };
+      });
+    };
 
-      return UIPopover;
-
-    })();
-    return __extends(exports, {
-      UIPopable: UIPopable,
-      UITooltip: UITooltip,
-      UIPopover: UIPopover
-    });
-  });
-
-  namespace("sm", function(exports) {
-    var App, Collection, Controller, Model, Router, View, _ref;
-    _ref = sm.mvc, Controller = _ref.Controller, View = _ref.View, Model = _ref.Model, Collection = _ref.Collection, Router = _ref.Router;
-    App = (function() {
-      var cfg, ctr, ui;
-
-      __extends(App, Router);
-
-      function App() {
-        App.__super__.constructor.apply(this, arguments);
+    UIPopover.prototype.on_click = function(e) {
+      if (this.state.disabled) return;
+      if (this.state.active) {
+        this.hide();
+      } else {
+        this.show();
       }
+      return e.stopPropagation();
+    };
 
-      ui = sm.ui, ctr = sm.ctr, cfg = sm.cfg;
+    return UIPopover;
 
-      App.prototype.routes = {
-        '*path': 'routeTo'
-      };
+  })();
+  return __extends(exports, {
+    UIPopable: UIPopable,
+    UITooltip: UITooltip,
+    UIPopover: UIPopover
+  });
+});
+namespace("sm", function(exports) {
+  var App, Collection, Controller, Model, Router, View, _ref;
+  _ref = sm.mvc, Controller = _ref.Controller, View = _ref.View, Model = _ref.Model, Collection = _ref.Collection, Router = _ref.Router;
+  App = (function() {
+    var cfg, ctr, ui;
 
-      App.prototype.bindings = {
-        'search-block:show': 'search:select'
-      };
+    __extends(App, Router);
 
-      App.prototype.controllers = {
-        'ad-list-controller': {
-          "class": 'AdListCtr',
-          options: {}
-        },
-        'search-controller': {
-          "class": 'SearchCtr',
-          options: {}
-        },
-        'new-ad-controller': {
-          "class": 'ModalCtr',
-          options: {
-            modal: 'new-ad-modal',
-            button: 'new-ad-button'
-          }
-        },
-        'pref-controller': {
-          "class": 'ModalCtr',
-          options: {
-            modal: 'pref-modal',
-            button: 'pref-button'
-          }
-        },
-        'followers-controller': {
-          "class": 'ModalCtr',
-          options: {
-            modal: 'followers-modal',
-            button: 'followers-button'
-          }
+    function App() {
+      App.__super__.constructor.apply(this, arguments);
+    }
+
+    ui = sm.ui, ctr = sm.ctr, cfg = sm.cfg;
+
+    App.prototype.routes = {
+      '*path': 'routeTo'
+    };
+
+    App.prototype.bindings = {
+      'search-block:show': 'search:select'
+    };
+
+    App.prototype.controllers = {
+      'ad-list-controller': {
+        "class": 'AdListCtr',
+        options: {}
+      },
+      'search-controller': {
+        "class": 'SearchCtr',
+        options: {}
+      },
+      'new-ad-controller': {
+        "class": 'ModalCtr',
+        options: {
+          modal: 'new-ad-modal',
+          button: 'new-ad-button'
         }
-      };
+      },
+      'pref-controller': {
+        "class": 'ModalCtr',
+        options: {
+          modal: 'pref-modal',
+          button: 'pref-button'
+        }
+      },
+      'followers-controller': {
+        "class": 'ModalCtr',
+        options: {
+          modal: 'followers-modal',
+          button: 'followers-button'
+        }
+      }
+    };
 
-      App.prototype.initialize = function(options) {
-        if (options == null) options = {};
-        this.cid = 'app';
-        App.__super__.initialize.call(this, options);
-        root.$app = this;
-        $(document).ready(_.bind(this.on_domLoaded, this));
-        return this._initControllers();
-      };
+    App.prototype.initialize = function(options) {
+      if (options == null) options = {};
+      this.cid = 'app';
+      App.__super__.initialize.call(this, options);
+      root.$app = this;
+      $(document).ready(_.bind(this.on_domLoaded, this));
+      return this._initControllers();
+    };
 
-      App.prototype.routeTo = function(path) {
-        return console.log(path);
-      };
+    App.prototype.routeTo = function(path) {
+      return console.log(path);
+    };
 
-      App.prototype.makeBinding = function(trg, src) {
-        var event, method, srcId, trgId, _ref2, _ref3;
-        _ref2 = src.split(':'), srcId = _ref2[0], event = _ref2[1];
-        _ref3 = trg.split(':'), trgId = _ref3[0], method = _ref3[1];
-        return $$(srcId).bind(event, $$(trgId)[method], $$(trgId));
-      };
+    App.prototype.makeBinding = function(trg, src) {
+      var event, method, srcId, trgId, _ref2, _ref3;
+      _ref2 = src.split(':'), srcId = _ref2[0], event = _ref2[1];
+      _ref3 = trg.split(':'), trgId = _ref3[0], method = _ref3[1];
+      return $$(srcId).bind(event, $$(trgId)[method], $$(trgId));
+    };
 
-      App.prototype._initBindings = function() {
-        return _.each(this.bindings, this.makeBinding);
-      };
+    App.prototype._initBindings = function() {
+      return _.each(this.bindings, this.makeBinding);
+    };
 
-      App.prototype._initControllers = function() {
-        var _this = this;
-        return _.each(this.controllers, function(ctx, id) {
-          ctx.options.cid = id;
-          return new ctr[ctx["class"]](ctx.options);
+    App.prototype._initControllers = function() {
+      var _this = this;
+      return _.each(this.controllers, function(ctx, id) {
+        ctx.options.cid = id;
+        return new ctr[ctx["class"]](ctx.options);
+      });
+    };
+
+    App.prototype._initAutoloadClasses = function() {
+      var _this = this;
+      return $('.autoload').each(function(i, _el) {
+        var el;
+        el = $(_el);
+        el.removeClass('autoload');
+        return console.log(new ui[el.data('class')]({
+          el: _el
+        }));
+      });
+    };
+
+    App.prototype._initGoogleMaps = function() {
+      var _this = this;
+      root.__initialize_maps = _.bind(this._initGoogleMapsCompletion, this);
+      return $.getScript("" + cfg.GMAP_JS_URL + "&callback=__initialize_maps", function(data, status) {
+        if (status !== 'success') throw 'google map load failed';
+      });
+    };
+
+    App.prototype._initGoogleMapsCompletion = function() {
+      delete root.__initialize_maps;
+      return this.trigger('gmap-load', google.maps);
+    };
+
+    App.prototype.on_domLoaded = function() {
+      this._initAutoloadClasses();
+      this._initBindings();
+      this._initGoogleMaps();
+      this.toolbar = $$('toolbar');
+      this.sidebar = $$('sidebar');
+      this.content = $$('content-view');
+      this.trigger('views-loaded');
+      $("[rel=UITooltip]").each(function(i, v) {
+        return new ui.UITooltip({
+          target: v
         });
-      };
-
-      App.prototype._initAutoloadClasses = function() {
-        var _this = this;
-        return $('.autoload').each(function(i, _el) {
-          var el;
-          el = $(_el);
-          el.removeClass('autoload');
-          return console.log(new ui[el.data('class')]({
-            el: _el
-          }));
+      });
+      return $("[rel=UIPopover]").each(function(i, v) {
+        return new ui.UIPopover({
+          target: v,
+          template: $(v).data('popover')
         });
-      };
+      });
+    };
 
-      App.prototype._initGoogleMaps = function() {
-        var _this = this;
-        root.__initialize_maps = _.bind(this._initGoogleMapsCompletion, this);
-        return $.getScript("" + cfg.GMAP_JS_URL + "&callback=__initialize_maps", function(data, status) {
-          if (status !== 'success') throw 'google map load failed';
-        });
-      };
+    return App;
 
-      App.prototype._initGoogleMapsCompletion = function() {
-        delete root.__initialize_maps;
-        return this.trigger('gmap-load', google.maps);
-      };
-
-      App.prototype.on_domLoaded = function() {
-        this._initAutoloadClasses();
-        this._initBindings();
-        this._initGoogleMaps();
-        this.toolbar = $$('toolbar');
-        this.sidebar = $$('sidebar');
-        this.content = $$('content-view');
-        this.trigger('views-loaded');
-        $("[rel=UITooltip]").each(function(i, v) {
-          return new ui.UITooltip({
-            target: v
-          });
-        });
-        return $("[rel=UIPopover]").each(function(i, v) {
-          return new ui.UIPopover({
-            target: v,
-            template: $(v).data('popover')
-          });
-        });
-      };
-
-      return App;
-
-    })();
-    return exports.App = App;
-  });
-
-  new sm.App;
-
-  Backbone.history.start({
-    pushState: true
-  });
-
-}).call(this);
+  })();
+  return exports.App = App;
+});
+new sm.App;
+Backbone.history.start({
+  pushState: true
+});

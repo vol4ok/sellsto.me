@@ -1,5 +1,4 @@
 {build_script, build_style, build_view} = require './builder'
-
   
 option '-e', '--env [ENVIRONMENT_NAME]', 'set the environment for `build:script`'
 

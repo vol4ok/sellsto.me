@@ -1,4 +1,4 @@
-#require backbone
+#require vendor/backbone
 #require mvc
 
 namespace "sm.ui", (exports) ->
