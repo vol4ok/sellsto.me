@@ -1,6 +1,6 @@
 #require vendor/underscore
 #require vendor/backbone
-#require cfg
+#require config
 #require mvc
 #require ctr
 #require vendor/jquery.mousewheel
@@ -55,6 +55,12 @@ namespace "sm", (exports) ->
       [srcId, event]  = src.split(':')
       [trgId, method] = trg.split(':')
       $$(srcId).bind(event, $$(trgId)[method], $$(trgId))
+      
+    expandApiURL: (relativePath) ->
+    	throw new Error("Invalid argument") if not _.isString( relativePath )
+    	relativePath = "/" + relativePath if relativePath.indexOf("/") != 0
+    	expandedPath = "#{window.location.protocol}//#{cfg.API_HOSTNAME}#{relativePath}"
+    	return expandedPath
       
     _initBindings: ->
       _.each(@bindings, @makeBinding)
