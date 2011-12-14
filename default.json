@@ -3,7 +3,7 @@
   "install-dir": "$(PROJECT_DIR)/../../_debug",
   "output-dir": "$(PROJECT_DIR)/app",
   "compress": "no",
-  "verbose": "no",
+  "verbose": "yes",
   
   "configure": {
     "application": {
@@ -11,16 +11,28 @@
       "api-hostname": "api.sellstome.local",
       "gmap-api-key": "ABQIAAAAYUB6q4UJksDvp1TvGGHG_BQNYqpsCpiTg7NWK5aiP4T3BBIq-RRZOwE9ta7QktesY-NgAnSC2S6aiw"
     }, 
-    "server": {
-      "template": "$(PROJECT_DIR)/src/nginx.conf.template",
-      "output-dir": "$(PROJECT_DIR)/src/_static",
+    "nginx": {
+      "template": "$(PROJECT_DIR)/src/_server/nginx.conf.template",
       "listen": "127.0.0.2:80",
       "domains": ["sellstome.local"],
       "proxy-url": "http://localhost:3000",
       "root-dir": "$(INSTALL_DIR)"
     }
   },
-
+  "static": [
+    {
+      "includes": ["$(PROJECT_DIR)/src/styles/_static"],
+      "output-dir": "$(PROJECT_DIR)/app",
+      "allow": [".*"],
+      "deny": ["^\\.", "^__"]
+    },
+    {
+      "includes": ["$(PROJECT_DIR)/src/_server"],
+      "output-dir": "$(PROJECT_DIR)/app/nginx",
+      "allow": ["\\.conf$"],
+      "deny": ["^\\.template$" ,"^\\.", "^__"]
+    }
+  ],
   "script": {
     "includes": [ "$(PROJECT_DIR)/src/scripts" ], 
     "resident": [ "core_utils", "vendor/jquery", "core" ], 
@@ -33,11 +45,5 @@
   "view": {
     "builder": "$(PROJECT_DIR)/src/views/build.coffee", 
     "targets": [ "index" ]
-  },
-  "static": {
-    "includes": ["$(PROJECT_DIR)/src/_static"],
-    "allow": [".*"],
-    "deny": ["^\\.", "^__"],
-    "output-dir": "$(PROJECT_DIR)/app"
   }
 }

@@ -158,18 +158,18 @@ copy = (src, dst, callback) ->
 indexStaticEx = (dir, allow, deny, prefix = '') ->
   files = []
   for file in fs.readdirSync(dir)
-    result = true
-    for regex in allow when not regex.test(file)
-      result = false
-      break
-    continue unless result
-    result = true
-    for regex in deny when regex.test(file)
-      result = false
-      break
-    continue unless result
     fullPath = join(dir,file)
     name = join(prefix, file)
+    result = true
+    for regex in allow when not regex.test(name)
+      result = false
+      break
+    continue unless result
+    result = true
+    for regex in deny when regex.test(name)
+      result = false
+      break
+    continue unless result
     if fs.statSync(fullPath).isDirectory()
       files.push fullPath
       files = files.concat(indexStaticEx(fullPath, allow, deny, name))
@@ -202,16 +202,36 @@ enumBuildFiles = (options) ->
   
 enumStaticFiles = (options) ->
   files = []
-  output = options.static['output-dir'] or options['output-dir']
-  includes = options.static.includes or options.includes
-  allow = []
-  deny = []
-  allow.push new RegExp(rxstr) for rxstr in options.static.allow or [".*"]
-  deny.push  new RegExp(rxstr) for rxstr in options.static.deny
-  for dir in includes
-    for file in indexStaticEx(dir, allow, deny)
-      files.push join(output, relative(dir, file))
+  enumForOpt = (static_opt, options) ->
+    output = static_opt['output-dir'] or options['output-dir']
+    includes = static_opt.includes or options.includes
+    allow = []
+    deny = []
+    allow.push new RegExp(rxstr) for rxstr in static_opt.allow or [".*"]
+    deny.push  new RegExp(rxstr) for rxstr in static_opt.deny
+    for dir in includes
+      for file in indexStaticEx(dir, allow, deny)
+        files.push join(output, relative(dir, file))
+  if _.isArray(options.static)
+    enumForOpt(static_opt, options) for static_opt in options.static
+  else 
+    enumForOpt(options.static, options)
   return files
+  
+enumOutputDirs = (options) ->
+  dirs = []
+  if _.isArray(options.static)
+    for static_opt in options.static when static_opt['output-dir']?
+      dirs.push(static_opt['output-dir'])
+  else 
+    dirs.push(options.static['output-dir']) if options.static['output-dir']?
+  dirs.push(options.script['output-dir']) if options.script['output-dir']?
+  dirs.push(options.style['output-dir']) if options.style['output-dir']?
+  dirs.push(options.view['output-dir']) if options.view['output-dir']?
+  for task,param of options.configure
+    dirs.push(param['output-dir']) if param['output-dir']?
+  dirs.push(options['output-dir']) if options['output-dir']?
+  return dirs
   
 readConfig = (configFile) ->
   ENV = 
@@ -250,6 +270,8 @@ configure = (options) ->
     data = require(param.template)(param)
     output = join(param['output-dir'] or
       dirname(param.template), basename(param.template, extname(param.template)))
+    outDir = dirname(output)
+    mkdir.sync(outDir, "0755") unless existsSync(outDir)
     fs.writeFileSync(output, data, 'utf-8')
     console.log "Configure: #{output}".green
   fs.writeFileSync(CURRENT_CONFIG, JSON.stringify(config), 'utf-8')
@@ -261,6 +283,7 @@ build_script = (options) ->
   @targets  = options.script.targets or []
   @compress = options.script.compress or options.compress or "no"
   @exts     = options.script.extensions or ["js", "coffee"] #reserved options
+  mkdir.sync(@output, "0755") unless existsSync(@output)
   index = indexIncludeDirectories(@includes, @exts)
   resident = buildList(@resident, index, {bare: true, utilities: no})
   for target in @targets
@@ -285,6 +308,7 @@ build_style = (options) ->
   @targets  = options.style.targets or []
   @compress = options.style.compress or options.compress or no
   @exts     = options.style.extensions or ["css", "less"] #reserved options
+  mkdir.sync(@output, "0755") unless existsSync(@output)
   index = indexIncludeDirectories(@includes, @exts)
   for s in @targets
     output = join(@output, "#{s}.css")
@@ -307,6 +331,7 @@ build_view = (options) ->
   @builder = options.view.builder
   @output  = options.view['output-dir'] or options['output-dir']
   @targets = options.view.targets or []
+  mkdir.sync(@output, "0755") unless existsSync(@output)
   builder = require(@builder)
   for target in @targets
     fullPath = join(@output, "#{target}.html")
@@ -314,29 +339,35 @@ build_view = (options) ->
     console.log "Compile: #{fullPath}".green
   
 build_static = (options) ->
-  @output = options.static['output-dir'] or options['output-dir']
-  @includes = options.static.includes or options.includes
-  @allow = []
-  @deny = []
-  @allow.push new RegExp(rxstr) for rxstr in options.static.allow or [".*"]
-  @deny.push  new RegExp(rxstr) for rxstr in options.static.deny
-  @verbose = options.verbose? and options.verbose == "yes"
-  count = 0
-  for dir in @includes
-    for src in indexStaticEx(dir, allow, deny) 
-      dst = join(@output, relative(dir, src))
-      if fs.statSync(src).isDirectory()
-        unless existsSync(dst)
-          console.log "Create dir: #{relative(__dirname, dst)}".cyan if @verbose
-          mkdir.sync(dst, "0755")
-      else
-        $asyncOperations++
-        copy src, dst, (err) -> 
-          $asyncOperations--
-          console.log "Error: #{err}".red if err
-        count++  
-        console.log "Copy: #{relative(__dirname, src)}  ->  #{relative(__dirname, dst)}".cyan if @verbose
-  console.log "#{count} static files successfully copied".green
+  buildForOpt = (static_opt, options) ->
+    @output = static_opt['output-dir'] or options['output-dir']
+    @includes = static_opt.includes or options.includes
+    @allow = []
+    @deny = []
+    @allow.push new RegExp(rxstr) for rxstr in static_opt.allow or [".*"]
+    @deny.push  new RegExp(rxstr) for rxstr in static_opt.deny
+    @verbose = options.verbose? and options.verbose == "yes"
+    mkdir.sync(@output, "0755") unless existsSync(@output)
+    count = 0
+    for dir in @includes
+      for src in indexStaticEx(dir, allow, deny) 
+        dst = join(@output, relative(dir, src))
+        if fs.statSync(src).isDirectory()
+          unless existsSync(dst)
+            console.log "Create dir: #{relative(__dirname, dst)}".cyan if @verbose
+            mkdir.sync(dst, "0755")
+        else
+          $asyncOperations++
+          copy src, dst, (err) -> 
+            $asyncOperations--
+            console.log "Error: #{err}".red if err
+          count++  
+          console.log "Copy: #{relative(__dirname, src)}  ->  #{relative(__dirname, dst)}".cyan if @verbose
+    console.log "#{count} static files successfully copied to #{relative(__dirname, @output)}.".green
+  if _.isArray(options.static)
+    buildForOpt(static_opt, options) for static_opt in options.static
+  else 
+    buildForOpt(options.static, options)
 
 install = (options) ->
   files = _.union(enumBuildFiles(options), enumStaticFiles(options))
@@ -404,6 +435,12 @@ clean = (options) ->
       console.log "Delete #{relative(__dirname, file)}".yellow if verbose
     catch err
       console.log "Can't delete #{file}".yellow
+  for file in enumOutputDirs(options)
+    try
+      fs.rmdirSync(file)
+      count++
+      console.log "Delete #{relative(__dirname, file)}".yellow if verbose
+    catch err
   if existsSync(CURRENT_CONFIG)
     fs.unlinkSync(CURRENT_CONFIG) 
     count++
@@ -458,7 +495,7 @@ task 'build:view', 'Build html-views', (options) ->
   
 task 'build:static', 'Copy static-files', (options) ->
   if $asyncOperations > 0
-    setTimeout (-> invoke 'configure'), ASYNC_CHECK_TIMEOUT
+    setTimeout (-> invoke 'build:static'), ASYNC_CHECK_TIMEOUT
     return
   opt = config or config = load_config(CURRENT_CONFIG)
   unless opt
@@ -469,18 +506,10 @@ task 'build', 'Build all project', ->
   if $asyncOperations > 0
     setTimeout (-> invoke 'build'), ASYNC_CHECK_TIMEOUT
     return
-  invoke 'build:static'
   invoke 'build:script'
   invoke 'build:style'
   invoke 'build:view'
-  # opt = config or config = load_config(CURRENT_CONFIG)
-  # unless opt
-  # then console.log "First, configure the project!".yellow
-  # else
-  #   build_static(opt)
-  #   build_script(opt)
-  #   build_style(opt)
-  #   build_view(opt)
+  invoke 'build:static'
   
 task 'install', 'Install project', (options) ->
   if $asyncOperations > 0
