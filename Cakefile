@@ -277,6 +277,7 @@ configure = (options) ->
   fs.writeFileSync(CURRENT_CONFIG, JSON.stringify(config), 'utf-8')
     
 build_script = (options) ->
+  return unless options.script?
   @output   = options.script['output-dir'] or options['output-dir']
   @includes = options.script.includes or options.includes
   @resident = options.script.resident or []
@@ -303,6 +304,7 @@ build_script = (options) ->
     console.log "Compile: #{fullPath}".green
 
 build_style = (options) ->
+  return unless options.style?
   @output   = options.style['output-dir'] or options['output-dir']
   @includes = options.style.includes or options.includes
   @targets  = options.style.targets or []
@@ -328,6 +330,7 @@ build_style = (options) ->
   return
 
 build_view = (options) ->
+  return unless options.view?
   @builder = options.view.builder
   @output  = options.view['output-dir'] or options['output-dir']
   @targets = options.view.targets or []
@@ -339,6 +342,7 @@ build_view = (options) ->
     console.log "Compile: #{fullPath}".green
   
 build_static = (options) ->
+  return unless options.static?
   buildForOpt = (static_opt, options) ->
     @output = static_opt['output-dir'] or options['output-dir']
     @includes = static_opt.includes or options.includes
@@ -370,6 +374,7 @@ build_static = (options) ->
     buildForOpt(options.static, options)
 
 install = (options) ->
+  return unless options['install-dir']
   files = _.union(enumBuildFiles(options), enumStaticFiles(options))
   output = options['output-dir']
   install = options['install-dir']
@@ -391,6 +396,7 @@ install = (options) ->
   console.log "#{count} files installed to #{install}".green
   
 uninstall = (options) ->
+  return unless options['install-dir']
   files = _.union(enumBuildFiles(options), enumStaticFiles(options))
   output = options['output-dir']
   install = options['install-dir']
@@ -537,6 +543,3 @@ task 'clean', 'Clean project', ->
   unless opt
   then console.log "No config!".red
   else clean(opt)
-
-  
-  

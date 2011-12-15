@@ -13,7 +13,7 @@
     }, 
     "style": {
       "template": "$(PROJECT_DIR)/src/styles/common/config.less.template",
-      "prefix": "/"
+      "prefix": ""
     },
     "node": {
       "template": "$(PROJECT_DIR)/src/_server/node.json.template",
