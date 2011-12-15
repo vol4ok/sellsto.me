@@ -1,16 +1,26 @@
 {
   "enveroument": "development", 
   "install-dir": "$(PROJECT_DIR)/../../_debug",
-  "output-dir": "$(PROJECT_DIR)/app",
+  "output-dir": "$(PROJECT_DIR)/build",
   "compress": "no",
   "verbose": "yes",
   
   "configure": {
-    "application": {
+    "script": {
       "template": "$(PROJECT_DIR)/src/scripts/config.coffee.template",
       "api-hostname": "api.sellstome.local",
       "gmap-api-key": "ABQIAAAAYUB6q4UJksDvp1TvGGHG_BQNYqpsCpiTg7NWK5aiP4T3BBIq-RRZOwE9ta7QktesY-NgAnSC2S6aiw"
     }, 
+    "style": {
+      "template": "$(PROJECT_DIR)/src/styles/common/config.less.template",
+      "prefix": "/"
+    },
+    "node": {
+      "template": "$(PROJECT_DIR)/src/_server/node.json.template",
+      "interface": "127.0.0.1",
+      "port": "3005",
+      "root": "$(OUTPUT_DIR)/app"
+    },
     "nginx": {
       "template": "$(PROJECT_DIR)/src/_server/nginx.conf.template",
       "listen": "127.0.0.2:80",
@@ -22,28 +32,31 @@
   "static": [
     {
       "includes": ["$(PROJECT_DIR)/src/styles/_static"],
-      "output-dir": "$(PROJECT_DIR)/app",
+      "output-dir": "$(OUTPUT_DIR)/app",
       "allow": [".*"],
       "deny": ["^\\.", "^__"]
     },
     {
       "includes": ["$(PROJECT_DIR)/src/_server"],
-      "output-dir": "$(PROJECT_DIR)/app/nginx",
-      "allow": ["\\.conf$"],
+      "output-dir": "$(OUTPUT_DIR)/srv",
+      "allow": ["\\.(conf|json)$"],
       "deny": ["^\\.template$" ,"^\\.", "^__"]
     }
   ],
   "script": {
     "includes": [ "$(PROJECT_DIR)/src/scripts" ], 
+    "output-dir": "$(OUTPUT_DIR)/app",
     "resident": [ "core_utils", "vendor/jquery", "core" ], 
     "targets": [ "app" ]
   }, 
   "style": {
     "includes": [ "$(PROJECT_DIR)/src/styles" ], 
+    "output-dir": "$(OUTPUT_DIR)/app",
     "targets": [ "app" ]
   }, 
   "view": {
     "builder": "$(PROJECT_DIR)/src/views/build.coffee", 
+    "output-dir": "$(OUTPUT_DIR)/app",
     "targets": [ "index" ]
   }
 }

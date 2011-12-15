@@ -1,0 +1,8 @@
+module.exports = (options) ->
+  """
+  {
+    "interface": "#{options.interface}",
+    "port": "#{options.port}",
+    "root": "#{options.root}"
+  }
+  """
