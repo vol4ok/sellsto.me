@@ -9267,7 +9267,7 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
 
 
 
-})( window );var API_PORT, API_SERVER_HOSTNAME, REQUEST_PROTOCOL, SERVER_HOSTNAME, expandApiURL, implements, __ns;
+})( window );var implements, __ns;
 
 window.root = window;
 
@@ -9325,22 +9325,6 @@ root.getTemplate = function(klass, data) {
   } else {
     return $__templates[klass](data);
   }
-};
-
-SERVER_HOSTNAME = 'localhost';
-
-REQUEST_PROTOCOL = window.location.protocol;
-
-API_SERVER_HOSTNAME = SERVER_HOSTNAME;
-
-API_PORT = 4000;
-
-expandApiURL = function(relativePath) {
-  var expandedPath;
-  if (!_.isString(relativePath)) throw new Error("Invalid argument");
-  if (relativePath.indexOf("/") !== 0) relativePath = "/" + relativePath;
-  expandedPath = REQUEST_PROTOCOL + "//" + API_SERVER_HOSTNAME + ":" + API_PORT + relativePath;
-  return expandedPath;
 };
 
 //     Underscore.js 1.2.1
@@ -11461,10 +11445,9 @@ expandApiURL = function(relativePath) {
 }).call(this);
 
 namespace("sm.cfg", function(exports) {
-  var GMAP_API_KEY;
-  GMAP_API_KEY = 'ABQIAAAAYUB6q4UJksDvp1TvGGHG_BQNYqpsCpiTg7NWK5aiP4T3BBIq-RRZOwE9ta7QktesY-NgAnSC2S6aiw';
   return __extends(exports, {
-    GMAP_JS_URL: "http://maps.google.com/maps/api/js?sensor=false&key=" + GMAP_API_KEY
+    API_HOSTNAME: "api.sellstome.local",
+    GMAP_JS_URL: "http://maps.google.com/maps/api/js?sensor=false&key=ABQIAAAAYUB6q4UJksDvp1TvGGHG_BQNYqpsCpiTg7NWK5aiP4T3BBIq-RRZOwE9ta7QktesY-NgAnSC2S6aiw"
   });
 });
 
@@ -11566,7 +11549,9 @@ namespace("sm.ctr", function(exports) {
 
     AdListCollection.prototype.model = AdModel;
 
-    AdListCollection.prototype.url = expandApiURL('/ads');
+    AdListCollection.prototype.url = function() {
+      return $app.expandApiURL('/ads');
+    };
 
     AdListCollection.prototype.parse = function(res) {
       if (_.isString(res)) {
@@ -14513,6 +14498,14 @@ namespace("sm", function(exports) {
       _ref2 = src.split(':'), srcId = _ref2[0], event = _ref2[1];
       _ref3 = trg.split(':'), trgId = _ref3[0], method = _ref3[1];
       return $$(srcId).bind(event, $$(trgId)[method], $$(trgId));
+    };
+
+    App.prototype.expandApiURL = function(relativePath) {
+      var expandedPath;
+      if (!_.isString(relativePath)) throw new Error("Invalid argument");
+      if (relativePath.indexOf("/") !== 0) relativePath = "/" + relativePath;
+      expandedPath = "" + window.location.protocol + "//" + cfg.API_HOSTNAME + relativePath;
+      return expandedPath;
     };
 
     App.prototype._initBindings = function() {

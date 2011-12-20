@@ -1,3 +1,4 @@
+fs = require('fs')
 express  = require 'express'
 {exec} = require 'child_process'
 url = require 'url'
@@ -21,7 +22,10 @@ app.use (req, res, next) ->
   else
     next()
     
-app.use express.static(__dirname + '/app')
+
+config = JSON.parse(fs.readFileSync("#{__dirname}/build/srv/node.json", 'utf-8'))
+    
+app.use express.static(config.root)
 	
-app.listen(3000)
-console.log('server listening on port 3000');
+app.listen(config.port, config.interface)
+console.log("Server listening on #{config.interface}:#{config.port}");

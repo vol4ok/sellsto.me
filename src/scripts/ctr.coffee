@@ -8,7 +8,7 @@ namespace "sm.ctr", (exports) ->
   
   class AdListCollection extends Collection
     model: AdModel
-    url: expandApiURL('/ads')
+    url: -> $app.expandApiURL('/ads')
     parse: (res) -> 
       return if _.isString(res) then JSON.parse(res) else res
   
