@@ -11446,10 +11446,11 @@ root.getTemplate = function(klass, data) {
 
 namespace("sm.cfg", function(exports) {
   return __extends(exports, {
-    API_HOSTNAME: "api.sellstome.local",
+    API_HOSTNAME: "127.0.0.1:4000",
     GMAP_JS_URL: "http://maps.google.com/maps/api/js?sensor=false&key=ABQIAAAAYUB6q4UJksDvp1TvGGHG_BQNYqpsCpiTg7NWK5aiP4T3BBIq-RRZOwE9ta7QktesY-NgAnSC2S6aiw"
   });
 });
+
 
 namespace("sm.mvc", function(exports) {
   var Collection, Controller, Model, Router, View;
@@ -11465,9 +11466,9 @@ namespace("sm.mvc", function(exports) {
       return this.state = {};
     }
   });
-  View = (function() {
+  View = (function(_super) {
 
-    __extends(View, Backbone.View);
+    __extends(View, _super);
 
     function View() {
       View.__super__.constructor.apply(this, arguments);
@@ -11479,10 +11480,10 @@ namespace("sm.mvc", function(exports) {
 
     return View;
 
-  })();
-  Model = (function() {
+  })(Backbone.View);
+  Model = (function(_super) {
 
-    __extends(Model, Backbone.Model);
+    __extends(Model, _super);
 
     function Model() {
       Model.__super__.constructor.apply(this, arguments);
@@ -11490,10 +11491,10 @@ namespace("sm.mvc", function(exports) {
 
     return Model;
 
-  })();
-  Collection = (function() {
+  })(Backbone.Model);
+  Collection = (function(_super) {
 
-    __extends(Collection, Backbone.Collection);
+    __extends(Collection, _super);
 
     function Collection() {
       Collection.__super__.constructor.apply(this, arguments);
@@ -11501,10 +11502,10 @@ namespace("sm.mvc", function(exports) {
 
     return Collection;
 
-  })();
-  Router = (function() {
+  })(Backbone.Collection);
+  Router = (function(_super) {
 
-    __extends(Router, Backbone.Router);
+    __extends(Router, _super);
 
     function Router() {
       Router.__super__.constructor.apply(this, arguments);
@@ -11516,7 +11517,7 @@ namespace("sm.mvc", function(exports) {
 
     return Router;
 
-  })();
+  })(Backbone.Router);
   return __extends(exports, {
     Controller: Controller,
     View: View,
@@ -11525,12 +11526,14 @@ namespace("sm.mvc", function(exports) {
     Router: Router
   });
 });
-namespace("sm.ctr", function(exports) {
-  var AdListCollection, AdListCtr, AdModel, Collection, Controller, ModalCtr, Model, Router, SearchCtr, View, _ref;
-  _ref = sm.mvc, Controller = _ref.Controller, View = _ref.View, Model = _ref.Model, Collection = _ref.Collection, Router = _ref.Router;
-  AdModel = (function() {
 
-    __extends(AdModel, Model);
+
+namespace("sm.ctr", function(exports) {
+  var AdListCollection, AdListCtr, AdModel, Collection, Controller, ModalCtr, Model, Router, SearchCtr, SearchListCollection, View, _ref;
+  _ref = sm.mvc, Controller = _ref.Controller, View = _ref.View, Model = _ref.Model, Collection = _ref.Collection, Router = _ref.Router;
+  AdModel = (function(_super) {
+
+    __extends(AdModel, _super);
 
     function AdModel() {
       AdModel.__super__.constructor.apply(this, arguments);
@@ -11538,10 +11541,10 @@ namespace("sm.ctr", function(exports) {
 
     return AdModel;
 
-  })();
-  AdListCollection = (function() {
+  })(Model);
+  AdListCollection = (function(_super) {
 
-    __extends(AdListCollection, Collection);
+    __extends(AdListCollection, _super);
 
     function AdListCollection() {
       AdListCollection.__super__.constructor.apply(this, arguments);
@@ -11550,7 +11553,10 @@ namespace("sm.ctr", function(exports) {
     AdListCollection.prototype.model = AdModel;
 
     AdListCollection.prototype.url = function() {
-      return $app.expandApiURL('/ads');
+      var url;
+      url = $app.expandApiURL('/ads');
+      console.log(url);
+      return url;
     };
 
     AdListCollection.prototype.parse = function(res) {
@@ -11563,10 +11569,40 @@ namespace("sm.ctr", function(exports) {
 
     return AdListCollection;
 
-  })();
-  AdListCtr = (function() {
+  })(Collection);
+  SearchListCollection = (function(_super) {
 
-    __extends(AdListCtr, Controller);
+    __extends(SearchListCollection, _super);
+
+    function SearchListCollection() {
+      SearchListCollection.__super__.constructor.apply(this, arguments);
+    }
+
+    SearchListCollection.prototype.initialize = function(options) {
+      SearchListCollection.__super__.initialize.call(this, options);
+      return this.query = options.query;
+    };
+
+    SearchListCollection.prototype.model = AdModel;
+
+    SearchListCollection.prototype.url = function() {
+      return "http://api.sellsto.me/search/ad/select?q=" + (encodeURIComponent(this.query)) + "&location.bottom=30.60&location.top=50.61&location.left=-83.95&location.right=-63.94";
+    };
+
+    SearchListCollection.prototype.parse = function(res) {
+      if (_.isString(res)) {
+        return JSON.parse(res);
+      } else {
+        return res;
+      }
+    };
+
+    return SearchListCollection;
+
+  })(Collection);
+  AdListCtr = (function(_super) {
+
+    __extends(AdListCtr, _super);
 
     function AdListCtr() {
       AdListCtr.__super__.constructor.apply(this, arguments);
@@ -11609,10 +11645,10 @@ namespace("sm.ctr", function(exports) {
 
     return AdListCtr;
 
-  })();
-  SearchCtr = (function() {
+  })(Controller);
+  SearchCtr = (function(_super) {
 
-    __extends(SearchCtr, Controller);
+    __extends(SearchCtr, _super);
 
     function SearchCtr() {
       SearchCtr.__super__.constructor.apply(this, arguments);
@@ -11627,28 +11663,45 @@ namespace("sm.ctr", function(exports) {
     SearchCtr.prototype.on_viewsLoaded = function() {
       this.block = $$('search-block');
       this.sidebar = $$('sidebar');
-      this.seatchItem = $$('search');
+      this.searchItem = $$('search');
       this.content = $$('content-view');
       this.map = $$('search-list-map');
+      this.list = $$('search-list');
       this.block.bind('show', this.on_blockShow, this);
-      return this.seatchItem.bind('click', this.on_itemClick, this);
+      this.searchItem.bind('click', this.on_itemClick, this);
+      return this.searchItem.bind('search', this.on_search, this);
     };
 
     SearchCtr.prototype.on_itemClick = function() {
       return this.content["switch"]('search-block');
     };
 
+    SearchCtr.prototype.on_search = function(query) {
+      var _this = this;
+      console.log('on_search', query);
+      this.ads = new SearchListCollection({
+        query: query
+      });
+      this.list.showSpinner();
+      return this.ads.fetch({
+        success: function() {
+          _this.list.hideSpinner();
+          return _this.list.render(_this.ads);
+        }
+      });
+    };
+
     SearchCtr.prototype.on_blockShow = function(block) {
-      this.seatchItem.select();
+      this.searchItem.select();
       return this.map.refrash();
     };
 
     return SearchCtr;
 
-  })();
-  ModalCtr = (function() {
+  })(Controller);
+  ModalCtr = (function(_super) {
 
-    __extends(ModalCtr, Controller);
+    __extends(ModalCtr, _super);
 
     function ModalCtr() {
       ModalCtr.__super__.constructor.apply(this, arguments);
@@ -11695,13 +11748,14 @@ namespace("sm.ctr", function(exports) {
 
     return ModalCtr;
 
-  })();
+  })(Controller);
   return __extends(exports, {
     AdListCtr: AdListCtr,
     SearchCtr: SearchCtr,
     ModalCtr: ModalCtr
   });
 });
+
 /*! Copyright (c) 2010 Brandon Aaron (http://brandonaaron.net)
  * Licensed under the MIT License (LICENSE.txt).
  *
@@ -13170,13 +13224,14 @@ function handler(event) {
 })(jQuery,this);
 
 
+
 namespace("sm.ui", function(exports) {
   var Collection, Controller, Model, Router, UIClickableItem, UIItem, UIItemList, UIView, View, ui, _ref;
   ui = sm.ui;
   _ref = sm.mvc, Controller = _ref.Controller, View = _ref.View, Model = _ref.Model, Collection = _ref.Collection, Router = _ref.Router;
-  UIView = (function() {
+  UIView = (function(_super) {
 
-    __extends(UIView, View);
+    __extends(UIView, _super);
 
     function UIView() {
       UIView.__super__.constructor.apply(this, arguments);
@@ -13190,10 +13245,10 @@ namespace("sm.ui", function(exports) {
 
     return UIView;
 
-  })();
-  UIItem = (function() {
+  })(View);
+  UIItem = (function(_super) {
 
-    __extends(UIItem, UIView);
+    __extends(UIItem, _super);
 
     function UIItem() {
       UIItem.__super__.constructor.apply(this, arguments);
@@ -13209,10 +13264,10 @@ namespace("sm.ui", function(exports) {
 
     return UIItem;
 
-  })();
-  UIClickableItem = (function() {
+  })(UIView);
+  UIClickableItem = (function(_super) {
 
-    __extends(UIClickableItem, UIItem);
+    __extends(UIClickableItem, _super);
 
     function UIClickableItem() {
       UIClickableItem.__super__.constructor.apply(this, arguments);
@@ -13285,10 +13340,10 @@ namespace("sm.ui", function(exports) {
 
     return UIClickableItem;
 
-  })();
-  UIItemList = (function() {
+  })(UIItem);
+  UIItemList = (function(_super) {
 
-    __extends(UIItemList, UIView);
+    __extends(UIItemList, _super);
 
     function UIItemList() {
       UIItemList.__super__.constructor.apply(this, arguments);
@@ -13360,7 +13415,7 @@ namespace("sm.ui", function(exports) {
 
     return UIItemList;
 
-  })();
+  })(UIView);
   return __extends(exports, {
     UIView: UIView,
     UIItem: UIItem,
@@ -13368,13 +13423,15 @@ namespace("sm.ui", function(exports) {
     UIItemList: UIItemList
   });
 });
+
+
 namespace("sm.ui", function(exports) {
   var UIClickableItem, UIItem, UIItemList, UIToolbar, UIToolbarButton, UIToolbarLogo, UIToolbarSearch, UIToolbarSeparator, UIView, ui;
   ui = sm.ui;
   UIView = ui.UIView, UIItem = ui.UIItem, UIClickableItem = ui.UIClickableItem, UIItemList = ui.UIItemList;
-  UIToolbar = (function() {
+  UIToolbar = (function(_super) {
 
-    __extends(UIToolbar, UIItemList);
+    __extends(UIToolbar, _super);
 
     function UIToolbar() {
       UIToolbar.__super__.constructor.apply(this, arguments);
@@ -13392,10 +13449,10 @@ namespace("sm.ui", function(exports) {
 
     return UIToolbar;
 
-  })();
-  UIToolbarButton = (function() {
+  })(UIItemList);
+  UIToolbarButton = (function(_super) {
 
-    __extends(UIToolbarButton, UIClickableItem);
+    __extends(UIToolbarButton, _super);
 
     function UIToolbarButton() {
       UIToolbarButton.__super__.constructor.apply(this, arguments);
@@ -13413,10 +13470,10 @@ namespace("sm.ui", function(exports) {
 
     return UIToolbarButton;
 
-  })();
-  UIToolbarSearch = (function() {
+  })(UIClickableItem);
+  UIToolbarSearch = (function(_super) {
 
-    __extends(UIToolbarSearch, UIItem);
+    __extends(UIToolbarSearch, _super);
 
     function UIToolbarSearch() {
       UIToolbarSearch.__super__.constructor.apply(this, arguments);
@@ -13466,10 +13523,10 @@ namespace("sm.ui", function(exports) {
 
     return UIToolbarSearch;
 
-  })();
-  UIToolbarSeparator = (function() {
+  })(UIItem);
+  UIToolbarSeparator = (function(_super) {
 
-    __extends(UIToolbarSeparator, UIItem);
+    __extends(UIToolbarSeparator, _super);
 
     function UIToolbarSeparator() {
       UIToolbarSeparator.__super__.constructor.apply(this, arguments);
@@ -13481,10 +13538,10 @@ namespace("sm.ui", function(exports) {
 
     return UIToolbarSeparator;
 
-  })();
-  UIToolbarLogo = (function() {
+  })(UIItem);
+  UIToolbarLogo = (function(_super) {
 
-    __extends(UIToolbarLogo, UIItem);
+    __extends(UIToolbarLogo, _super);
 
     function UIToolbarLogo() {
       UIToolbarLogo.__super__.constructor.apply(this, arguments);
@@ -13496,7 +13553,7 @@ namespace("sm.ui", function(exports) {
 
     return UIToolbarLogo;
 
-  })();
+  })(UIItem);
   return __extends(exports, {
     UIToolbar: UIToolbar,
     UIToolbarButton: UIToolbarButton,
@@ -13505,14 +13562,16 @@ namespace("sm.ui", function(exports) {
     UIToolbarLogo: UIToolbarLogo
   });
 });
+
+
 namespace("sm.ui", function(exports) {
   var Controller, UIClickableItem, UIContentBlock, UIContentView, UIItem, UIItemList, UISidebar, UISidebarButton, UISidebarSeparator, UIView, ui;
   ui = sm.ui;
   UIView = ui.UIView, UIItem = ui.UIItem, UIClickableItem = ui.UIClickableItem, UIItemList = ui.UIItemList;
   Controller = sm.mvc.Controller;
-  UISidebar = (function() {
+  UISidebar = (function(_super) {
 
-    __extends(UISidebar, UIItemList);
+    __extends(UISidebar, _super);
 
     function UISidebar() {
       UISidebar.__super__.constructor.apply(this, arguments);
@@ -13525,10 +13584,10 @@ namespace("sm.ui", function(exports) {
 
     return UISidebar;
 
-  })();
-  UISidebarButton = (function() {
+  })(UIItemList);
+  UISidebarButton = (function(_super) {
 
-    __extends(UISidebarButton, UIClickableItem);
+    __extends(UISidebarButton, _super);
 
     function UISidebarButton() {
       UISidebarButton.__super__.constructor.apply(this, arguments);
@@ -13559,10 +13618,10 @@ namespace("sm.ui", function(exports) {
 
     return UISidebarButton;
 
-  })();
-  UISidebarSeparator = (function() {
+  })(UIClickableItem);
+  UISidebarSeparator = (function(_super) {
 
-    __extends(UISidebarSeparator, UIItem);
+    __extends(UISidebarSeparator, _super);
 
     function UISidebarSeparator() {
       UISidebarSeparator.__super__.constructor.apply(this, arguments);
@@ -13574,10 +13633,10 @@ namespace("sm.ui", function(exports) {
 
     return UISidebarSeparator;
 
-  })();
-  UIContentBlock = (function() {
+  })(UIItem);
+  UIContentBlock = (function(_super) {
 
-    __extends(UIContentBlock, UIView);
+    __extends(UIContentBlock, _super);
 
     function UIContentBlock() {
       UIContentBlock.__super__.constructor.apply(this, arguments);
@@ -13610,10 +13669,10 @@ namespace("sm.ui", function(exports) {
 
     return UIContentBlock;
 
-  })();
-  UIContentView = (function() {
+  })(UIView);
+  UIContentView = (function(_super) {
 
-    __extends(UIContentView, UIView);
+    __extends(UIContentView, _super);
 
     function UIContentView() {
       UIContentView.__super__.constructor.apply(this, arguments);
@@ -13673,7 +13732,7 @@ namespace("sm.ui", function(exports) {
 
     return UIContentView;
 
-  })();
+  })(UIView);
   return __extends(exports, {
     UISidebar: UISidebar,
     UISidebarButton: UISidebarButton,
@@ -13682,13 +13741,15 @@ namespace("sm.ui", function(exports) {
     UIContentBlock: UIContentBlock
   });
 });
+
+
 namespace("sm.ui", function(exports) {
   var ISelectableItem, UIAdEntry, UIAdList, UIItem, UISidebar, UISpinner, UIView, ui;
   ui = sm.ui;
   UIView = ui.UIView, UIItem = ui.UIItem, ISelectableItem = ui.ISelectableItem, UISidebar = ui.UISidebar;
-  UIAdEntry = (function() {
+  UIAdEntry = (function(_super) {
 
-    __extends(UIAdEntry, UIView);
+    __extends(UIAdEntry, _super);
 
     function UIAdEntry() {
       UIAdEntry.__super__.constructor.apply(this, arguments);
@@ -13707,10 +13768,10 @@ namespace("sm.ui", function(exports) {
 
     return UIAdEntry;
 
-  })();
-  UISpinner = (function() {
+  })(UIView);
+  UISpinner = (function(_super) {
 
-    __extends(UISpinner, UIView);
+    __extends(UISpinner, _super);
 
     function UISpinner() {
       UISpinner.__super__.constructor.apply(this, arguments);
@@ -13731,10 +13792,10 @@ namespace("sm.ui", function(exports) {
 
     return UISpinner;
 
-  })();
-  UIAdList = (function() {
+  })(UIView);
+  UIAdList = (function(_super) {
 
-    __extends(UIAdList, UISidebar);
+    __extends(UIAdList, _super);
 
     function UIAdList() {
       UIAdList.__super__.constructor.apply(this, arguments);
@@ -13780,18 +13841,20 @@ namespace("sm.ui", function(exports) {
 
     return UIAdList;
 
-  })();
+  })(UISidebar);
   return __extends(exports, {
     UIAdList: UIAdList
   });
 });
+
+
 namespace("sm.ui", function(exports) {
   var UIMap, UIView, ui;
   ui = sm.ui;
   UIView = ui.UIView;
-  UIMap = (function() {
+  UIMap = (function(_super) {
 
-    __extends(UIMap, UIView);
+    __extends(UIMap, _super);
 
     function UIMap() {
       UIMap.__super__.constructor.apply(this, arguments);
@@ -13831,18 +13894,20 @@ namespace("sm.ui", function(exports) {
 
     return UIMap;
 
-  })();
+  })(UIView);
   return __extends(exports, {
     UIMap: UIMap
   });
 });
+
+
 namespace("sm.ui", function(exports) {
   var UIFollowersModal, UIModal, UIModalUnderlay, UINewAdModal, UIPrefModal, UIView, ui;
   ui = sm.ui;
   UIView = ui.UIView;
-  UIModal = (function() {
+  UIModal = (function(_super) {
 
-    __extends(UIModal, UIView);
+    __extends(UIModal, _super);
 
     function UIModal() {
       UIModal.__super__.constructor.apply(this, arguments);
@@ -13865,11 +13930,11 @@ namespace("sm.ui", function(exports) {
 
     return UIModal;
 
-  })();
-  UINewAdModal = (function() {
+  })(UIView);
+  UINewAdModal = (function(_super) {
     var MESSAGE_LENGTH;
 
-    __extends(UINewAdModal, UIModal);
+    __extends(UINewAdModal, _super);
 
     function UINewAdModal() {
       UINewAdModal.__super__.constructor.apply(this, arguments);
@@ -13927,10 +13992,10 @@ namespace("sm.ui", function(exports) {
 
     return UINewAdModal;
 
-  })();
-  UIPrefModal = (function() {
+  })(UIModal);
+  UIPrefModal = (function(_super) {
 
-    __extends(UIPrefModal, UIModal);
+    __extends(UIPrefModal, _super);
 
     function UIPrefModal() {
       UIPrefModal.__super__.constructor.apply(this, arguments);
@@ -13942,10 +14007,10 @@ namespace("sm.ui", function(exports) {
 
     return UIPrefModal;
 
-  })();
-  UIFollowersModal = (function() {
+  })(UIModal);
+  UIFollowersModal = (function(_super) {
 
-    __extends(UIFollowersModal, UIModal);
+    __extends(UIFollowersModal, _super);
 
     function UIFollowersModal() {
       UIFollowersModal.__super__.constructor.apply(this, arguments);
@@ -13957,10 +14022,10 @@ namespace("sm.ui", function(exports) {
 
     return UIFollowersModal;
 
-  })();
-  UIModalUnderlay = (function() {
+  })(UIModal);
+  UIModalUnderlay = (function(_super) {
 
-    __extends(UIModalUnderlay, UIView);
+    __extends(UIModalUnderlay, _super);
 
     function UIModalUnderlay() {
       UIModalUnderlay.__super__.constructor.apply(this, arguments);
@@ -13988,7 +14053,7 @@ namespace("sm.ui", function(exports) {
 
     return UIModalUnderlay;
 
-  })();
+  })(UIView);
   return __extends(exports, {
     UIModal: UIModal,
     UINewAdModal: UINewAdModal,
@@ -13997,13 +14062,15 @@ namespace("sm.ui", function(exports) {
     UIFollowersModal: UIFollowersModal
   });
 });
+
+
 namespace("sm.ui", function(exports) {
   var UIClickableItem, UIItem, UISelectBox, UIView, ui;
   ui = sm.ui;
   UIView = ui.UIView, UIItem = ui.UIItem, UIClickableItem = ui.UIClickableItem;
-  UISelectBox = (function() {
+  UISelectBox = (function(_super) {
 
-    __extends(UISelectBox, UIView);
+    __extends(UISelectBox, _super);
 
     function UISelectBox() {
       UISelectBox.__super__.constructor.apply(this, arguments);
@@ -14034,11 +14101,13 @@ namespace("sm.ui", function(exports) {
 
     return UISelectBox;
 
-  })();
+  })(UIView);
   return __extends(exports, {
     UISelectBox: UISelectBox
   });
 });
+
+
 namespace("sm.helpers", function(exports) {
   var getTransitionEnd;
   getTransitionEnd = function() {
@@ -14063,13 +14132,15 @@ namespace("sm.helpers", function(exports) {
     getTransitionEnd: getTransitionEnd
   });
 });
+
+
 namespace("sm.ui", function(exports) {
   var UIPopable, UIPopover, UITooltip, UIView, helpers, ui;
   ui = sm.ui, helpers = sm.helpers;
   UIView = ui.UIView;
-  UIPopable = (function() {
+  UIPopable = (function(_super) {
 
-    __extends(UIPopable, UIView);
+    __extends(UIPopable, _super);
 
     function UIPopable() {
       UIPopable.__super__.constructor.apply(this, arguments);
@@ -14263,8 +14334,8 @@ namespace("sm.ui", function(exports) {
     };
 
     UIPopable.prototype.hide = function() {
-      var el;
-      var _this = this;
+      var el,
+        _this = this;
       el = $(this.el);
       el.removeClass('in');
       if ((this.transitionEnd != null) && this.options.animate) {
@@ -14289,12 +14360,12 @@ namespace("sm.ui", function(exports) {
 
     return UIPopable;
 
-  })();
+  })(UIView);
   /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   */
-  UITooltip = (function() {
+  UITooltip = (function(_super) {
 
-    __extends(UITooltip, UIPopable);
+    __extends(UITooltip, _super);
 
     function UITooltip() {
       UITooltip.__super__.constructor.apply(this, arguments);
@@ -14360,12 +14431,12 @@ namespace("sm.ui", function(exports) {
 
     return UITooltip;
 
-  })();
+  })(UIPopable);
   /* **********************************************************************
   */
-  UIPopover = (function() {
+  UIPopover = (function(_super) {
 
-    __extends(UIPopover, UIPopable);
+    __extends(UIPopover, _super);
 
     function UIPopover() {
       UIPopover.__super__.constructor.apply(this, arguments);
@@ -14419,20 +14490,22 @@ namespace("sm.ui", function(exports) {
 
     return UIPopover;
 
-  })();
+  })(UIPopable);
   return __extends(exports, {
     UIPopable: UIPopable,
     UITooltip: UITooltip,
     UIPopover: UIPopover
   });
 });
+
+
 namespace("sm", function(exports) {
   var App, Collection, Controller, Model, Router, View, _ref;
   _ref = sm.mvc, Controller = _ref.Controller, View = _ref.View, Model = _ref.Model, Collection = _ref.Collection, Router = _ref.Router;
-  App = (function() {
+  App = (function(_super) {
     var cfg, ctr, ui;
 
-    __extends(App, Router);
+    __extends(App, _super);
 
     function App() {
       App.__super__.constructor.apply(this, arguments);
@@ -14526,9 +14599,9 @@ namespace("sm", function(exports) {
         var el;
         el = $(_el);
         el.removeClass('autoload');
-        return console.log(new ui[el.data('class')]({
+        return new ui[el.data('class')]({
           el: _el
-        }));
+        });
       });
     };
 
@@ -14568,10 +14641,12 @@ namespace("sm", function(exports) {
 
     return App;
 
-  })();
+  })(Router);
   return exports.App = App;
 });
+
 new sm.App;
+
 Backbone.history.start({
   pushState: true
 });

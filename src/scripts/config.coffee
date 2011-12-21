@@ -1,4 +1,5 @@
 namespace "sm.cfg", (exports) ->
-  exports extends
-    API_HOSTNAME: "api.sellstome.local"
+  exports extends {
+    API_HOSTNAME: "127.0.0.1:4000"
     GMAP_JS_URL: "http://maps.google.com/maps/api/js?sensor=false&key=ABQIAAAAYUB6q4UJksDvp1TvGGHG_BQNYqpsCpiTg7NWK5aiP4T3BBIq-RRZOwE9ta7QktesY-NgAnSC2S6aiw"
+  }
