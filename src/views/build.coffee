@@ -5,6 +5,11 @@ fs = require 'fs'
 jsp = require("uglify-js").parser
 pro = require("uglify-js").uglify
 
+_.templateSettings =
+  evaluate    : /<%([\s\S]+?)%>/g
+  interpolate : /<%=([\s\S]+?)%>/g
+  escape      : /<%-([\s\S]+?)%>/g
+
 exports.index = (options) ->
   body = ck.render(require('./index.coffee'))
   tpls = require('./templates.coffee')
@@ -12,8 +17,8 @@ exports.index = (options) ->
   js = '$__templates = {\n'
   for key,val of tpls
     # console.log ck.render(val)
-    #     console.log _.template(ck.render(val)).toString()
-    tpl = _.template(ck.render(val)).toString() #.replace(/^function anonymous/, 'function')
+    # console.log _.template(ck.render(val)).toString()
+    tpl = _.template(ck.render(val)).toString().replace(/^function anonymous/, 'function')
     #console.log tpl
     js += "'#{key}': #{tpl},\n"
   js += '};'

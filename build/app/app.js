@@ -11446,13 +11446,14 @@ root.getTemplate = function(klass, data) {
 
 namespace("sm.cfg", function(exports) {
   return __extends(exports, {
-    API_HOSTNAME: "api.sellstome.local",
+    API_HOSTNAME: "127.0.0.1:4000",
     GMAP_JS_URL: "http://maps.google.com/maps/api/js?sensor=false&key=ABQIAAAAYUB6q4UJksDvp1TvGGHG_BQNYqpsCpiTg7NWK5aiP4T3BBIq-RRZOwE9ta7QktesY-NgAnSC2S6aiw"
   });
 });
 
+
 namespace("sm.mvc", function(exports) {
-  var Collection, Controller, Model, Router, View;
+  var Collection, Controller, DomlessView, Model, Router, VIEW_OPTIONS, View;
   Controller = function(options) {
     this.cid = _.uniqueId('ctr');
     this.initialize.call(this, options);
@@ -11465,24 +11466,48 @@ namespace("sm.mvc", function(exports) {
       return this.state = {};
     }
   });
-  View = (function() {
+  VIEW_OPTIONS = ['model', 'collection', 'id', 'attributes'];
+  DomlessView = function(options) {
+    this.cid = _.uniqueId('dview');
+    this._configure(options || {});
+    this.initialize.call(this, options);
+  };
+  _.extend(DomlessView.prototype, Backbone.Events, {
+    initialize: function(options) {
+      if (options == null) options = {};
+      if (options.cid != null) this.cid = options.cid;
+      registerObject(this.cid, this);
+      return this.state = {};
+    },
+    _configure: function(options) {
+      var attr, _i, _len;
+      if (this.options) options = _.extend({}, this.options, options);
+      for (_i = 0, _len = VIEW_OPTIONS.length; _i < _len; _i++) {
+        attr = VIEW_OPTIONS[_i];
+        if (options[attr]) this[attr] = options[attr];
+      }
+      return this.options = options;
+    }
+  });
+  View = (function(_super) {
 
-    __extends(View, Backbone.View);
+    __extends(View, _super);
 
     function View() {
       View.__super__.constructor.apply(this, arguments);
     }
 
     View.prototype.initialize = function(options) {
-      return registerObject(this.cid, this);
+      registerObject(this.cid, this);
+      return this.state = {};
     };
 
     return View;
 
-  })();
-  Model = (function() {
+  })(Backbone.View);
+  Model = (function(_super) {
 
-    __extends(Model, Backbone.Model);
+    __extends(Model, _super);
 
     function Model() {
       Model.__super__.constructor.apply(this, arguments);
@@ -11490,10 +11515,10 @@ namespace("sm.mvc", function(exports) {
 
     return Model;
 
-  })();
-  Collection = (function() {
+  })(Backbone.Model);
+  Collection = (function(_super) {
 
-    __extends(Collection, Backbone.Collection);
+    __extends(Collection, _super);
 
     function Collection() {
       Collection.__super__.constructor.apply(this, arguments);
@@ -11501,10 +11526,10 @@ namespace("sm.mvc", function(exports) {
 
     return Collection;
 
-  })();
-  Router = (function() {
+  })(Backbone.Collection);
+  Router = (function(_super) {
 
-    __extends(Router, Backbone.Router);
+    __extends(Router, _super);
 
     function Router() {
       Router.__super__.constructor.apply(this, arguments);
@@ -11516,21 +11541,24 @@ namespace("sm.mvc", function(exports) {
 
     return Router;
 
-  })();
+  })(Backbone.Router);
   return __extends(exports, {
     Controller: Controller,
     View: View,
+    DomlessView: DomlessView,
     Model: Model,
     Collection: Collection,
     Router: Router
   });
 });
-namespace("sm.ctr", function(exports) {
-  var AdListCollection, AdListCtr, AdModel, Collection, Controller, ModalCtr, Model, Router, SearchCtr, View, _ref;
-  _ref = sm.mvc, Controller = _ref.Controller, View = _ref.View, Model = _ref.Model, Collection = _ref.Collection, Router = _ref.Router;
-  AdModel = (function() {
 
-    __extends(AdModel, Model);
+
+namespace("sm.ctr", function(exports) {
+  var AdListCollection, AdListCtr, AdModel, Collection, Controller, ModalCtr, Model, Router, SearchCtr, SearchListCollection, View, _ref;
+  _ref = sm.mvc, Controller = _ref.Controller, View = _ref.View, Model = _ref.Model, Collection = _ref.Collection, Router = _ref.Router;
+  AdModel = (function(_super) {
+
+    __extends(AdModel, _super);
 
     function AdModel() {
       AdModel.__super__.constructor.apply(this, arguments);
@@ -11538,10 +11566,10 @@ namespace("sm.ctr", function(exports) {
 
     return AdModel;
 
-  })();
-  AdListCollection = (function() {
+  })(Model);
+  AdListCollection = (function(_super) {
 
-    __extends(AdListCollection, Collection);
+    __extends(AdListCollection, _super);
 
     function AdListCollection() {
       AdListCollection.__super__.constructor.apply(this, arguments);
@@ -11563,10 +11591,40 @@ namespace("sm.ctr", function(exports) {
 
     return AdListCollection;
 
-  })();
-  AdListCtr = (function() {
+  })(Collection);
+  SearchListCollection = (function(_super) {
 
-    __extends(AdListCtr, Controller);
+    __extends(SearchListCollection, _super);
+
+    function SearchListCollection() {
+      SearchListCollection.__super__.constructor.apply(this, arguments);
+    }
+
+    SearchListCollection.prototype.initialize = function(options) {
+      SearchListCollection.__super__.initialize.call(this, options);
+      return this.query = options.query;
+    };
+
+    SearchListCollection.prototype.model = AdModel;
+
+    SearchListCollection.prototype.url = function() {
+      return "http://api.sellsto.me/search/ad/select?q=" + (encodeURIComponent(this.query)) + "&location.bottom=30.60&location.top=50.61&location.left=-83.95&location.right=-63.94";
+    };
+
+    SearchListCollection.prototype.parse = function(res) {
+      if (_.isString(res)) {
+        return JSON.parse(res);
+      } else {
+        return res;
+      }
+    };
+
+    return SearchListCollection;
+
+  })(Collection);
+  AdListCtr = (function(_super) {
+
+    __extends(AdListCtr, _super);
 
     function AdListCtr() {
       AdListCtr.__super__.constructor.apply(this, arguments);
@@ -11609,10 +11667,10 @@ namespace("sm.ctr", function(exports) {
 
     return AdListCtr;
 
-  })();
-  SearchCtr = (function() {
+  })(Controller);
+  SearchCtr = (function(_super) {
 
-    __extends(SearchCtr, Controller);
+    __extends(SearchCtr, _super);
 
     function SearchCtr() {
       SearchCtr.__super__.constructor.apply(this, arguments);
@@ -11627,28 +11685,46 @@ namespace("sm.ctr", function(exports) {
     SearchCtr.prototype.on_viewsLoaded = function() {
       this.block = $$('search-block');
       this.sidebar = $$('sidebar');
-      this.seatchItem = $$('search');
+      this.searchItem = $$('search');
       this.content = $$('content-view');
       this.map = $$('search-list-map');
+      this.list = $$('search-list');
       this.block.bind('show', this.on_blockShow, this);
-      return this.seatchItem.bind('click', this.on_itemClick, this);
+      this.searchItem.bind('click', this.on_itemClick, this);
+      return this.searchItem.bind('search', this.on_search, this);
     };
 
     SearchCtr.prototype.on_itemClick = function() {
       return this.content["switch"]('search-block');
     };
 
+    SearchCtr.prototype.on_search = function(query) {
+      var _this = this;
+      console.log('on_search', query);
+      this.ads = new SearchListCollection({
+        query: query
+      });
+      this.list.showSpinner();
+      return this.ads.fetch({
+        success: function() {
+          _this.list.hideSpinner();
+          _this.list.render(_this.ads);
+          return _this.map.renderMarkers(_this.ads);
+        }
+      });
+    };
+
     SearchCtr.prototype.on_blockShow = function(block) {
-      this.seatchItem.select();
+      this.searchItem.select();
       return this.map.refrash();
     };
 
     return SearchCtr;
 
-  })();
-  ModalCtr = (function() {
+  })(Controller);
+  ModalCtr = (function(_super) {
 
-    __extends(ModalCtr, Controller);
+    __extends(ModalCtr, _super);
 
     function ModalCtr() {
       ModalCtr.__super__.constructor.apply(this, arguments);
@@ -11695,13 +11771,14 @@ namespace("sm.ctr", function(exports) {
 
     return ModalCtr;
 
-  })();
+  })(Controller);
   return __extends(exports, {
     AdListCtr: AdListCtr,
     SearchCtr: SearchCtr,
     ModalCtr: ModalCtr
   });
 });
+
 /*! Copyright (c) 2010 Brandon Aaron (http://brandonaaron.net)
  * Licensed under the MIT License (LICENSE.txt).
  *
@@ -13170,30 +13247,30 @@ function handler(event) {
 })(jQuery,this);
 
 
+
 namespace("sm.ui", function(exports) {
   var Collection, Controller, Model, Router, UIClickableItem, UIItem, UIItemList, UIView, View, ui, _ref;
   ui = sm.ui;
   _ref = sm.mvc, Controller = _ref.Controller, View = _ref.View, Model = _ref.Model, Collection = _ref.Collection, Router = _ref.Router;
-  UIView = (function() {
+  UIView = (function(_super) {
 
-    __extends(UIView, View);
+    __extends(UIView, _super);
 
     function UIView() {
       UIView.__super__.constructor.apply(this, arguments);
     }
 
     UIView.prototype.initialize = function(options) {
-      this.state = {};
       if ($(this.el).attr('id') != null) this.cid = $(this.el).attr('id');
       return UIView.__super__.initialize.call(this, options);
     };
 
     return UIView;
 
-  })();
-  UIItem = (function() {
+  })(View);
+  UIItem = (function(_super) {
 
-    __extends(UIItem, UIView);
+    __extends(UIItem, _super);
 
     function UIItem() {
       UIItem.__super__.constructor.apply(this, arguments);
@@ -13209,10 +13286,10 @@ namespace("sm.ui", function(exports) {
 
     return UIItem;
 
-  })();
-  UIClickableItem = (function() {
+  })(UIView);
+  UIClickableItem = (function(_super) {
 
-    __extends(UIClickableItem, UIItem);
+    __extends(UIClickableItem, _super);
 
     function UIClickableItem() {
       UIClickableItem.__super__.constructor.apply(this, arguments);
@@ -13285,10 +13362,10 @@ namespace("sm.ui", function(exports) {
 
     return UIClickableItem;
 
-  })();
-  UIItemList = (function() {
+  })(UIItem);
+  UIItemList = (function(_super) {
 
-    __extends(UIItemList, UIView);
+    __extends(UIItemList, _super);
 
     function UIItemList() {
       UIItemList.__super__.constructor.apply(this, arguments);
@@ -13360,7 +13437,7 @@ namespace("sm.ui", function(exports) {
 
     return UIItemList;
 
-  })();
+  })(UIView);
   return __extends(exports, {
     UIView: UIView,
     UIItem: UIItem,
@@ -13368,13 +13445,15 @@ namespace("sm.ui", function(exports) {
     UIItemList: UIItemList
   });
 });
+
+
 namespace("sm.ui", function(exports) {
   var UIClickableItem, UIItem, UIItemList, UIToolbar, UIToolbarButton, UIToolbarLogo, UIToolbarSearch, UIToolbarSeparator, UIView, ui;
   ui = sm.ui;
   UIView = ui.UIView, UIItem = ui.UIItem, UIClickableItem = ui.UIClickableItem, UIItemList = ui.UIItemList;
-  UIToolbar = (function() {
+  UIToolbar = (function(_super) {
 
-    __extends(UIToolbar, UIItemList);
+    __extends(UIToolbar, _super);
 
     function UIToolbar() {
       UIToolbar.__super__.constructor.apply(this, arguments);
@@ -13392,10 +13471,10 @@ namespace("sm.ui", function(exports) {
 
     return UIToolbar;
 
-  })();
-  UIToolbarButton = (function() {
+  })(UIItemList);
+  UIToolbarButton = (function(_super) {
 
-    __extends(UIToolbarButton, UIClickableItem);
+    __extends(UIToolbarButton, _super);
 
     function UIToolbarButton() {
       UIToolbarButton.__super__.constructor.apply(this, arguments);
@@ -13413,10 +13492,10 @@ namespace("sm.ui", function(exports) {
 
     return UIToolbarButton;
 
-  })();
-  UIToolbarSearch = (function() {
+  })(UIClickableItem);
+  UIToolbarSearch = (function(_super) {
 
-    __extends(UIToolbarSearch, UIItem);
+    __extends(UIToolbarSearch, _super);
 
     function UIToolbarSearch() {
       UIToolbarSearch.__super__.constructor.apply(this, arguments);
@@ -13466,10 +13545,10 @@ namespace("sm.ui", function(exports) {
 
     return UIToolbarSearch;
 
-  })();
-  UIToolbarSeparator = (function() {
+  })(UIItem);
+  UIToolbarSeparator = (function(_super) {
 
-    __extends(UIToolbarSeparator, UIItem);
+    __extends(UIToolbarSeparator, _super);
 
     function UIToolbarSeparator() {
       UIToolbarSeparator.__super__.constructor.apply(this, arguments);
@@ -13481,10 +13560,10 @@ namespace("sm.ui", function(exports) {
 
     return UIToolbarSeparator;
 
-  })();
-  UIToolbarLogo = (function() {
+  })(UIItem);
+  UIToolbarLogo = (function(_super) {
 
-    __extends(UIToolbarLogo, UIItem);
+    __extends(UIToolbarLogo, _super);
 
     function UIToolbarLogo() {
       UIToolbarLogo.__super__.constructor.apply(this, arguments);
@@ -13496,7 +13575,7 @@ namespace("sm.ui", function(exports) {
 
     return UIToolbarLogo;
 
-  })();
+  })(UIItem);
   return __extends(exports, {
     UIToolbar: UIToolbar,
     UIToolbarButton: UIToolbarButton,
@@ -13505,14 +13584,16 @@ namespace("sm.ui", function(exports) {
     UIToolbarLogo: UIToolbarLogo
   });
 });
+
+
 namespace("sm.ui", function(exports) {
   var Controller, UIClickableItem, UIContentBlock, UIContentView, UIItem, UIItemList, UISidebar, UISidebarButton, UISidebarSeparator, UIView, ui;
   ui = sm.ui;
   UIView = ui.UIView, UIItem = ui.UIItem, UIClickableItem = ui.UIClickableItem, UIItemList = ui.UIItemList;
   Controller = sm.mvc.Controller;
-  UISidebar = (function() {
+  UISidebar = (function(_super) {
 
-    __extends(UISidebar, UIItemList);
+    __extends(UISidebar, _super);
 
     function UISidebar() {
       UISidebar.__super__.constructor.apply(this, arguments);
@@ -13525,10 +13606,10 @@ namespace("sm.ui", function(exports) {
 
     return UISidebar;
 
-  })();
-  UISidebarButton = (function() {
+  })(UIItemList);
+  UISidebarButton = (function(_super) {
 
-    __extends(UISidebarButton, UIClickableItem);
+    __extends(UISidebarButton, _super);
 
     function UISidebarButton() {
       UISidebarButton.__super__.constructor.apply(this, arguments);
@@ -13559,10 +13640,10 @@ namespace("sm.ui", function(exports) {
 
     return UISidebarButton;
 
-  })();
-  UISidebarSeparator = (function() {
+  })(UIClickableItem);
+  UISidebarSeparator = (function(_super) {
 
-    __extends(UISidebarSeparator, UIItem);
+    __extends(UISidebarSeparator, _super);
 
     function UISidebarSeparator() {
       UISidebarSeparator.__super__.constructor.apply(this, arguments);
@@ -13574,10 +13655,10 @@ namespace("sm.ui", function(exports) {
 
     return UISidebarSeparator;
 
-  })();
-  UIContentBlock = (function() {
+  })(UIItem);
+  UIContentBlock = (function(_super) {
 
-    __extends(UIContentBlock, UIView);
+    __extends(UIContentBlock, _super);
 
     function UIContentBlock() {
       UIContentBlock.__super__.constructor.apply(this, arguments);
@@ -13610,10 +13691,10 @@ namespace("sm.ui", function(exports) {
 
     return UIContentBlock;
 
-  })();
-  UIContentView = (function() {
+  })(UIView);
+  UIContentView = (function(_super) {
 
-    __extends(UIContentView, UIView);
+    __extends(UIContentView, _super);
 
     function UIContentView() {
       UIContentView.__super__.constructor.apply(this, arguments);
@@ -13673,7 +13754,7 @@ namespace("sm.ui", function(exports) {
 
     return UIContentView;
 
-  })();
+  })(UIView);
   return __extends(exports, {
     UISidebar: UISidebar,
     UISidebarButton: UISidebarButton,
@@ -13682,13 +13763,15 @@ namespace("sm.ui", function(exports) {
     UIContentBlock: UIContentBlock
   });
 });
+
+
 namespace("sm.ui", function(exports) {
   var ISelectableItem, UIAdEntry, UIAdList, UIItem, UISidebar, UISpinner, UIView, ui;
   ui = sm.ui;
   UIView = ui.UIView, UIItem = ui.UIItem, ISelectableItem = ui.ISelectableItem, UISidebar = ui.UISidebar;
-  UIAdEntry = (function() {
+  UIAdEntry = (function(_super) {
 
-    __extends(UIAdEntry, UIView);
+    __extends(UIAdEntry, _super);
 
     function UIAdEntry() {
       UIAdEntry.__super__.constructor.apply(this, arguments);
@@ -13707,10 +13790,10 @@ namespace("sm.ui", function(exports) {
 
     return UIAdEntry;
 
-  })();
-  UISpinner = (function() {
+  })(UIView);
+  UISpinner = (function(_super) {
 
-    __extends(UISpinner, UIView);
+    __extends(UISpinner, _super);
 
     function UISpinner() {
       UISpinner.__super__.constructor.apply(this, arguments);
@@ -13731,10 +13814,10 @@ namespace("sm.ui", function(exports) {
 
     return UISpinner;
 
-  })();
-  UIAdList = (function() {
+  })(UIView);
+  UIAdList = (function(_super) {
 
-    __extends(UIAdList, UISidebar);
+    __extends(UIAdList, _super);
 
     function UIAdList() {
       UIAdList.__super__.constructor.apply(this, arguments);
@@ -13772,7 +13855,6 @@ namespace("sm.ui", function(exports) {
         view = new UIAdEntry({
           model: model
         });
-        console.log(view, model);
         return _this.contentPane.getContentPane().append(view.render());
       });
       return this.contentPane.reinitialise();
@@ -13780,45 +13862,336 @@ namespace("sm.ui", function(exports) {
 
     return UIAdList;
 
-  })();
+  })(UISidebar);
   return __extends(exports, {
     UIAdList: UIAdList
   });
 });
-namespace("sm.ui", function(exports) {
-  var UIMap, UIView, ui;
-  ui = sm.ui;
-  UIView = ui.UIView;
-  UIMap = (function() {
 
-    __extends(UIMap, UIView);
+
+namespace("sm.generators", function(exports) {
+  var DEFAULT_CANVAS_HEIGHT, DEFAULT_CANVAS_WIDTH, roundRect;
+  DEFAULT_CANVAS_WIDTH = 300;
+  DEFAULT_CANVAS_HEIGHT = 150;
+  roundRect = function(ctx, x, y, w, h, r, fill, stroke) {
+    if (r > 0) {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + w - r, y);
+      ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+      ctx.lineTo(x + w, y + h - r);
+      ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+      ctx.lineTo(x + r, y + h);
+      ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+      ctx.lineTo(x, y + r);
+      ctx.quadraticCurveTo(x, y, x + r, y);
+      ctx.closePath();
+    } else {
+      ctx.rect(x, y, w, h);
+    }
+    if (fill) ctx.fill();
+    if (stroke) return ctx.stroke();
+  };
+  exports.generateCircle = function(r, options) {
+    var canvas, cfg, ctx, s;
+    cfg = {
+      fillStyle: 'white',
+      strokeStyle: null
+    };
+    _.extend(cfg, options);
+    s = cfg.strokeStyle != null ? 1 : 0;
+    canvas = document.createElement('canvas');
+    canvas.width = 2 * r + 2 * s;
+    canvas.height = 2 * r + 2 * s;
+    ctx = canvas.getContext('2d');
+    if (cfg.fillStyle != null) ctx.fillStyle = cfg.fillStyle;
+    if (cfg.strokeStyle != null) ctx.strokeStyle = cfg.strokeStyle;
+    ctx.arc(r + s, r + s, r, 0, 2 * Math.PI, true);
+    if (cfg.fillStyle != null) ctx.fill();
+    if (cfg.strokeStyle != null) ctx.stroke();
+    return {
+      width: canvas.width,
+      height: canvas.height,
+      anchorX: r + s,
+      anchorY: r + s,
+      shape: {
+        coords: [r + s, r + s, r + s],
+        type: 'circle'
+      },
+      image: canvas.toDataURL("image/png")
+    };
+  };
+  exports.generateRect = function(w, h, options) {
+    var canvas, cfg, ctx, s;
+    cfg = {
+      fillStyle: 'white',
+      strokeStyle: null,
+      borderRadius: 0
+    };
+    _.extend(cfg, options);
+    s = cfg.strokeStyle != null ? 1 : 0;
+    canvas = document.createElement('canvas');
+    canvas.width = w + 2 * s;
+    canvas.height = h + 2 * s;
+    ctx = canvas.getContext('2d');
+    if (cfg.fillStyle != null) ctx.fillStyle = cfg.fillStyle;
+    if (cfg.strokeStyle != null) ctx.strokeStyle = cfg.strokeStyle;
+    roundRect(ctx, s, s, w, h, cfg.borderRadius, cfg.fillStyle != null, cfg.strokeStyle != null);
+    return {
+      width: canvas.width,
+      height: canvas.height,
+      anchorX: Math.round(canvas.width / 2),
+      anchorY: Math.round(canvas.height / 2),
+      shape: {
+        coords: [s, s, w + 2 * s, h + 2 * s],
+        type: 'rect'
+      },
+      image: canvas.toDataURL("image/png")
+    };
+  };
+  return exports.generatePriceBubble = function(text, options) {
+    var canvas, cfg, ctx, data, h, h1, h2, i, j, r, state, tailH, tailW, w, x, y;
+    cfg = {
+      font: '14px Georgia',
+      color: 'black',
+      fillStyle: 'white',
+      strokeStyle: null,
+      paddingX: 5,
+      paddingY: 3
+    };
+    _.extend(cfg, options);
+    canvas = document.createElement('canvas');
+    canvas.width = DEFAULT_CANVAS_WIDTH;
+    canvas.height = DEFAULT_CANVAS_HEIGHT;
+    ctx = canvas.getContext('2d');
+    ctx.font = cfg.font;
+    ctx.textBaseline = "top";
+    ctx.fillText(text, 0, 0);
+    w = ctx.measureText(text).width;
+    data = ctx.getImageData(0, 0, w, canvas.height).data;
+    state = i = h = h1 = h2 = 0;
+    while (state < 2 && i < canvas.height) {
+      if (state === 0) {
+        for (j = 0; 0 <= w ? j < w : j > w; 0 <= w ? j++ : j--) {
+          if (data[w * i * 4 + j * 4 + 3] !== 0) {
+            h1 = i;
+            state++;
+            break;
+          }
+        }
+      } else {
+        for (j = 0; 0 <= w ? j < w : j > w; 0 <= w ? j++ : j--) {
+          if (data[w * i * 4 + j * 4 + 3] !== 0) {
+            break;
+          } else if (j === w - 1) {
+            h2 = i;
+            state++;
+            break;
+          }
+        }
+      }
+      i++;
+    }
+    console.log(h, h1, h2, state);
+    w += 2 * cfg.paddingX;
+    h = h2 - h1 + 2 * cfg.paddingY;
+    tailH = Math.round(h * 0.4);
+    tailW = Math.round(tailH / 3);
+    x = y = 0;
+    r = Math.round(h / 5);
+    canvas.width = w;
+    canvas.height = h + tailH;
+    ctx.font = cfg.font;
+    ctx.textBaseline = "top";
+    if (cfg.fillStyle != null) ctx.fillStyle = cfg.fillStyle;
+    if (cfg.strokeStyle != null) ctx.strokeStyle = cfg.strokeStyle;
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + w / 2 + tailW, y + h);
+    ctx.lineTo(x + w / 2, y + h + tailH);
+    ctx.lineTo(x + w / 2 - tailW, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+    if (cfg.fillStyle != null) ctx.fill();
+    if (cfg.strokeStyle != null) ctx.stroke();
+    ctx.fillStyle = cfg.color;
+    ctx.fillText(text, cfg.paddingX, cfg.paddingY - h1);
+    return {
+      width: canvas.width,
+      height: canvas.height,
+      anchorX: Math.round(w / 2),
+      anchorY: Math.round(h + tailH),
+      shape: {
+        coords: [0, 0, w, h],
+        type: 'rect'
+      },
+      image: canvas.toDataURL("image/png")
+    };
+  };
+});
+
+
+namespace("sm.ui", function(exports) {
+  var DomlessView, UIMap, UIMapMarker, UIView, generateCircle, generatePriceBubble, generateRect, mvc, ui, _ref;
+  ui = sm.ui, mvc = sm.mvc;
+  UIView = ui.UIView;
+  DomlessView = mvc.DomlessView;
+  _ref = sm.generators, generateCircle = _ref.generateCircle, generateRect = _ref.generateRect, generatePriceBubble = _ref.generatePriceBubble;
+  UIMapMarker = (function(_super) {
+    var LatLng, Map, Marker, MarkerImage, Point, Size;
+
+    __extends(UIMapMarker, _super);
+
+    function UIMapMarker() {
+      UIMapMarker.__super__.constructor.apply(this, arguments);
+    }
+
+    Size = Point = Map = LatLng = MarkerImage = Marker = null;
+
+    UIMapMarker.prototype.cache = {};
+
+    UIMapMarker.prototype.initialize = function(options) {
+      var _ref2;
+      UIMapMarker.__super__.initialize.call(this, options);
+      this.gmap = google.maps;
+      _ref2 = this.gmap, Size = _ref2.Size, Point = _ref2.Point, Map = _ref2.Map, LatLng = _ref2.LatLng, MarkerImage = _ref2.MarkerImage, Marker = _ref2.Marker;
+      this.event = this.gmap.event;
+      this.markerData = this._generatePriceMarkers(this.model.get('price').toString());
+      return this.location = this.model.get('location');
+    };
+
+    UIMapMarker.prototype.render = function(map) {
+      if (this.marker != null) delete this.marker;
+      this.marker = new Marker({
+        position: new LatLng(this.location.latitude + (Math.random() * 0.1 - 0.05), this.location.longitude + (Math.random() * 0.1 - 0.05)),
+        map: map,
+        icon: this.markerData[0],
+        shape: this.markerData['shape']
+      });
+      this.event.addListener(this.marker, 'mouseover', _.bind(this.on_mouseover, this));
+      return this.event.addListener(this.marker, 'mouseout', _.bind(this.on_mouseout, this));
+    };
+
+    UIMapMarker.prototype.remove = function() {
+      console.log('remove', this.marker);
+      return this.marker.setMap(null);
+    };
+
+    UIMapMarker.prototype.on_click = function(e) {
+      return this.trigger('click', this);
+    };
+
+    UIMapMarker.prototype.on_mouseover = function(e) {
+      this.marker.setZIndex(100);
+      this.marker.setIcon(this.markerData[1]);
+      return this.trigger('mouseover', this);
+    };
+
+    UIMapMarker.prototype.on_mouseout = function(e) {
+      this.marker.setZIndex(1);
+      this.marker.setIcon(this.markerData[0]);
+      return this.trigger('mouseout', this);
+    };
+
+    UIMapMarker.prototype._generatePriceMarkers = function(price) {
+      var bubble;
+      if (this.cache[price] == null) {
+        this.cache[price] = {};
+        bubble = generatePriceBubble("$" + price, {
+          font: '11px Geneva',
+          color: '#444',
+          fillStyle: 'rgba(0,200,0,0.6)',
+          strokeStyle: 'rgba(0,120,0,0.6)'
+        });
+        this.cache[price][0] = new MarkerImage(bubble.image, new Size(bubble.width, bubble.height), new Point(0, 0), new Point(bubble.anchorX, bubble.anchorY));
+        this.cache[price]['shape'] = bubble.shape;
+        bubble = generatePriceBubble("$" + price, {
+          font: '11px Geneva',
+          color: '#444',
+          fillStyle: 'rgba(245,50,50,0.9)',
+          strokeStyle: 'rgba(120,20,20,0.9)'
+        });
+        this.cache[price][1] = new MarkerImage(bubble.image, new Size(bubble.width, bubble.height), new Point(0, 0), new Point(bubble.anchorX, bubble.anchorY));
+      }
+      return this.cache[price];
+    };
+
+    return UIMapMarker;
+
+  })(DomlessView);
+  UIMap = (function(_super) {
+    var LatLng, Map, Marker, MarkerImage, Point, Size;
+
+    __extends(UIMap, _super);
 
     function UIMap() {
       UIMap.__super__.constructor.apply(this, arguments);
     }
 
+    Size = Point = Map = LatLng = MarkerImage = Marker = null;
+
     UIMap.prototype.initialize = function(options) {
       UIMap.__super__.initialize.call(this, options);
-      console.log('initialize UIMap');
-      return $app.bind('gmap-load', this._initializeCompletion, this);
+      this.views = {};
+      if (typeof google === "undefined" || google === null) {
+        return $app.bind('gmap-load', this._initializeCompletion, this);
+      } else {
+        return this._initializeCompletion(google.maps);
+      }
     };
 
     UIMap.prototype._initializeCompletion = function(gmap) {
+      var _ref2;
       this.gmap = gmap;
+      _ref2 = this.gmap, Size = _ref2.Size, Point = _ref2.Point, Map = _ref2.Map, LatLng = _ref2.LatLng, MarkerImage = _ref2.MarkerImage, Marker = _ref2.Marker;
       return this.renderMap();
     };
 
     UIMap.prototype.renderMap = function() {
       var mapCenterPosition, options;
-      console.log('renderMap');
-      mapCenterPosition = new this.gmap.LatLng(53.902257, 27.561640);
+      mapCenterPosition = new LatLng(53.902257, 27.561640);
       options = {
         zoom: 12,
         center: mapCenterPosition,
         mapTypeId: this.gmap.MapTypeId.ROADMAP,
         disableDefaultUI: true
       };
-      return this.map = new this.gmap.Map($(this.el).get(0), options);
+      return this.map = new Map($(this.el).get(0), options);
+    };
+
+    UIMap.prototype.renderMarkers = function(collection) {
+      var location,
+        _this = this;
+      this.clearMarkers();
+      collection.each(function(model) {
+        var view;
+        view = new UIMapMarker({
+          model: model
+        });
+        view.render(_this.map);
+        return _this.views[view.cid] = view;
+      });
+      location = collection.models[0].get('location');
+      return this.map.setCenter(new LatLng(location.latitude, location.longitude));
+    };
+
+    UIMap.prototype.clearMarkers = function() {
+      var cid, view, _ref2;
+      console.log('clearMarkers', this.views);
+      _ref2 = this.views;
+      for (cid in _ref2) {
+        view = _ref2[cid];
+        view.remove();
+        delete view;
+      }
+      return this.views = {};
     };
 
     UIMap.prototype.refrash = function() {
@@ -13831,18 +14204,20 @@ namespace("sm.ui", function(exports) {
 
     return UIMap;
 
-  })();
+  })(UIView);
   return __extends(exports, {
     UIMap: UIMap
   });
 });
+
+
 namespace("sm.ui", function(exports) {
   var UIFollowersModal, UIModal, UIModalUnderlay, UINewAdModal, UIPrefModal, UIView, ui;
   ui = sm.ui;
   UIView = ui.UIView;
-  UIModal = (function() {
+  UIModal = (function(_super) {
 
-    __extends(UIModal, UIView);
+    __extends(UIModal, _super);
 
     function UIModal() {
       UIModal.__super__.constructor.apply(this, arguments);
@@ -13865,11 +14240,11 @@ namespace("sm.ui", function(exports) {
 
     return UIModal;
 
-  })();
-  UINewAdModal = (function() {
+  })(UIView);
+  UINewAdModal = (function(_super) {
     var MESSAGE_LENGTH;
 
-    __extends(UINewAdModal, UIModal);
+    __extends(UINewAdModal, _super);
 
     function UINewAdModal() {
       UINewAdModal.__super__.constructor.apply(this, arguments);
@@ -13927,10 +14302,10 @@ namespace("sm.ui", function(exports) {
 
     return UINewAdModal;
 
-  })();
-  UIPrefModal = (function() {
+  })(UIModal);
+  UIPrefModal = (function(_super) {
 
-    __extends(UIPrefModal, UIModal);
+    __extends(UIPrefModal, _super);
 
     function UIPrefModal() {
       UIPrefModal.__super__.constructor.apply(this, arguments);
@@ -13942,10 +14317,10 @@ namespace("sm.ui", function(exports) {
 
     return UIPrefModal;
 
-  })();
-  UIFollowersModal = (function() {
+  })(UIModal);
+  UIFollowersModal = (function(_super) {
 
-    __extends(UIFollowersModal, UIModal);
+    __extends(UIFollowersModal, _super);
 
     function UIFollowersModal() {
       UIFollowersModal.__super__.constructor.apply(this, arguments);
@@ -13957,10 +14332,10 @@ namespace("sm.ui", function(exports) {
 
     return UIFollowersModal;
 
-  })();
-  UIModalUnderlay = (function() {
+  })(UIModal);
+  UIModalUnderlay = (function(_super) {
 
-    __extends(UIModalUnderlay, UIView);
+    __extends(UIModalUnderlay, _super);
 
     function UIModalUnderlay() {
       UIModalUnderlay.__super__.constructor.apply(this, arguments);
@@ -13988,7 +14363,7 @@ namespace("sm.ui", function(exports) {
 
     return UIModalUnderlay;
 
-  })();
+  })(UIView);
   return __extends(exports, {
     UIModal: UIModal,
     UINewAdModal: UINewAdModal,
@@ -13997,13 +14372,15 @@ namespace("sm.ui", function(exports) {
     UIFollowersModal: UIFollowersModal
   });
 });
+
+
 namespace("sm.ui", function(exports) {
   var UIClickableItem, UIItem, UISelectBox, UIView, ui;
   ui = sm.ui;
   UIView = ui.UIView, UIItem = ui.UIItem, UIClickableItem = ui.UIClickableItem;
-  UISelectBox = (function() {
+  UISelectBox = (function(_super) {
 
-    __extends(UISelectBox, UIView);
+    __extends(UISelectBox, _super);
 
     function UISelectBox() {
       UISelectBox.__super__.constructor.apply(this, arguments);
@@ -14034,11 +14411,13 @@ namespace("sm.ui", function(exports) {
 
     return UISelectBox;
 
-  })();
+  })(UIView);
   return __extends(exports, {
     UISelectBox: UISelectBox
   });
 });
+
+
 namespace("sm.helpers", function(exports) {
   var getTransitionEnd;
   getTransitionEnd = function() {
@@ -14063,13 +14442,15 @@ namespace("sm.helpers", function(exports) {
     getTransitionEnd: getTransitionEnd
   });
 });
+
+
 namespace("sm.ui", function(exports) {
   var UIPopable, UIPopover, UITooltip, UIView, helpers, ui;
   ui = sm.ui, helpers = sm.helpers;
   UIView = ui.UIView;
-  UIPopable = (function() {
+  UIPopable = (function(_super) {
 
-    __extends(UIPopable, UIView);
+    __extends(UIPopable, _super);
 
     function UIPopable() {
       UIPopable.__super__.constructor.apply(this, arguments);
@@ -14078,7 +14459,6 @@ namespace("sm.ui", function(exports) {
     UIPopable.prototype.initialize = function() {
       UIPopable.__super__.initialize.call(this);
       this.target = $(this.options.target);
-      console.log(this.cid, this.target);
       this.holder = $("#" + this.options.holderId);
       if (this.holder.length === 0) this.holder = this._createHolder();
       this.transitionEnd = helpers.getTransitionEnd();
@@ -14263,8 +14643,8 @@ namespace("sm.ui", function(exports) {
     };
 
     UIPopable.prototype.hide = function() {
-      var el;
-      var _this = this;
+      var el,
+        _this = this;
       el = $(this.el);
       el.removeClass('in');
       if ((this.transitionEnd != null) && this.options.animate) {
@@ -14289,12 +14669,12 @@ namespace("sm.ui", function(exports) {
 
     return UIPopable;
 
-  })();
+  })(UIView);
   /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   */
-  UITooltip = (function() {
+  UITooltip = (function(_super) {
 
-    __extends(UITooltip, UIPopable);
+    __extends(UITooltip, _super);
 
     function UITooltip() {
       UITooltip.__super__.constructor.apply(this, arguments);
@@ -14360,12 +14740,12 @@ namespace("sm.ui", function(exports) {
 
     return UITooltip;
 
-  })();
+  })(UIPopable);
   /* **********************************************************************
   */
-  UIPopover = (function() {
+  UIPopover = (function(_super) {
 
-    __extends(UIPopover, UIPopable);
+    __extends(UIPopover, _super);
 
     function UIPopover() {
       UIPopover.__super__.constructor.apply(this, arguments);
@@ -14419,20 +14799,22 @@ namespace("sm.ui", function(exports) {
 
     return UIPopover;
 
-  })();
+  })(UIPopable);
   return __extends(exports, {
     UIPopable: UIPopable,
     UITooltip: UITooltip,
     UIPopover: UIPopover
   });
 });
+
+
 namespace("sm", function(exports) {
   var App, Collection, Controller, Model, Router, View, _ref;
   _ref = sm.mvc, Controller = _ref.Controller, View = _ref.View, Model = _ref.Model, Collection = _ref.Collection, Router = _ref.Router;
-  App = (function() {
+  App = (function(_super) {
     var cfg, ctr, ui;
 
-    __extends(App, Router);
+    __extends(App, _super);
 
     function App() {
       App.__super__.constructor.apply(this, arguments);
@@ -14526,9 +14908,9 @@ namespace("sm", function(exports) {
         var el;
         el = $(_el);
         el.removeClass('autoload');
-        return console.log(new ui[el.data('class')]({
+        return new ui[el.data('class')]({
           el: _el
-        }));
+        });
       });
     };
 
@@ -14568,10 +14950,12 @@ namespace("sm", function(exports) {
 
     return App;
 
-  })();
+  })(Router);
   return exports.App = App;
 });
+
 new sm.App;
+
 Backbone.history.start({
   pushState: true
 });

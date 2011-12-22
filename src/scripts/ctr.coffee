@@ -11,7 +11,16 @@ namespace "sm.ctr", (exports) ->
     url: -> $app.expandApiURL('/ads')
     parse: (res) -> 
       return if _.isString(res) then JSON.parse(res) else res
-  
+      
+  class SearchListCollection extends Collection
+    initialize: (options) ->
+      super(options)
+      @query = options.query
+    model: AdModel
+    url: -> ("http://api.sellsto.me/search/ad/select?q=#{encodeURIComponent(@query)}&location.bottom=30.60&location.top=50.61&location.left=-83.95&location.right=-63.94")
+    parse: (res) ->
+      return if _.isString(res) then JSON.parse(res) else res
+      
   class AdListCtr extends Controller
     initialize: (options) ->
       super(options)
@@ -45,17 +54,26 @@ namespace "sm.ctr", (exports) ->
     on_viewsLoaded: ->
       @block   = $$('search-block')
       @sidebar = $$('sidebar')
-      @seatchItem = $$('search')
+      @searchItem = $$('search')
       @content = $$('content-view')
       @map = $$('search-list-map')
+      @list = $$('search-list')
       @block.bind('show', @on_blockShow, this)
-      @seatchItem.bind('click', @on_itemClick, this)
+      @searchItem.bind('click', @on_itemClick, this)
+      @searchItem.bind('search', @on_search, this)
     on_itemClick: ->
       @content.switch('search-block')
+    on_search: (query) ->
+      console.log 'on_search', query
+      @ads = new SearchListCollection(query: query)
+      @list.showSpinner()      
+      @ads.fetch success: =>
+        @list.hideSpinner()
+        @list.render(@ads)
+        @map.renderMarkers(@ads)
     on_blockShow: (block) ->
-      @seatchItem.select()
+      @searchItem.select()
       @map.refrash()
-      
           
   class ModalCtr extends Controller
     initialize: (options) ->

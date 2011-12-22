@@ -74,7 +74,7 @@ namespace "sm", (exports) ->
       $('.autoload').each (i, _el) =>
         el = $(_el)
         el.removeClass('autoload')
-        console.log new ui[el.data('class')](el: _el)
+        new ui[el.data('class')](el: _el)
           
     _initGoogleMaps: ->
       root.__initialize_maps = _.bind(@_initGoogleMapsCompletion, this)

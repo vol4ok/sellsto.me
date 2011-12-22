@@ -8,7 +8,6 @@ namespace "sm.ui", (exports) ->
       
   class UIView extends View
     initialize: (options) ->
-      @state = {}
       @cid = $(@el).attr('id') if $(@el).attr('id')?
       super(options)
       

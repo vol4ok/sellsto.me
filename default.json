@@ -8,17 +8,17 @@
   "configure": {
     "script": {
       "template": "$(PROJECT_DIR)/src/scripts/config.coffee.template",
-      "api-hostname": "api.sellstome.local",
+      "api-hostname": "127.0.0.1:4000",
       "gmap-api-key": "ABQIAAAAYUB6q4UJksDvp1TvGGHG_BQNYqpsCpiTg7NWK5aiP4T3BBIq-RRZOwE9ta7QktesY-NgAnSC2S6aiw"
     }, 
     "style": {
       "template": "$(PROJECT_DIR)/src/styles/common/config.less.template",
-      "prefix": ""
+      "prefix": " "
     },
     "node": {
       "template": "$(PROJECT_DIR)/src/_server/node.json.template",
       "interface": "127.0.0.1",
-      "port": "3005",
+      "port": "3001",
       "root": "$(OUTPUT_DIR)/app"
     },
     "nginx": {
