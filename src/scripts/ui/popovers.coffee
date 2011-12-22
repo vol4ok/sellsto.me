@@ -11,7 +11,6 @@ namespace "sm.ui", (exports) ->
     initialize: ->
       super()
       @target = $(@options.target)
-      console.log @cid, @target
       @holder = $("##{@options.holderId}")
       @holder = @_createHolder() if @holder.length is 0
       @transitionEnd = helpers.getTransitionEnd()

@@ -8,10 +8,7 @@ namespace "sm.ctr", (exports) ->
   
   class AdListCollection extends Collection
     model: AdModel
-    url: -> 
-      url = $app.expandApiURL('/ads')
-      console.log url
-      return url
+    url: -> $app.expandApiURL('/ads')
     parse: (res) -> 
       return if _.isString(res) then JSON.parse(res) else res
       
@@ -73,7 +70,7 @@ namespace "sm.ctr", (exports) ->
       @ads.fetch success: =>
         @list.hideSpinner()
         @list.render(@ads)
-      
+        @map.renderMarkers(@ads)
     on_blockShow: (block) ->
       @searchItem.select()
       @map.refrash()

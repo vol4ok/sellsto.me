@@ -41,7 +41,6 @@ namespace "sm.ui", (exports) ->
       return unless @collection?
       @collection.each (model) =>
         view = new UIAdEntry(model: model)
-        console.log view, model
         @contentPane.getContentPane().append(view.render())
         #$(@el).append(view.render())
       @contentPane.reinitialise()

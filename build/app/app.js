@@ -11453,7 +11453,7 @@ namespace("sm.cfg", function(exports) {
 
 
 namespace("sm.mvc", function(exports) {
-  var Collection, Controller, Model, Router, View;
+  var Collection, Controller, DomlessView, Model, Router, VIEW_OPTIONS, View;
   Controller = function(options) {
     this.cid = _.uniqueId('ctr');
     this.initialize.call(this, options);
@@ -11466,6 +11466,29 @@ namespace("sm.mvc", function(exports) {
       return this.state = {};
     }
   });
+  VIEW_OPTIONS = ['model', 'collection', 'id', 'attributes'];
+  DomlessView = function(options) {
+    this.cid = _.uniqueId('dview');
+    this._configure(options || {});
+    this.initialize.call(this, options);
+  };
+  _.extend(DomlessView.prototype, Backbone.Events, {
+    initialize: function(options) {
+      if (options == null) options = {};
+      if (options.cid != null) this.cid = options.cid;
+      registerObject(this.cid, this);
+      return this.state = {};
+    },
+    _configure: function(options) {
+      var attr, _i, _len;
+      if (this.options) options = _.extend({}, this.options, options);
+      for (_i = 0, _len = VIEW_OPTIONS.length; _i < _len; _i++) {
+        attr = VIEW_OPTIONS[_i];
+        if (options[attr]) this[attr] = options[attr];
+      }
+      return this.options = options;
+    }
+  });
   View = (function(_super) {
 
     __extends(View, _super);
@@ -11475,7 +11498,8 @@ namespace("sm.mvc", function(exports) {
     }
 
     View.prototype.initialize = function(options) {
-      return registerObject(this.cid, this);
+      registerObject(this.cid, this);
+      return this.state = {};
     };
 
     return View;
@@ -11521,6 +11545,7 @@ namespace("sm.mvc", function(exports) {
   return __extends(exports, {
     Controller: Controller,
     View: View,
+    DomlessView: DomlessView,
     Model: Model,
     Collection: Collection,
     Router: Router
@@ -11553,10 +11578,7 @@ namespace("sm.ctr", function(exports) {
     AdListCollection.prototype.model = AdModel;
 
     AdListCollection.prototype.url = function() {
-      var url;
-      url = $app.expandApiURL('/ads');
-      console.log(url);
-      return url;
+      return $app.expandApiURL('/ads');
     };
 
     AdListCollection.prototype.parse = function(res) {
@@ -11686,7 +11708,8 @@ namespace("sm.ctr", function(exports) {
       return this.ads.fetch({
         success: function() {
           _this.list.hideSpinner();
-          return _this.list.render(_this.ads);
+          _this.list.render(_this.ads);
+          return _this.map.renderMarkers(_this.ads);
         }
       });
     };
@@ -13238,7 +13261,6 @@ namespace("sm.ui", function(exports) {
     }
 
     UIView.prototype.initialize = function(options) {
-      this.state = {};
       if ($(this.el).attr('id') != null) this.cid = $(this.el).attr('id');
       return UIView.__super__.initialize.call(this, options);
     };
@@ -13833,7 +13855,6 @@ namespace("sm.ui", function(exports) {
         view = new UIAdEntry({
           model: model
         });
-        console.log(view, model);
         return _this.contentPane.getContentPane().append(view.render());
       });
       return this.contentPane.reinitialise();
@@ -13848,11 +13869,265 @@ namespace("sm.ui", function(exports) {
 });
 
 
+namespace("sm.generators", function(exports) {
+  var DEFAULT_CANVAS_HEIGHT, DEFAULT_CANVAS_WIDTH, roundRect;
+  DEFAULT_CANVAS_WIDTH = 300;
+  DEFAULT_CANVAS_HEIGHT = 150;
+  roundRect = function(ctx, x, y, w, h, r, fill, stroke) {
+    if (r > 0) {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + w - r, y);
+      ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+      ctx.lineTo(x + w, y + h - r);
+      ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+      ctx.lineTo(x + r, y + h);
+      ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+      ctx.lineTo(x, y + r);
+      ctx.quadraticCurveTo(x, y, x + r, y);
+      ctx.closePath();
+    } else {
+      ctx.rect(x, y, w, h);
+    }
+    if (fill) ctx.fill();
+    if (stroke) return ctx.stroke();
+  };
+  exports.generateCircle = function(r, options) {
+    var canvas, cfg, ctx, s;
+    cfg = {
+      fillStyle: 'white',
+      strokeStyle: null
+    };
+    _.extend(cfg, options);
+    s = cfg.strokeStyle != null ? 1 : 0;
+    canvas = document.createElement('canvas');
+    canvas.width = 2 * r + 2 * s;
+    canvas.height = 2 * r + 2 * s;
+    ctx = canvas.getContext('2d');
+    if (cfg.fillStyle != null) ctx.fillStyle = cfg.fillStyle;
+    if (cfg.strokeStyle != null) ctx.strokeStyle = cfg.strokeStyle;
+    ctx.arc(r + s, r + s, r, 0, 2 * Math.PI, true);
+    if (cfg.fillStyle != null) ctx.fill();
+    if (cfg.strokeStyle != null) ctx.stroke();
+    return {
+      width: canvas.width,
+      height: canvas.height,
+      anchorX: r + s,
+      anchorY: r + s,
+      shape: {
+        coords: [r + s, r + s, r + s],
+        type: 'circle'
+      },
+      image: canvas.toDataURL("image/png")
+    };
+  };
+  exports.generateRect = function(w, h, options) {
+    var canvas, cfg, ctx, s;
+    cfg = {
+      fillStyle: 'white',
+      strokeStyle: null,
+      borderRadius: 0
+    };
+    _.extend(cfg, options);
+    s = cfg.strokeStyle != null ? 1 : 0;
+    canvas = document.createElement('canvas');
+    canvas.width = w + 2 * s;
+    canvas.height = h + 2 * s;
+    ctx = canvas.getContext('2d');
+    if (cfg.fillStyle != null) ctx.fillStyle = cfg.fillStyle;
+    if (cfg.strokeStyle != null) ctx.strokeStyle = cfg.strokeStyle;
+    roundRect(ctx, s, s, w, h, cfg.borderRadius, cfg.fillStyle != null, cfg.strokeStyle != null);
+    return {
+      width: canvas.width,
+      height: canvas.height,
+      anchorX: Math.round(canvas.width / 2),
+      anchorY: Math.round(canvas.height / 2),
+      shape: {
+        coords: [s, s, w + 2 * s, h + 2 * s],
+        type: 'rect'
+      },
+      image: canvas.toDataURL("image/png")
+    };
+  };
+  return exports.generatePriceBubble = function(text, options) {
+    var canvas, cfg, ctx, data, h, h1, h2, i, j, r, state, tailH, tailW, w, x, y;
+    cfg = {
+      font: '14px Georgia',
+      color: 'black',
+      fillStyle: 'white',
+      strokeStyle: null,
+      paddingX: 5,
+      paddingY: 3
+    };
+    _.extend(cfg, options);
+    canvas = document.createElement('canvas');
+    canvas.width = DEFAULT_CANVAS_WIDTH;
+    canvas.height = DEFAULT_CANVAS_HEIGHT;
+    ctx = canvas.getContext('2d');
+    ctx.font = cfg.font;
+    ctx.textBaseline = "top";
+    ctx.fillText(text, 0, 0);
+    w = ctx.measureText(text).width;
+    data = ctx.getImageData(0, 0, w, canvas.height).data;
+    state = i = h = h1 = h2 = 0;
+    while (state < 2 && i < canvas.height) {
+      if (state === 0) {
+        for (j = 0; 0 <= w ? j < w : j > w; 0 <= w ? j++ : j--) {
+          if (data[w * i * 4 + j * 4 + 3] !== 0) {
+            h1 = i;
+            state++;
+            break;
+          }
+        }
+      } else {
+        for (j = 0; 0 <= w ? j < w : j > w; 0 <= w ? j++ : j--) {
+          if (data[w * i * 4 + j * 4 + 3] !== 0) {
+            break;
+          } else if (j === w - 1) {
+            h2 = i;
+            state++;
+            break;
+          }
+        }
+      }
+      i++;
+    }
+    console.log(h, h1, h2, state);
+    w += 2 * cfg.paddingX;
+    h = h2 - h1 + 2 * cfg.paddingY;
+    tailH = Math.round(h * 0.4);
+    tailW = Math.round(tailH / 3);
+    x = y = 0;
+    r = Math.round(h / 5);
+    canvas.width = w;
+    canvas.height = h + tailH;
+    ctx.font = cfg.font;
+    ctx.textBaseline = "top";
+    if (cfg.fillStyle != null) ctx.fillStyle = cfg.fillStyle;
+    if (cfg.strokeStyle != null) ctx.strokeStyle = cfg.strokeStyle;
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + w / 2 + tailW, y + h);
+    ctx.lineTo(x + w / 2, y + h + tailH);
+    ctx.lineTo(x + w / 2 - tailW, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+    if (cfg.fillStyle != null) ctx.fill();
+    if (cfg.strokeStyle != null) ctx.stroke();
+    ctx.fillStyle = cfg.color;
+    ctx.fillText(text, cfg.paddingX, cfg.paddingY - h1);
+    return {
+      width: canvas.width,
+      height: canvas.height,
+      anchorX: Math.round(w / 2),
+      anchorY: Math.round(h + tailH),
+      shape: {
+        coords: [0, 0, w, h],
+        type: 'rect'
+      },
+      image: canvas.toDataURL("image/png")
+    };
+  };
+});
+
+
 namespace("sm.ui", function(exports) {
-  var UIMap, UIView, ui;
-  ui = sm.ui;
+  var DomlessView, UIMap, UIMapMarker, UIView, generateCircle, generatePriceBubble, generateRect, mvc, ui, _ref;
+  ui = sm.ui, mvc = sm.mvc;
   UIView = ui.UIView;
+  DomlessView = mvc.DomlessView;
+  _ref = sm.generators, generateCircle = _ref.generateCircle, generateRect = _ref.generateRect, generatePriceBubble = _ref.generatePriceBubble;
+  UIMapMarker = (function(_super) {
+    var LatLng, Map, Marker, MarkerImage, Point, Size;
+
+    __extends(UIMapMarker, _super);
+
+    function UIMapMarker() {
+      UIMapMarker.__super__.constructor.apply(this, arguments);
+    }
+
+    Size = Point = Map = LatLng = MarkerImage = Marker = null;
+
+    UIMapMarker.prototype.cache = {};
+
+    UIMapMarker.prototype.initialize = function(options) {
+      var _ref2;
+      UIMapMarker.__super__.initialize.call(this, options);
+      this.gmap = google.maps;
+      _ref2 = this.gmap, Size = _ref2.Size, Point = _ref2.Point, Map = _ref2.Map, LatLng = _ref2.LatLng, MarkerImage = _ref2.MarkerImage, Marker = _ref2.Marker;
+      this.event = this.gmap.event;
+      this.markerData = this._generatePriceMarkers(this.model.get('price').toString());
+      return this.location = this.model.get('location');
+    };
+
+    UIMapMarker.prototype.render = function(map) {
+      if (this.marker != null) delete this.marker;
+      this.marker = new Marker({
+        position: new LatLng(this.location.latitude + (Math.random() * 0.1 - 0.05), this.location.longitude + (Math.random() * 0.1 - 0.05)),
+        map: map,
+        icon: this.markerData[0],
+        shape: this.markerData['shape']
+      });
+      this.event.addListener(this.marker, 'mouseover', _.bind(this.on_mouseover, this));
+      return this.event.addListener(this.marker, 'mouseout', _.bind(this.on_mouseout, this));
+    };
+
+    UIMapMarker.prototype.remove = function() {
+      console.log('remove', this.marker);
+      return this.marker.setMap(null);
+    };
+
+    UIMapMarker.prototype.on_click = function(e) {
+      return this.trigger('click', this);
+    };
+
+    UIMapMarker.prototype.on_mouseover = function(e) {
+      this.marker.setZIndex(100);
+      this.marker.setIcon(this.markerData[1]);
+      return this.trigger('mouseover', this);
+    };
+
+    UIMapMarker.prototype.on_mouseout = function(e) {
+      this.marker.setZIndex(1);
+      this.marker.setIcon(this.markerData[0]);
+      return this.trigger('mouseout', this);
+    };
+
+    UIMapMarker.prototype._generatePriceMarkers = function(price) {
+      var bubble;
+      if (this.cache[price] == null) {
+        this.cache[price] = {};
+        bubble = generatePriceBubble("$" + price, {
+          font: '11px Geneva',
+          color: '#444',
+          fillStyle: 'rgba(0,200,0,0.6)',
+          strokeStyle: 'rgba(0,120,0,0.6)'
+        });
+        this.cache[price][0] = new MarkerImage(bubble.image, new Size(bubble.width, bubble.height), new Point(0, 0), new Point(bubble.anchorX, bubble.anchorY));
+        this.cache[price]['shape'] = bubble.shape;
+        bubble = generatePriceBubble("$" + price, {
+          font: '11px Geneva',
+          color: '#444',
+          fillStyle: 'rgba(245,50,50,0.9)',
+          strokeStyle: 'rgba(120,20,20,0.9)'
+        });
+        this.cache[price][1] = new MarkerImage(bubble.image, new Size(bubble.width, bubble.height), new Point(0, 0), new Point(bubble.anchorX, bubble.anchorY));
+      }
+      return this.cache[price];
+    };
+
+    return UIMapMarker;
+
+  })(DomlessView);
   UIMap = (function(_super) {
+    var LatLng, Map, Marker, MarkerImage, Point, Size;
 
     __extends(UIMap, _super);
 
@@ -13860,28 +14135,63 @@ namespace("sm.ui", function(exports) {
       UIMap.__super__.constructor.apply(this, arguments);
     }
 
+    Size = Point = Map = LatLng = MarkerImage = Marker = null;
+
     UIMap.prototype.initialize = function(options) {
       UIMap.__super__.initialize.call(this, options);
-      console.log('initialize UIMap');
-      return $app.bind('gmap-load', this._initializeCompletion, this);
+      this.views = {};
+      if (typeof google === "undefined" || google === null) {
+        return $app.bind('gmap-load', this._initializeCompletion, this);
+      } else {
+        return this._initializeCompletion(google.maps);
+      }
     };
 
     UIMap.prototype._initializeCompletion = function(gmap) {
+      var _ref2;
       this.gmap = gmap;
+      _ref2 = this.gmap, Size = _ref2.Size, Point = _ref2.Point, Map = _ref2.Map, LatLng = _ref2.LatLng, MarkerImage = _ref2.MarkerImage, Marker = _ref2.Marker;
       return this.renderMap();
     };
 
     UIMap.prototype.renderMap = function() {
       var mapCenterPosition, options;
-      console.log('renderMap');
-      mapCenterPosition = new this.gmap.LatLng(53.902257, 27.561640);
+      mapCenterPosition = new LatLng(53.902257, 27.561640);
       options = {
         zoom: 12,
         center: mapCenterPosition,
         mapTypeId: this.gmap.MapTypeId.ROADMAP,
         disableDefaultUI: true
       };
-      return this.map = new this.gmap.Map($(this.el).get(0), options);
+      return this.map = new Map($(this.el).get(0), options);
+    };
+
+    UIMap.prototype.renderMarkers = function(collection) {
+      var location,
+        _this = this;
+      this.clearMarkers();
+      collection.each(function(model) {
+        var view;
+        view = new UIMapMarker({
+          model: model
+        });
+        view.render(_this.map);
+        return _this.views[view.cid] = view;
+      });
+      location = collection.models[0].get('location');
+      return this.map.setCenter(new LatLng(location.latitude, location.longitude));
+    };
+
+    UIMap.prototype.clearMarkers = function() {
+      var cid, view, _ref2;
+      console.log('clearMarkers', this.views);
+      _ref2 = this.views;
+      for (cid in _ref2) {
+        view = _ref2[cid];
+        view.remove();
+        delete view;
+      }
+      return this.views = {};
     };
 
     UIMap.prototype.refrash = function() {
@@ -14149,7 +14459,6 @@ namespace("sm.ui", function(exports) {
     UIPopable.prototype.initialize = function() {
       UIPopable.__super__.initialize.call(this);
       this.target = $(this.options.target);
-      console.log(this.cid, this.target);
       this.holder = $("#" + this.options.holderId);
       if (this.holder.length === 0) this.holder = this._createHolder();
       this.transitionEnd = helpers.getTransitionEnd();
