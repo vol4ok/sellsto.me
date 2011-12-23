@@ -11553,95 +11553,9 @@ namespace("sm.mvc", function(exports) {
 });
 
 
-namespace("sm.helpers", function(exports) {
-  var UrlBuilder, getTransitionEnd;
-  getTransitionEnd = function() {
-    var support, thisBody, thisStyle, transitionEnd;
-    thisBody = document.body || document.documentElement;
-    thisStyle = thisBody.style;
-    support = thisStyle.transition !== void 0 || thisStyle.WebkitTransition !== void 0 || thisStyle.MozTransition !== void 0 || thisStyle.MsTransition !== void 0 || thisStyle.OTransition !== void 0;
-    if (support) {
-      transitionEnd = "TransitionEnd";
-      if ($.browser.webkit) {
-        transitionEnd = "webkitTransitionEnd";
-      } else if ($.browser.mozilla) {
-        transitionEnd = "transitionend";
-      } else if ($.browser.opera) {
-        transitionEnd = "oTransitionEnd";
-      }
-      return transitionEnd;
-    }
-    return false;
-  };
-  UrlBuilder = (function() {
-    /* whenever this url uses https
-    */
-    UrlBuilder.prototype.isSecure = false;
-
-    UrlBuilder.prototype.domain = null;
-
-    UrlBuilder.prototype.port = null;
-
-    UrlBuilder.prototype.path = "";
-
-    /* collection of key-value pairs
-    */
-
-    UrlBuilder.prototype.params = null;
-
-    /* todo zhugrov a - perform validation of input arguments
-    */
-
-    function UrlBuilder(options) {
-      if (options.isSecure != null) this.isSecure = options.isSecure;
-      if (options.domain != null) this.domain = options.domain;
-      if (options.port != null) this.port = options.port;
-      if (options.path != null) this.path = options.path;
-      this.params = new Array();
-      return;
-    }
-
-    UrlBuilder.prototype.on = function(name, value) {
-      this.params.push({
-        name: name,
-        value: value
-      });
-      return this;
-    };
-
-    UrlBuilder.prototype.url = function() {
-      var param, query, url, _i, _len, _ref;
-      if (_.isNull(this.domain)) throw new Error("Domain is not set");
-      url = this.isSecure ? "https://" : "http://";
-      url += this.domain;
-      if (!_.isNull(this.port)) url += ":" + this.port;
-      url += this.path;
-      query = new Array();
-      _ref = this.params;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        param = _ref[_i];
-        if ((param.name != null) && (param.value != null)) {
-          query.push(encodeURIComponent(param.name) + "=" + encodeURIComponent(param.value));
-        }
-      }
-      if (!_.isEmpty(query)) url += "?" + query.join("&");
-      return url;
-    };
-
-    return UrlBuilder;
-
-  })();
-  return __extends(exports, {
-    getTransitionEnd: getTransitionEnd,
-    UrlBuilder: UrlBuilder
-  });
-});
-
-
 namespace("sm.ctr", function(exports) {
-  var AdListCollection, AdListCtr, AdModel, Collection, Controller, ModalCtr, Model, Router, SearchCtr, SearchListCollection, UrlBuilder, View, _ref;
+  var AdListCollection, AdListCtr, AdModel, Collection, Controller, ModalCtr, Model, Router, SearchCtr, SearchListCollection, View, _ref;
   _ref = sm.mvc, Controller = _ref.Controller, View = _ref.View, Model = _ref.Model, Collection = _ref.Collection, Router = _ref.Router;
-  UrlBuilder = sm.helpers.UrlBuilder;
   AdModel = (function(_super) {
 
     __extends(AdModel, _super);
@@ -11688,17 +11602,13 @@ namespace("sm.ctr", function(exports) {
 
     SearchListCollection.prototype.initialize = function(options) {
       SearchListCollection.__super__.initialize.call(this, options);
-      this.query = options.query;
-      return this.bounds = options.bounds;
+      return this.query = options.query;
     };
 
     SearchListCollection.prototype.model = AdModel;
 
     SearchListCollection.prototype.url = function() {
-      return new UrlBuilder({
-        domain: "apilocal.sellsto.me",
-        path: "/search/ad/select"
-      }).on("q", this.query).on("location.bottom", this.bounds.getSouthWest().lat()).on("location.top", this.bounds.getNorthEast().lat()).on("location.left", this.bounds.getSouthWest().lng()).on("location.right", this.bounds.getNorthEast().lng()).url();
+      return "http://api.sellsto.me/search/ad/select?q=" + (encodeURIComponent(this.query)) + "&location.bottom=30.60&location.top=50.61&location.left=-83.95&location.right=-63.94";
     };
 
     SearchListCollection.prototype.parse = function(res) {
@@ -11752,7 +11662,7 @@ namespace("sm.ctr", function(exports) {
     };
 
     AdListCtr.prototype.on_blockShow = function(block) {
-      return this.map.refresh();
+      return this.map.refrash();
     };
 
     return AdListCtr;
@@ -11792,8 +11702,7 @@ namespace("sm.ctr", function(exports) {
       var _this = this;
       console.log('on_search', query);
       this.ads = new SearchListCollection({
-        query: query,
-        bounds: this.map.getBounds()
+        query: query
       });
       this.list.showSpinner();
       return this.ads.fetch({
@@ -11807,7 +11716,7 @@ namespace("sm.ctr", function(exports) {
 
     SearchCtr.prototype.on_blockShow = function(block) {
       this.searchItem.select();
-      return this.map.refresh();
+      return this.map.refrash();
     };
 
     return SearchCtr;
@@ -14161,7 +14070,7 @@ namespace("sm.ui", function(exports) {
     UIMapMarker.prototype.render = function(map) {
       if (this.marker != null) delete this.marker;
       this.marker = new Marker({
-        position: new LatLng(this.location.latitude, this.location.longitude),
+        position: new LatLng(this.location.latitude + (Math.random() * 0.1 - 0.05), this.location.longitude + (Math.random() * 0.1 - 0.05)),
         map: map,
         icon: this.markerData[0],
         shape: this.markerData['shape']
@@ -14257,9 +14166,11 @@ namespace("sm.ui", function(exports) {
     };
 
     UIMap.prototype.renderMarkers = function(collection) {
-      var _this = this;
+      var location,
+        _this = this;
+      if (collection.length === 0) return;
       this.clearMarkers();
-      return collection.each(function(model) {
+      collection.each(function(model) {
         var view;
         view = new UIMapMarker({
           model: model
@@ -14267,6 +14178,8 @@ namespace("sm.ui", function(exports) {
         view.render(_this.map);
         return _this.views[view.cid] = view;
       });
+      location = collection.models[0].get('location');
+      return this.map.setCenter(new LatLng(location.latitude, location.longitude));
     };
 
     UIMap.prototype.clearMarkers = function() {
@@ -14280,16 +14193,12 @@ namespace("sm.ui", function(exports) {
       return this.views = {};
     };
 
-    UIMap.prototype.refresh = function() {
+    UIMap.prototype.refrash = function() {
       var _this = this;
       if (!this.gmap) return;
       return _.defer(function() {
         return _this.gmap.event.trigger(_this.map, 'resize');
       });
-    };
-
-    UIMap.prototype.getBounds = function() {
-      return this.map.getBounds();
     };
 
     return UIMap;
@@ -14504,6 +14413,32 @@ namespace("sm.ui", function(exports) {
   })(UIView);
   return __extends(exports, {
     UISelectBox: UISelectBox
+  });
+});
+
+
+namespace("sm.helpers", function(exports) {
+  var getTransitionEnd;
+  getTransitionEnd = function() {
+    var support, thisBody, thisStyle, transitionEnd;
+    thisBody = document.body || document.documentElement;
+    thisStyle = thisBody.style;
+    support = thisStyle.transition !== void 0 || thisStyle.WebkitTransition !== void 0 || thisStyle.MozTransition !== void 0 || thisStyle.MsTransition !== void 0 || thisStyle.OTransition !== void 0;
+    if (support) {
+      transitionEnd = "TransitionEnd";
+      if ($.browser.webkit) {
+        transitionEnd = "webkitTransitionEnd";
+      } else if ($.browser.mozilla) {
+        transitionEnd = "transitionend";
+      } else if ($.browser.opera) {
+        transitionEnd = "oTransitionEnd";
+      }
+      return transitionEnd;
+    }
+    return false;
+  };
+  return __extends(exports, {
+    getTransitionEnd: getTransitionEnd
   });
 });
 

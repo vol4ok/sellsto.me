@@ -90,6 +90,7 @@ namespace "sm.ui", (exports) ->
       @map = new Map($(@el).get(0), options)
         
     renderMarkers: (collection) ->
+      return if collection.length is 0
       @clearMarkers()
       collection.each (model) =>
         view = new UIMapMarker(model: model)
@@ -101,7 +102,6 @@ namespace "sm.ui", (exports) ->
         view.remove()
         delete view
       @views = {}
-
     refresh: ->
       return unless @gmap
       _.defer => @gmap.event.trigger(@map, 'resize')
