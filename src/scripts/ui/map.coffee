@@ -23,7 +23,7 @@ namespace "sm.ui", (exports) ->
     render: (map) ->
       delete @marker if @marker?
       @marker = new Marker
-        position: new LatLng(@location.latitude + (Math.random()*0.1-0.05),@location.longitude + (Math.random()*0.1-0.05))
+        position: new LatLng(@location.latitude, @location.longitude)
         map: map
         icon: @markerData[0]
         shape: @markerData['shape']
@@ -95,16 +95,18 @@ namespace "sm.ui", (exports) ->
         view = new UIMapMarker(model: model)
         view.render(@map)
         @views[view.cid] = view
-      location = collection.models[0].get('location')
-      @map.setCenter(new LatLng(location.latitude,location.longitude))
       
     clearMarkers: ->
       for cid, view of @views
         view.remove()
         delete view
       @views = {}
-    refrash: ->
+
+    refresh: ->
       return unless @gmap
       _.defer => @gmap.event.trigger(@map, 'resize')
+
+    getBounds: ->
+      return @map.getBounds()
 
   exports extends {UIMap}

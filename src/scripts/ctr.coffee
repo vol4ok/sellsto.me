@@ -1,8 +1,10 @@
 #require mvc
+#require helpers
 
 namespace "sm.ctr", (exports) ->
   
   {Controller, View, Model, Collection, Router} = sm.mvc
+  {UrlBuilder}                                  = sm.helpers
   
   class AdModel extends Model
   
@@ -15,9 +17,16 @@ namespace "sm.ctr", (exports) ->
   class SearchListCollection extends Collection
     initialize: (options) ->
       super(options)
-      @query = options.query
+      @query  = options.query
+      @bounds = options.bounds
     model: AdModel
-    url: -> ("http://api.sellsto.me/search/ad/select?q=#{encodeURIComponent(@query)}&location.bottom=30.60&location.top=50.61&location.left=-83.95&location.right=-63.94")
+    url: ->
+      new UrlBuilder(domain: "apilocal.sellsto.me", path: "/search/ad/select")
+      .on("q", @query)
+      .on("location.bottom", @bounds.getSouthWest().lat())
+      .on("location.top",    @bounds.getNorthEast().lat())
+      .on("location.left",   @bounds.getSouthWest().lng())
+      .on("location.right",  @bounds.getNorthEast().lng()).url()
     parse: (res) ->
       return if _.isString(res) then JSON.parse(res) else res
       
@@ -43,7 +52,7 @@ namespace "sm.ctr", (exports) ->
         alert('Featch failed!')
       , dataType: 'jsonp'
     on_blockShow: (block) ->
-      @map.refrash()
+      @map.refresh()
       
       
   class SearchCtr extends Controller
@@ -65,7 +74,7 @@ namespace "sm.ctr", (exports) ->
       @content.switch('search-block')
     on_search: (query) ->
       console.log 'on_search', query
-      @ads = new SearchListCollection(query: query)
+      @ads = new SearchListCollection(query: query, bounds: @map.getBounds())
       @list.showSpinner()      
       @ads.fetch success: =>
         @list.hideSpinner()
@@ -73,7 +82,7 @@ namespace "sm.ctr", (exports) ->
         @map.renderMarkers(@ads)
     on_blockShow: (block) ->
       @searchItem.select()
-      @map.refrash()
+      @map.refresh()
           
   class ModalCtr extends Controller
     initialize: (options) ->
