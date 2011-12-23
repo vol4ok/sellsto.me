@@ -23,7 +23,7 @@ namespace "sm.ui", (exports) ->
     render: (map) ->
       delete @marker if @marker?
       @marker = new Marker
-        position: new LatLng(@location.latitude + (Math.random()*0.1-0.05),@location.longitude + (Math.random()*0.1-0.05))
+        position: new LatLng(@location.latitude, @location.longitude)
         map: map
         icon: @markerData[0]
         shape: @markerData['shape']
@@ -90,6 +90,7 @@ namespace "sm.ui", (exports) ->
       @map = new Map($(@el).get(0), options)
         
     renderMarkers: (collection) ->
+      return if collection.length is 0
       @clearMarkers()
       collection.each (model) =>
         view = new UIMapMarker(model: model)
@@ -103,7 +104,7 @@ namespace "sm.ui", (exports) ->
         view.remove()
         delete view
       @views = {}
-    refrash: ->
+    refresh: ->
       return unless @gmap
       _.defer => @gmap.event.trigger(@map, 'resize')
 

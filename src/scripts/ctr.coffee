@@ -43,7 +43,7 @@ namespace "sm.ctr", (exports) ->
         alert('Featch failed!')
       , dataType: 'jsonp'
     on_blockShow: (block) ->
-      @map.refrash()
+      @map.refresh()
       
       
   class SearchCtr extends Controller
@@ -73,7 +73,7 @@ namespace "sm.ctr", (exports) ->
         @map.renderMarkers(@ads)
     on_blockShow: (block) ->
       @searchItem.select()
-      @map.refrash()
+      @map.refresh()
           
   class ModalCtr extends Controller
     initialize: (options) ->

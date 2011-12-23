@@ -14080,7 +14080,6 @@ namespace("sm.ui", function(exports) {
     };
 
     UIMapMarker.prototype.remove = function() {
-      console.log('remove', this.marker);
       return this.marker.setMap(null);
     };
 
@@ -14169,6 +14168,7 @@ namespace("sm.ui", function(exports) {
     UIMap.prototype.renderMarkers = function(collection) {
       var location,
         _this = this;
+      if (collection.length === 0) return;
       this.clearMarkers();
       collection.each(function(model) {
         var view;
@@ -14184,7 +14184,6 @@ namespace("sm.ui", function(exports) {
 
     UIMap.prototype.clearMarkers = function() {
       var cid, view, _ref2;
-      console.log('clearMarkers', this.views);
       _ref2 = this.views;
       for (cid in _ref2) {
         view = _ref2[cid];
