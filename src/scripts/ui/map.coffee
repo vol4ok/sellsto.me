@@ -81,9 +81,9 @@ namespace "sm.ui", (exports) ->
       @renderMap()
     
     renderMap: ->
-      mapCenterPosition = new LatLng(53.902257,27.561640)
+      mapCenterPosition = new LatLng(40.78,-73.87)
       options =
-        zoom: 12
+        zoom: 10
         center: mapCenterPosition
         mapTypeId: @gmap.MapTypeId.ROADMAP
         disableDefaultUI: true

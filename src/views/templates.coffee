@@ -2,7 +2,7 @@ module.exports = exports =
   UIAdEntry: -> 
     div '.row', ->
       div '.col.image', ->
-        img src: 'http://localhost:4000/images/m/<%= images[0].name %>.<%= images[0].type %>', alt: ''
+        img src: '/sample/<%= images[0].name %>.<%= images[0].type %>', alt: ''
       div '.col.content', ->
         div '.message', '<%= body %>'
       div '.col.price', ->
