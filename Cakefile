@@ -267,6 +267,7 @@ configure = (options) ->
     content = CoffeeScript.compile(fs.readFileSync(filename, 'utf8'), {filename})
     module._compile content, filename
   for task,param of options.configure
+    continue if param.template is ""
     data = require(param.template)(param)
     output = join(param['output-dir'] or
       dirname(param.template), basename(param.template, extname(param.template)))

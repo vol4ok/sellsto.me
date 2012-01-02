@@ -38,7 +38,7 @@
     },
     {
       "includes": ["$(PROJECT_DIR)/src/_server"],
-      "output-dir": "$(OUTPUT_DIR)/srv",
+      "output-dir": "$(OUTPUT_DIR)",
       "allow": ["\\.(conf|json)$"],
       "deny": ["^\\.template$" ,"^\\.", "^__"]
     }
