@@ -9,7 +9,7 @@ namespace "sm.ui", (exports) ->
   {UIView} = ui
   {DomlessView} = mvc
   {generateCircle,generateRect,generatePriceBubble} = sm.generators
-  
+
   class UIMapMarker extends DomlessView
     Size = Point = Map = LatLng = MarkerImage = Marker = null
     cache: {}

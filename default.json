@@ -1,15 +1,18 @@
 {
-  "enveroument": "development", 
-  "install-dir": "$(PROJECT_DIR)/../../_debug",
-  "output-dir": "$(PROJECT_DIR)/build",
-  "compress": "no",
-  "verbose": "yes",
+  "enveroument":        "development",
+  "install-dir":        "$(PROJECT_DIR)/../../_debug",
+  "output-dir":         "$(PROJECT_DIR)/build",
+  "compress":           "no",
+  "verbose":            "yes",
   
   "configure": {
     "script": {
-      "template": "$(PROJECT_DIR)/src/scripts/config.coffee.template",
-      "api-hostname": "127.0.0.1:4000",
-      "gmap-api-key": "ABQIAAAAYUB6q4UJksDvp1TvGGHG_BQNYqpsCpiTg7NWK5aiP4T3BBIq-RRZOwE9ta7QktesY-NgAnSC2S6aiw"
+      "template":       "$(PROJECT_DIR)/src/scripts/config.coffee.template",
+      "api-hostname":   "127.0.0.1:4000",
+      "api-domain":     "la.sl.me",
+      "search-domain":  "ls.sl.me",
+      "site-domain":    "l.sl.me",
+      "gmap-api-key":   "ABQIAAAAYUB6q4UJksDvp1TvGGHG_BQNYqpsCpiTg7NWK5aiP4T3BBIq-RRZOwE9ta7QktesY-NgAnSC2S6aiw"
     }, 
     "style": {
       "template": "$(PROJECT_DIR)/src/styles/common/config.less.template",

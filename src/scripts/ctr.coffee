@@ -5,6 +5,7 @@ namespace "sm.ctr", (exports) ->
   
   {Controller, View, Model, Collection, Router} = sm.mvc
   {UrlBuilder}                                  = sm.helpers
+  {SEARCH_DOMAIN}                               = sm.cfg
   
   class AdModel extends Model
   
@@ -21,7 +22,7 @@ namespace "sm.ctr", (exports) ->
       @bounds = options.bounds
     model: AdModel
     url: ->
-      new UrlBuilder(domain: "api.sellsto.me", path: "/search/ad/select")
+      new UrlBuilder(domain: SEARCH_DOMAIN, path: "/ad/select")
       .on("q", @query)
       .on("location.bottom", @bounds.getSouthWest().lat())
       .on("location.top",    @bounds.getNorthEast().lat())

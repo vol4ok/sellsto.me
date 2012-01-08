@@ -2,7 +2,10 @@ module.exports = (options) ->
   """
   namespace "sm.cfg", (exports) ->
     exports extends {
-      API_HOSTNAME: "#{options['api-hostname']}"
-      GMAP_JS_URL: "http://maps.google.com/maps/api/js?sensor=false&key=#{options['gmap-api-key']}"
+      API_HOSTNAME:     "#{options['api-hostname']}"
+      API_DOMAIN:       "#{options['api-domain']}"
+      SEARCH_DOMAIN:    "#{options['search-domain']}"
+      SITE_DOMAIN:      "#{options['site-domain']}"
+      GMAP_JS_URL:      "http://maps.google.com/maps/api/js?sensor=false&key=#{options['gmap-api-key']}"
     }
   """
