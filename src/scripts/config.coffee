@@ -4,5 +4,5 @@ namespace "sm.cfg", (exports) ->
     API_DOMAIN:       "la.sl.me"
     SEARCH_DOMAIN:    "ls.sl.me"
     SITE_DOMAIN:      "l.sl.me"
-    GMAP_JS_URL:      "http://maps.google.com/maps/api/js?sensor=false&key=ABQIAAAAYUB6q4UJksDvp1TvGGHG_BQNYqpsCpiTg7NWK5aiP4T3BBIq-RRZOwE9ta7QktesY-NgAnSC2S6aiw"
+    GMAP_JS_URL:      "http://maps.google.com/maps/api/js?sensor=false&key=AIzaSyDG6xyCe_6s01ndApwR9OR3YEoS9QZ4jzY"
   }

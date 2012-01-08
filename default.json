@@ -12,7 +12,7 @@
       "api-domain":     "la.sl.me",
       "search-domain":  "ls.sl.me",
       "site-domain":    "l.sl.me",
-      "gmap-api-key":   "ABQIAAAAYUB6q4UJksDvp1TvGGHG_BQNYqpsCpiTg7NWK5aiP4T3BBIq-RRZOwE9ta7QktesY-NgAnSC2S6aiw"
+      "gmap-api-key":   "AIzaSyDG6xyCe_6s01ndApwR9OR3YEoS9QZ4jzY"
     }, 
     "style": {
       "template": "$(PROJECT_DIR)/src/styles/common/config.less.template",
