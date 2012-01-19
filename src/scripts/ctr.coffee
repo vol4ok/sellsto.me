@@ -45,13 +45,13 @@ namespace "sm.ctr", (exports) ->
       @ads = new AdListCollection
       @list.showSpinner()
       @ads.fetch success: =>
-        @list.hideSpinner() #setTimeout (=> ), 1200
+        @list.hideSpinner()
         @list.render(@ads)
         @block.unbind('show', @on_blockShowFirst, this)
         @block.bind('show', @on_blockShow, this)
       , error: => 
-        alert('Featch failed!')
-      , dataType: 'jsonp'
+        console.error('Featch failed!')
+      , dataType: 'json'
     on_blockShow: (block) ->
       @map.refresh()
       

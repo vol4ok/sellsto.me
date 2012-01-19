@@ -72,23 +72,19 @@ namespace "sm", (exports) ->
       
     _initAutoloadClasses: ->
       $('.autoload').each (i, _el) =>
-        el = $(_el)
-        el.removeClass('autoload')
-        new ui[el.data('class')](el: _el)
+        try
+          el = $(_el)
+          el.removeClass('autoload')
+          new ui[el.data('class')](el: _el)
+        catch exc
+          id          = if _el.id? then _el.id else 'undefined'
+          data_class  = if _el['data-class']? then _el['data-class'] else 'undefined'
+          console.error("Could not initialize a view with class: #{data_class} and id: #{id}. " + exc.toString())
+        return
           
-    _initGoogleMaps: ->
-      root.__initialize_maps = _.bind(@_initGoogleMapsCompletion, this)
-      $.getScript "#{cfg.GMAP_JS_URL}&callback=__initialize_maps", (data,status) =>
-        throw 'google map load failed' unless status is 'success'
-        
-    _initGoogleMapsCompletion: ->
-      delete root.__initialize_maps
-      @trigger('gmap-load', google.maps)
-      
     on_domLoaded: ->
       @_initAutoloadClasses()
       @_initBindings()
-      @_initGoogleMaps()
       @toolbar = $$('toolbar')
       @sidebar = $$('sidebar')
       @content = $$('content-view')

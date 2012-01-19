@@ -2,6 +2,7 @@
 #require mvc
 #require ui/base
 #require ui/generators
+#require vendor/leaflet-latest/leaflet-src
 
 namespace "sm.ui", (exports) ->
   
@@ -11,35 +12,26 @@ namespace "sm.ui", (exports) ->
   {generateCircle,generateRect,generatePriceBubble} = sm.generators
 
   class UIMapMarker extends DomlessView
-    Size = Point = Map = LatLng = MarkerImage = Marker = null
+
     cache: {}
     initialize: (options) ->
       super(options)
-      @gmap = google.maps
-      {Size, Point, Map, LatLng, MarkerImage, Marker} = @gmap
-      {@event} = @gmap
       @markerData = @_generatePriceMarkers(@model.get('price').toString())
       @location = @model.get('location')
     render: (map) ->
       delete @marker if @marker?
-      @marker = new Marker
-        position: new LatLng(@location.latitude, @location.longitude)
-        map: map
-        icon: @markerData[0]
-        shape: @markerData['shape']
-      @event.addListener @marker, 'mouseover', _.bind(@on_mouseover, this)
-      @event.addListener @marker, 'mouseout',  _.bind(@on_mouseout, this)
+      return
     remove: ->
-      @marker.setMap(null)
-    on_click:     (e) -> @trigger('click', this) 
+      return
+    on_click:     (e) ->
+      @trigger('click', this)
+      return
     on_mouseover: (e) -> 
-      @marker.setZIndex(100)
-      @marker.setIcon(@markerData[1])
       @trigger('mouseover', this)
+      return
     on_mouseout:  (e) -> 
-      @marker.setZIndex(1)
-      @marker.setIcon(@markerData[0])
       @trigger('mouseout', this)
+      return
     _generatePriceMarkers: (price) ->
       unless @cache[price]?
         @cache[price] = {}
@@ -68,26 +60,19 @@ namespace "sm.ui", (exports) ->
       return @cache[price]
   
   class UIMap extends UIView
+
     Size = Point = Map = LatLng = MarkerImage = Marker = null
+
     initialize: (options) ->
       super(options)
       @views = {}
-      unless google?
-      then $app.bind('gmap-load', @_initializeCompletion, this)
-      else @_initializeCompletion(google.maps)
-    _initializeCompletion: (gmap) ->
-      @gmap = gmap
-      {Size, Point, Map, LatLng, MarkerImage, Marker} = @gmap
-      @renderMap()
-    
-    renderMap: ->
-      mapCenterPosition = new LatLng(40.78,-73.87)
-      options =
-        zoom: 10
-        center: mapCenterPosition
-        mapTypeId: @gmap.MapTypeId.ROADMAP
-        disableDefaultUI: true
-      @map = new Map($(@el).get(0), options)
+      mapQuestUrl = 'http://{s}.mqcdn.com/tiles/1.0.0/osm/{z}/{x}/{y}.jpg'
+      subDomains = ['otile1','otile2','otile3','otile4']
+      mapQuestAttribution = 'Data, imagery and map information provided by <a href="http://open.mapquest.co.uk" target="_blank">MapQuest</a>,
+                                <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> and contributors.'
+      mapLayer = new L.TileLayer(mapQuestUrl, {maxZoom: 18, attribution: mapQuestAttribution, subdomains: subDomains})
+      @map = new L.Map($(@el).attr('id'))
+      @map.setView(new L.LatLng(51.505, -0.09), 13).addLayer(mapLayer);
         
     renderMarkers: (collection) ->
       return if collection.length is 0
@@ -96,17 +81,19 @@ namespace "sm.ui", (exports) ->
         view = new UIMapMarker(model: model)
         view.render(@map)
         @views[view.cid] = view
+      return this
       
     clearMarkers: ->
       for cid, view of @views
         view.remove()
         delete view
       @views = {}
+      return this
+
     refresh: ->
-      return unless @gmap
-      _.defer => @gmap.event.trigger(@map, 'resize')
+      return this
 
     getBounds: ->
-      return @map.getBounds()
+      return this
 
   exports extends {UIMap}
