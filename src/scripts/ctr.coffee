@@ -40,7 +40,9 @@ namespace "sm.ctr", (exports) ->
       @block = $$('list-block')
       @list = $$('ad-list')
       @map = $$('ad-list-map')
+      @list_block = $$('list-block')
       @block.bind('show', @on_blockShowFirst, this)
+      @list_block.bind('show', @on_blockShow, this)
     on_blockShowFirst: (block) ->
       @ads = new AdListCollection
       @list.showSpinner()
@@ -48,7 +50,6 @@ namespace "sm.ctr", (exports) ->
         @list.hideSpinner()
         @list.render(@ads)
         @block.unbind('show', @on_blockShowFirst, this)
-        @block.bind('show', @on_blockShow, this)
       , error: => 
         console.error('Featch failed!')
       , dataType: 'json'

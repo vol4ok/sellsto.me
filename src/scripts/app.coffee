@@ -24,7 +24,7 @@ namespace "sm", (exports) ->
       '*path': 'routeTo'
     bindings:
       'search-block:show': 'search:select'
-    controllers: 
+    controllers:
       'ad-list-controller': 
         class: 'AdListCtr'
         options: {}

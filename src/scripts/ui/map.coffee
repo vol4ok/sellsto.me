@@ -72,8 +72,8 @@ namespace "sm.ui", (exports) ->
                                 <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> and contributors.'
       mapLayer = new L.TileLayer(mapQuestUrl, {maxZoom: 18, attribution: mapQuestAttribution, subdomains: subDomains})
       @map = new L.Map($(@el).attr('id'))
-      @map.setView(new L.LatLng(51.505, -0.09), 13).addLayer(mapLayer);
-        
+      @map.setView(new L.LatLng(51.505, -0.09), 13).addLayer(mapLayer)
+
     renderMarkers: (collection) ->
       return if collection.length is 0
       @clearMarkers()
@@ -91,6 +91,7 @@ namespace "sm.ui", (exports) ->
       return this
 
     refresh: ->
+      @map.invalidateSize()
       return this
 
     getBounds: ->

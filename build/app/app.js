@@ -11733,7 +11733,9 @@ namespace("sm.ctr", function(exports) {
       this.block = $$('list-block');
       this.list = $$('ad-list');
       this.map = $$('ad-list-map');
-      return this.block.bind('show', this.on_blockShowFirst, this);
+      this.list_block = $$('list-block');
+      this.block.bind('show', this.on_blockShowFirst, this);
+      return this.list_block.bind('show', this.on_blockShow, this);
     };
 
     AdListCtr.prototype.on_blockShowFirst = function(block) {
@@ -11744,8 +11746,7 @@ namespace("sm.ctr", function(exports) {
         success: function() {
           _this.list.hideSpinner();
           _this.list.render(_this.ads);
-          _this.block.unbind('show', _this.on_blockShowFirst, _this);
-          return _this.block.bind('show', _this.on_blockShow, _this);
+          return _this.block.unbind('show', _this.on_blockShowFirst, _this);
         },
         error: function() {
           return console.error('Featch failed!');
@@ -13774,8 +13775,14 @@ namespace("sm.ui", function(exports) {
     };
 
     UIContentBlock.prototype.show = function(callback) {
+      var c,
+        _this = this;
       this.trigger('show', this);
-      return $(this.el).fadeIn(this.switchTimeout, callback);
+      c = function() {
+        _this.trigger('show', _this);
+        if (_.isFunction(callback)) return callback.apply(_this);
+      };
+      return $(this.el).fadeIn(this.switchTimeout, c);
     };
 
     UIContentBlock.prototype.hide = function(callback) {
@@ -19802,6 +19809,7 @@ namespace("sm.ui", function(exports) {
     };
 
     UIMap.prototype.refresh = function() {
+      this.map.invalidateSize();
       return this;
     };
 

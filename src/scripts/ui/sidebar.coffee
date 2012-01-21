@@ -41,7 +41,10 @@ namespace "sm.ui", (exports) ->
       @trigger('switch', this)
     show: (callback) -> 
       @trigger('show', this)
-      $(@el).fadeIn(@switchTimeout, callback)
+      c = () =>
+        @trigger('show', this)
+        callback.apply(this) if _.isFunction(callback)
+      $(@el).fadeIn(@switchTimeout, c)
     hide: (callback) -> 
       @trigger('hide', this)
       $(@el).fadeOut(@switchTimeout, callback)
