@@ -19688,12 +19688,13 @@ L.Map.include({
 
 
 namespace("sm.ui", function(exports) {
-  var DomlessView, LatLng, Map, Marker, TileLayer, UIMap, UIMapMarker, UIView, generateCircle, generatePriceBubble, generateRect, mvc, ui, _ref;
+  var DomlessView, LatLng, Map, Marker, TileLayer, UIMap, UIMapMarker, UIView, generatePriceBubble, markerIconCache, mvc, ui;
   ui = sm.ui, mvc = sm.mvc;
   UIView = ui.UIView;
   DomlessView = mvc.DomlessView;
-  _ref = sm.generators, generateCircle = _ref.generateCircle, generateRect = _ref.generateRect, generatePriceBubble = _ref.generatePriceBubble;
+  generatePriceBubble = sm.generators.generatePriceBubble;
   Map = L.Map, TileLayer = L.TileLayer, LatLng = L.LatLng, Marker = L.Marker;
+  markerIconCache = {};
   UIMapMarker = (function(_super) {
 
     __extends(UIMapMarker, _super);
@@ -19708,10 +19709,13 @@ namespace("sm.ui", function(exports) {
     UIMapMarker.prototype.marker = null;
 
     UIMapMarker.prototype.initialize = function(options) {
-      var location;
+      var location, price;
       UIMapMarker.__super__.initialize.call(this, options);
+      price = this.model.get('price');
       location = this.model.get('location');
-      this.marker = new Marker(new LatLng(location.lat, location.lng));
+      this.marker = new Marker(new LatLng(location.lat, location.lng), {
+        icon: this._generatePriceMarkers(price)
+      });
       return this.marker.on('click', this.on_click, this);
     };
 
@@ -19741,6 +19745,27 @@ namespace("sm.ui", function(exports) {
 
     UIMapMarker.prototype.on_mouseout = function(e) {
       this.trigger('mouseout', this);
+    };
+
+    UIMapMarker.prototype._generatePriceMarkers = function(price) {
+      var PriceIcon, bubble;
+      if (markerIconCache[price] == null) {
+        markerIconCache[price] = {};
+        bubble = generatePriceBubble("$" + price, {
+          font: '11px Geneva',
+          color: '#444',
+          fillStyle: 'rgba(0,200,0,0.6)',
+          strokeStyle: 'rgba(0,120,0,0.6)'
+        });
+        PriceIcon = L.Icon.extend({
+          iconUrl: bubble.image,
+          iconSize: new L.Point(bubble.width, bubble.height),
+          iconAnchor: new L.Point(bubble.anchorX, bubble.anchorY),
+          shadowUrl: null
+        });
+        markerIconCache[price] = new PriceIcon();
+      }
+      return markerIconCache[price];
     };
 
     return UIMapMarker;
@@ -19787,10 +19812,10 @@ namespace("sm.ui", function(exports) {
     };
 
     UIMap.prototype.clearMarkers = function() {
-      var cid, view, _ref2;
-      _ref2 = this.views;
-      for (cid in _ref2) {
-        view = _ref2[cid];
+      var cid, view, _ref;
+      _ref = this.views;
+      for (cid in _ref) {
+        view = _ref[cid];
         view.remove(this.map);
         delete view;
       }

@@ -5,12 +5,15 @@
 #require vendor/leaflet-latest/leaflet-src
 
 namespace "sm.ui", (exports) ->
-  
+  ## import section ##
   {ui,mvc}                                          = sm
   {UIView}                                          = ui
   {DomlessView}                                     = mvc
-  {generateCircle,generateRect,generatePriceBubble} = sm.generators
+  {generatePriceBubble} = sm.generators
   {Map,TileLayer,LatLng,Marker}                     = L
+  ####################
+
+  markerIconCache                                   = {}
 
   class UIMapMarker extends DomlessView
     ### Marker delegate object ###
@@ -18,9 +21,11 @@ namespace "sm.ui", (exports) ->
 
     initialize: (options) ->
       super(options)
-      ## price    = @model.get('price')
+      price    = @model.get('price')
       location = @model.get('location')
-      @marker = new Marker(new LatLng(location.lat, location.lng))
+      @marker = new Marker(new LatLng(location.lat, location.lng),
+        icon:       @_generatePriceMarkers(price)
+      )
       @marker.on('click', @on_click, this)
 
     ### Renders marker on map ###
@@ -46,6 +51,28 @@ namespace "sm.ui", (exports) ->
       ## todo zhugrov a - currently does not supported by marker api
       @trigger('mouseout', this)
       return
+
+    _generatePriceMarkers: (price) ->
+      unless markerIconCache[price]?
+
+        markerIconCache[price] = {}
+
+        bubble = generatePriceBubble "$#{price}",
+            font:         '11px Geneva'
+            color:        '#444'
+            fillStyle:    'rgba(0,200,0,0.6)'
+            strokeStyle:  'rgba(0,120,0,0.6)'
+
+        PriceIcon = L.Icon.extend(
+            iconUrl:      bubble.image
+            iconSize:     new L.Point(bubble.width,   bubble.height)
+            iconAnchor:   new L.Point(bubble.anchorX, bubble.anchorY)
+            shadowUrl:    null ##disable shadow for a while
+        )
+
+        markerIconCache[price] = new PriceIcon()
+
+      return markerIconCache[price]
   
   class UIMap extends UIView
 
