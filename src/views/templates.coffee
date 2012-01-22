@@ -4,7 +4,7 @@ module.exports = exports =
       div '.col.image', ->
         img src: '/sample/<%= images[0].name %>.<%= images[0].type %>', alt: ''
       div '.col.content', ->
-        div '.message', '<%= body %>'
+        div '.message', '<%= message %>'
       div '.col.price', ->
         div '.price-data', '<sup>$</sup><%= price %>'
         div '.items-count', '<%= count %> items'

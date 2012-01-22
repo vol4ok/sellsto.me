@@ -6,73 +6,59 @@
 
 namespace "sm.ui", (exports) ->
   
-  {ui,mvc} = sm
-  {UIView} = ui
-  {DomlessView} = mvc
+  {ui,mvc}                                          = sm
+  {UIView}                                          = ui
+  {DomlessView}                                     = mvc
   {generateCircle,generateRect,generatePriceBubble} = sm.generators
+  {Map,TileLayer,LatLng,Marker}                     = L
 
   class UIMapMarker extends DomlessView
+    ### Marker delegate object ###
+    marker: null
 
-    cache: {}
     initialize: (options) ->
       super(options)
-      @markerData = @_generatePriceMarkers(@model.get('price').toString())
-      @location = @model.get('location')
+      ## price    = @model.get('price')
+      location = @model.get('location')
+      @marker = new Marker(new LatLng(location.lat, location.lng))
+      @marker.on('click', @on_click, this)
+
+    ### Renders marker on map ###
     render: (map) ->
-      delete @marker if @marker?
-      return
-    remove: ->
-      return
+      map.addLayer(@marker)
+      return this
+
+    ### Removes marker from map ###
+    remove: (map) ->
+      map.removeLayer(@marker)
+      return this
+
     on_click:     (e) ->
       @trigger('click', this)
       return
-    on_mouseover: (e) -> 
+
+    on_mouseover: (e) ->
+      ## todo zhugrov a - currently does not supported by marker api
       @trigger('mouseover', this)
       return
-    on_mouseout:  (e) -> 
+
+    on_mouseout:  (e) ->
+      ## todo zhugrov a - currently does not supported by marker api
       @trigger('mouseout', this)
       return
-    _generatePriceMarkers: (price) ->
-      unless @cache[price]?
-        @cache[price] = {}
-        bubble = generatePriceBubble "$#{price}",
-          font: '11px Geneva'
-          color: '#444'
-          fillStyle: 'rgba(0,200,0,0.6)'
-          strokeStyle: 'rgba(0,120,0,0.6)'
-        @cache[price][0] = new MarkerImage(
-          bubble.image,
-          new Size(bubble.width,bubble.height),
-          new Point(0,0),
-          new Point(bubble.anchorX,bubble.anchorY))
-        @cache[price]['shape'] = bubble.shape
-
-        bubble = generatePriceBubble "$#{price}",
-          font: '11px Geneva'
-          color: '#444'
-          fillStyle: 'rgba(245,50,50,0.9)'
-          strokeStyle: 'rgba(120,20,20,0.9)'
-        @cache[price][1] = new MarkerImage(
-          bubble.image,
-          new Size(bubble.width,bubble.height),
-          new Point(0,0),
-          new Point(bubble.anchorX,bubble.anchorY))
-      return @cache[price]
   
   class UIMap extends UIView
-
-    Size = Point = Map = LatLng = MarkerImage = Marker = null
 
     initialize: (options) ->
       super(options)
       @views = {}
-      mapQuestUrl = 'http://{s}.mqcdn.com/tiles/1.0.0/osm/{z}/{x}/{y}.jpg'
-      subDomains = ['otile1','otile2','otile3','otile4']
+      mapQuestUrl         = 'http://{s}.mqcdn.com/tiles/1.0.0/osm/{z}/{x}/{y}.jpg'
+      subDomains          = ['otile1','otile2','otile3','otile4']
       mapQuestAttribution = 'Data, imagery and map information provided by <a href="http://open.mapquest.co.uk" target="_blank">MapQuest</a>,
                                 <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> and contributors.'
-      mapLayer = new L.TileLayer(mapQuestUrl, {maxZoom: 18, attribution: mapQuestAttribution, subdomains: subDomains})
-      @map = new L.Map($(@el).attr('id'))
-      @map.setView(new L.LatLng(51.505, -0.09), 13).addLayer(mapLayer)
+      mapLayer = new TileLayer(mapQuestUrl, {maxZoom: 18, attribution: mapQuestAttribution, subdomains: subDomains})
+      @map     = new Map($(@el).attr('id'))
+      @map.setView(new LatLng(40.78, -73.87), 13).addLayer(mapLayer)
 
     renderMarkers: (collection) ->
       return if collection.length is 0
@@ -85,7 +71,7 @@ namespace "sm.ui", (exports) ->
       
     clearMarkers: ->
       for cid, view of @views
-        view.remove()
+        view.remove(@map)
         delete view
       @views = {}
       return this
@@ -94,7 +80,8 @@ namespace "sm.ui", (exports) ->
       @map.invalidateSize()
       return this
 
+    ### Gets a bound rectangle of underlying map. ###
     getBounds: ->
-      return this
+      return @map.getBounds()
 
   exports extends {UIMap}

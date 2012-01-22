@@ -11701,7 +11701,7 @@ namespace("sm.ctr", function(exports) {
       return new UrlBuilder({
         domain: SEARCH_DOMAIN,
         path: "/ad/select"
-      }).on("q", this.query).on("location.bottom", this.bounds.getSouthWest().lat()).on("location.top", this.bounds.getNorthEast().lat()).on("location.left", this.bounds.getSouthWest().lng()).on("location.right", this.bounds.getNorthEast().lng()).url();
+      }).on("q", this.query).on("location.bottom", this.bounds.getSouthWest().lat).on("location.top", this.bounds.getNorthEast().lat).on("location.left", this.bounds.getSouthWest().lng).on("location.right", this.bounds.getNorthEast().lng).url();
     };
 
     SearchListCollection.prototype.parse = function(res) {
@@ -19688,11 +19688,12 @@ L.Map.include({
 
 
 namespace("sm.ui", function(exports) {
-  var DomlessView, UIMap, UIMapMarker, UIView, generateCircle, generatePriceBubble, generateRect, mvc, ui, _ref;
+  var DomlessView, LatLng, Map, Marker, TileLayer, UIMap, UIMapMarker, UIView, generateCircle, generatePriceBubble, generateRect, mvc, ui, _ref;
   ui = sm.ui, mvc = sm.mvc;
   UIView = ui.UIView;
   DomlessView = mvc.DomlessView;
   _ref = sm.generators, generateCircle = _ref.generateCircle, generateRect = _ref.generateRect, generatePriceBubble = _ref.generatePriceBubble;
+  Map = L.Map, TileLayer = L.TileLayer, LatLng = L.LatLng, Marker = L.Marker;
   UIMapMarker = (function(_super) {
 
     __extends(UIMapMarker, _super);
@@ -19701,19 +19702,34 @@ namespace("sm.ui", function(exports) {
       UIMapMarker.__super__.constructor.apply(this, arguments);
     }
 
-    UIMapMarker.prototype.cache = {};
+    /* Marker delegate object
+    */
+
+    UIMapMarker.prototype.marker = null;
 
     UIMapMarker.prototype.initialize = function(options) {
+      var location;
       UIMapMarker.__super__.initialize.call(this, options);
-      this.markerData = this._generatePriceMarkers(this.model.get('price').toString());
-      return this.location = this.model.get('location');
+      location = this.model.get('location');
+      this.marker = new Marker(new LatLng(location.lat, location.lng));
+      return this.marker.on('click', this.on_click, this);
     };
+
+    /* Renders marker on map
+    */
 
     UIMapMarker.prototype.render = function(map) {
-      if (this.marker != null) delete this.marker;
+      map.addLayer(this.marker);
+      return this;
     };
 
-    UIMapMarker.prototype.remove = function() {};
+    /* Removes marker from map
+    */
+
+    UIMapMarker.prototype.remove = function(map) {
+      map.removeLayer(this.marker);
+      return this;
+    };
 
     UIMapMarker.prototype.on_click = function(e) {
       this.trigger('click', this);
@@ -19727,42 +19743,16 @@ namespace("sm.ui", function(exports) {
       this.trigger('mouseout', this);
     };
 
-    UIMapMarker.prototype._generatePriceMarkers = function(price) {
-      var bubble;
-      if (this.cache[price] == null) {
-        this.cache[price] = {};
-        bubble = generatePriceBubble("$" + price, {
-          font: '11px Geneva',
-          color: '#444',
-          fillStyle: 'rgba(0,200,0,0.6)',
-          strokeStyle: 'rgba(0,120,0,0.6)'
-        });
-        this.cache[price][0] = new MarkerImage(bubble.image, new Size(bubble.width, bubble.height), new Point(0, 0), new Point(bubble.anchorX, bubble.anchorY));
-        this.cache[price]['shape'] = bubble.shape;
-        bubble = generatePriceBubble("$" + price, {
-          font: '11px Geneva',
-          color: '#444',
-          fillStyle: 'rgba(245,50,50,0.9)',
-          strokeStyle: 'rgba(120,20,20,0.9)'
-        });
-        this.cache[price][1] = new MarkerImage(bubble.image, new Size(bubble.width, bubble.height), new Point(0, 0), new Point(bubble.anchorX, bubble.anchorY));
-      }
-      return this.cache[price];
-    };
-
     return UIMapMarker;
 
   })(DomlessView);
   UIMap = (function(_super) {
-    var LatLng, Map, Marker, MarkerImage, Point, Size;
 
     __extends(UIMap, _super);
 
     function UIMap() {
       UIMap.__super__.constructor.apply(this, arguments);
     }
-
-    Size = Point = Map = LatLng = MarkerImage = Marker = null;
 
     UIMap.prototype.initialize = function(options) {
       var mapLayer, mapQuestAttribution, mapQuestUrl, subDomains;
@@ -19772,13 +19762,13 @@ namespace("sm.ui", function(exports) {
       subDomains = ['otile1', 'otile2', 'otile3', 'otile4'];
       mapQuestAttribution = 'Data, imagery and map information provided by <a href="http://open.mapquest.co.uk" target="_blank">MapQuest</a>,\
                                 <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> and contributors.';
-      mapLayer = new L.TileLayer(mapQuestUrl, {
+      mapLayer = new TileLayer(mapQuestUrl, {
         maxZoom: 18,
         attribution: mapQuestAttribution,
         subdomains: subDomains
       });
-      this.map = new L.Map($(this.el).attr('id'));
-      return this.map.setView(new L.LatLng(51.505, -0.09), 13).addLayer(mapLayer);
+      this.map = new Map($(this.el).attr('id'));
+      return this.map.setView(new LatLng(40.78, -73.87), 13).addLayer(mapLayer);
     };
 
     UIMap.prototype.renderMarkers = function(collection) {
@@ -19801,7 +19791,7 @@ namespace("sm.ui", function(exports) {
       _ref2 = this.views;
       for (cid in _ref2) {
         view = _ref2[cid];
-        view.remove();
+        view.remove(this.map);
         delete view;
       }
       this.views = {};
@@ -19813,8 +19803,11 @@ namespace("sm.ui", function(exports) {
       return this;
     };
 
+    /* Gets a bound rectangle of underlying map.
+    */
+
     UIMap.prototype.getBounds = function() {
-      return this;
+      return this.map.getBounds();
     };
 
     return UIMap;
