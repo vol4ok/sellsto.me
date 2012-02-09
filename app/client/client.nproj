@@ -1,0 +1,40 @@
+#CSON
+
+defines:
+  "@type": "define"
+  PUBLIC_DIR: "$(PROJECT_DIR)/public"
+  CLIENT_DIR: "$(PROJECT_DIR)"
+
+configure:
+  script:
+    "@type": "coffee-template"
+    target: "script/config.coffee.cstpl"
+    params: 
+      "api-hostname":       "localhost:4000"
+      "api-domain":         "localhost:4000"
+      "search-domain":      "api.sellsto.me/search"
+      "site-domain":        "localhost:3001"
+      "mapquest-api-key":   "Fmjtd%7Cluua29uy29%2Cb2%3Do5-hwygu"
+
+script:
+  "@type"      : "coffee-ex"
+  includes     : ["$(CLIENT_DIR)/script"]
+  "output-dir" : "$(PUBLIC_DIR)/js"
+  resident     : ["core_utils", "vendor/jquery", "core"]
+  targets      : ["app"]
+  
+style:
+  "@type"      : "less-ex"
+  includes     : [ "$(CLIENT_DIR)/style" ]
+  "output-dir" : "$(PUBLIC_DIR)/css"
+  targets      : [ "app" ]
+
+view:
+  "@type"       : "coffeekup"
+  builder      : "$(CLIENT_DIR)/views/build.coffee"
+  "output-dir" : "$(PUBLIC_DIR)"
+  targets      : [ "index" ]
+
+all:
+  "@type": "call"
+  "command": [ "configure", "script", "style", "view" ]
