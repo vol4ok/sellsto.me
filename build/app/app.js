@@ -20008,7 +20008,7 @@ namespace("sm.ui", function(exports) {
 
 
 namespace("sm.ui", function(exports) {
-  var UIClickableItem, UIItem, UISelectBox, UIView, ui;
+  var UIButton, UICheckbox, UIClickableItem, UIItem, UISelectBox, UIView, ui;
   ui = sm.ui;
   UIView = ui.UIView, UIItem = ui.UIItem, UIClickableItem = ui.UIClickableItem;
   UISelectBox = (function(_super) {
@@ -20045,8 +20045,128 @@ namespace("sm.ui", function(exports) {
     return UISelectBox;
 
   })(UIView);
+  UICheckbox = (function(_super) {
+
+    __extends(UICheckbox, _super);
+
+    function UICheckbox() {
+      UICheckbox.__super__.constructor.apply(this, arguments);
+    }
+
+    UICheckbox.prototype.events = {
+      'click': "on_click",
+      'keydown': 'on_keydown',
+      'focus': 'on_focus',
+      'blur': 'on_blur'
+    };
+
+    UICheckbox.prototype.initialize = function(options) {
+      this.input = this.$('input');
+      return this.state = {
+        disabled: $(this.el).hasClass('disabled'),
+        checked: $(this.el).hasClass('on')
+      };
+    };
+
+    UICheckbox.prototype.enable = function() {
+      return this.state.disabled = $(this.el).addClass('disabled');
+    };
+
+    UICheckbox.prototype.disable = function() {
+      return this.state.disabled = $(this.el).removeClass('disabled');
+    };
+
+    UICheckbox.prototype.on_click = function() {
+      if (this.state.disabled) return;
+      $(this.el).toggleClass('on');
+      this.state.checked = $(this.el).hasClass('on');
+      this.input.attr('checked', this.state.checked);
+      this.trigger('click', this);
+      if (this.state.checked) return this.trigger('check', this);
+    };
+
+    UICheckbox.prototype.on_focus = function() {
+      if (!this.state.disabled) return this.trigger('focus', this);
+    };
+
+    UICheckbox.prototype.on_blur = function() {
+      if (!this.state.disabled) return this.trigger('blur', this);
+    };
+
+    UICheckbox.prototype.on_keydown = function(e) {
+      if (this.state.disabled) return;
+      if (e.keyCode === 13 || e.keyCode === 32) this.on_click();
+      if (e.keyCode === 37) if ($(this.el).hasClass('on')) this.on_click();
+      if (e.keyCode === 39) if (!$(this.el).hasClass('on')) return this.on_click();
+    };
+
+    return UICheckbox;
+
+  })(UIView);
+  UIButton = (function(_super) {
+
+    __extends(UIButton, _super);
+
+    function UIButton() {
+      UIButton.__super__.constructor.apply(this, arguments);
+    }
+
+    UIButton.prototype.events = {
+      'click': "on_click",
+      'keydown': 'on_keydown',
+      'keyup': 'on_keyup'
+    };
+
+    UIButton.prototype.initialize = function(options) {
+      return this.state = {};
+    };
+
+    UIButton.prototype.enable = function() {
+      this.state.disabled = false;
+      return $(this.el).removeClass('disabled');
+    };
+
+    UIButton.prototype.disable = function() {
+      this.state.disabled = true;
+      return $(this.el).addClass('disabled');
+    };
+
+    UIButton.prototype.on_click = function() {
+      if (this.state.disabled) return;
+      return this.trigger('click', this);
+    };
+
+    UIButton.prototype.on_focus = function() {
+      if (!this.state.disabled) return this.trigger('focus', this);
+    };
+
+    UIButton.prototype.on_blur = function() {
+      if (!this.state.disabled) return this.trigger('blur', this);
+    };
+
+    UIButton.prototype.on_keydown = function(e) {
+      console.log(e.keyCode);
+      if (this.state.disabled) return;
+      if (e.keyCode === 13 || e.keyCode === 32) {
+        return $(this.el).addClass('active');
+      }
+    };
+
+    UIButton.prototype.on_keyup = function(e) {
+      console.log(e.keyCode);
+      if (this.state.disabled) return;
+      if (e.keyCode === 13 || e.keyCode === 32) {
+        return $(this.el).removeClass('active');
+      }
+    };
+
+    return UIButton;
+
+  })(UIView);
   return __extends(exports, {
-    UISelectBox: UISelectBox
+    UISelectBox: UISelectBox,
+    UIButton: UIButton,
+    UICheckbox: UICheckbox
   });
 });
 

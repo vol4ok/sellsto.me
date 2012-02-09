@@ -13,18 +13,15 @@ module.exports = exports = ->
                   label for: 'price', 'Price:'
                   input '#price-input', name: 'price', maxlength: '5'
                   a '.inherit', href:'#', rel: 'UIPopover', data: { popover: 'UIСurrencyPopover' }, 'руб.'
-                li '.input', ->
-                  label for: 'count', 'Quantity:'
-                  input '#quantity-input', name: 'count', maxlength: '5'
-                  text 'items'
                 li '.button.right', rel: 'UITooltip', 'data-title': 'Drag photos here', ->           
-                  a '#photo-button', href: '#', ''
+                  a '#photo-button.ui-upload', href: '#', ->
+                    input type: 'file'
                 li '.button.right', rel: 'UITooltip', 'data-title': 'Add video URL', ->           
-                  a '#video-button', href: '#', ''
+                  a '#video-button', href: '#', rel: 'UIPopover', data: { popover: 'UITextreaPopover'}, ''
         div '.footer', ->
-          button '.submit.right.btn.primary.disabled', 'Create'
+          button '.submit.right.ui-button.primary.disabled', data: { class: 'UIButton' }, 'Create'
           div '.counter.right', '400'
-          button '.close.left.btn', 'Cancel'
+          button '.close.left.ui-button', data: { class: 'UIButton' }, 'Cancel'
       div '#pref-modal.modal.autoload', data: { class: 'UIPrefModal' }, ->
         
         div 'ui-textedit', ->
@@ -37,9 +34,17 @@ module.exports = exports = ->
             option value: 'auto', 'Auto'
             option value: 'manual', 'Manual'
         br()
-        div '.ui-upload', ->
+        div '.ui-upload.ui-button', ->
           span 'Upload'
           input type: 'file'
+        br()
+        div '.ui-button.primary', 'OK'
+        br()
+        div '.ui-checkbox.autoload', data: { class: 'UICheckbox' }, ->
+          div '.slider', ''
+          div '.label', ''
+          div '.focus', ''
+          input type: 'checkbox', name: '', value: ''
       div '#followers-modal.modal.autoload', data: { class: 'UIFollowersModal' }
   ul '#toolbar.toolbar.autoload', data: {class: 'UIToolbar'}, ->
     li '.toolbar-logo', data: {class: 'UIToolbarLogo'}, ->

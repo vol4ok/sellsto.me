@@ -7,7 +7,6 @@ module.exports = exports =
         div '.message', '<%= message %>'
       div '.col.price', ->
         div '.price-data', '<sup>$</sup><%= price %>'
-        div '.items-count', '<%= count %> items'
   UISpinner: ->  
     span '.spin-1', 'Loading...'
   UITooltip: ->
@@ -17,7 +16,13 @@ module.exports = exports =
     div '.arrow', ''
     div '.inner', ->
       ul ->
-        li -> a href: '#', '$'
-        li -> a href: '#', '£'
-        li -> a href: '#', '€'
-        li -> a href: '#', 'руб.'
+        li -> a href: '/', '$'
+        li -> a href: '/', '£'
+        li -> a href: '/', '€'
+        li -> a href: '/', 'руб.'
+  UITextreaPopover: ->
+    div '.arrow', ''
+    div '.inner', ->
+      form ->
+        textarea '#video-input.video-input', name: 'video-input', autofocus: yes, ''
+        button 'ui-button', data: { class: 'UIButton' }, 'Add'
