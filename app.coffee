@@ -23,7 +23,7 @@ app.use (req, res, next) ->
     next()
     
 
-config = JSON.parse(fs.readFileSync("#{__dirname}/build/srv/node.json", 'utf-8'))
+config = JSON.parse(fs.readFileSync("#{__dirname}/build/node.json", 'utf-8'))
     
 app.use express.static(config.root)
 	

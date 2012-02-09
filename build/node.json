@@ -1,5 +1,5 @@
 {
   "interface": "127.0.0.1",
   "port": "3001",
-  "root": "/mnt/hgfs/sellstome/sellsto.me/build/app"
+  "root": "/Users/Andrew/Sites/projects/sellstome/projects/app/build/app"
 }
