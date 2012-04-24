@@ -1,33 +1,28 @@
 express   = require 'express'
-websocket = require('websocket.io')
-cfg       = require('./config')
+eco = require 'eco'
 
-#dev
+VIEW_DIR = __dirname + '/views'
+
+#dev require
 require('colors')
 util = require('util')
 
-app = connect()
-app.use(connect.static(cfg.static))
-app.use(connect.bodyParser())
+app = express.createServer()
+app.use(express.static(CFG.STATIC))
+app.use(express.bodyParser())
+app.use app.router
 
-app.use (req, res) ->
-  console.log req.body
-  res.end('OK!')
-
-app.on 'listening', ->
-  console.log("Server listening on #{cfg.interface}:#{cfg.port}".green)
-  ws = websocket.attach(app)
-  ws.on 'connection', (client) ->
-    console.log 'connect'.green, client
-    client.on 'message', (data) ->
-      console.log 'message'.magenta, data
-    client.on 'close', ->
-      console.log 'close'.yellow, client
-      
-user = new User()
+app.register('.html', eco)
+app.set('view engine', 'html')
+app.set('views', VIEW_DIR)
   
-processRequest = (data) ->
+app.get '/', (req, res) ->
+  res.render 'dashboard.wa', layout: no
 
-module.exports = app
+app.get '/register', (req, res) ->
+  res.render 'register'
 
-app.listen(cfg.port, cfg.interface)
+app.get '/login', (req, res) ->
+  res.render 'login'
+
+app.listen(CFG.PORT, CFG.INTERFACE)

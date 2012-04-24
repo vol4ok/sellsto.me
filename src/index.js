@@ -1,2 +1,3 @@
 require('coffee-script');
-require('app/app');
+global.CFG = require('./config/app');
+require('./app/app');
