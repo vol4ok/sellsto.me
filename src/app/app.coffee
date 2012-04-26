@@ -1,6 +1,5 @@
 express   = require 'express'
 eco = require 'eco'
-
 VIEW_DIR = __dirname + '/views'
 
 #dev require
