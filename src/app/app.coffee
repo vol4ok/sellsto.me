@@ -1,10 +1,10 @@
-express   = require 'express'
+express = require('express')
 eco = require 'eco'
-VIEW_DIR = __dirname + '/views'
-
 #dev require
 require('colors')
 util = require('util')
+
+VIEW_DIR = __dirname + '/views'
 
 app = express.createServer()
 app.use(express.static(CFG.STATIC))

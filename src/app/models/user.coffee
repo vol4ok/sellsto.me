@@ -9,3 +9,5 @@ UserSchema = new Schema
   sessionSecret: String
 
 User = mongoose.model('User', UserSchema)
+
+exports.User = User

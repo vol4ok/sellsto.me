@@ -17,7 +17,9 @@
     "express": ">=2.5.9",
     "eco": ">0.1",
     "mongodb": ">=0.9.9",
-    "mongoose": ">=2.5.13"
+    "mongoose": ">=2.5.13",
+    "vows": ">=0.6.2",
+    "assert": ">=0.4.9"
   },
   "devDependencies": {
     "colors": ">=0.6",

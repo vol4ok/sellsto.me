@@ -1,5 +1,5 @@
-exports.PORT = 3000
-exports.INTERFACE = '192.168.211.128'
+exports.PORT = 4000
+exports.INTERFACE = '127.0.0.1'
 BASE_DIR = exports.BASE_DIR = process.cwd()
 exports.STATIC = "#{BASE_DIR}/public"
 exports.db =
