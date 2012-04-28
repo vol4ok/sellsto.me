@@ -1,11 +1,11 @@
-db = require('../db')
+mongoose = require('../db')
+{Schema} = mongoose
+{ObjectId} = Schema
 
-class User
- email: null
- password: null
- sessionId: null
- sessionSecret: null
+UserSchema = new Schema
+  email: String
+  password: String
+  sessionId: String
+  sessionSecret: String
 
- constructor: (@email, @password) ->
-
- save: () ->
+User = mongoose.model('User', UserSchema)
