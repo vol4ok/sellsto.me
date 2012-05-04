@@ -3,7 +3,8 @@ vows = require('vows')
 assert = require('assert')
 crypto = require('crypto')
 util = require('util')
-{User} = require('../../app/models/user')
+passHasher = require('../../app/models/auth').passHasher
+#{User} = require('../../app/models/user')
 
 salt = '3278jjkds3'
 length = 128
@@ -16,19 +17,17 @@ vows.describe('Test standart functions').addBatch(
         _that = this
         crypto.pbkdf2(password, salt, iters, length, (err, key) ->
           if (err?)
-            _that.callback.call(this, err)
+            _that.callback.call(this, true, false)
           else
-            console.log(key)
-            originalHash = key
-            crypto.pbkdf2(password, salt, iters, length, (err, key) ->
-              if (err?)
-                _that.callback.call(this, err)
-              else
-                _that.callback.call(this, err, key, originalHash)
+            passHasher.validatePass(password, key, (hasError, valid) ->
+              hasError = true
+              _that.callback.call(this, valid)
+              return
             )
+          return
         )
-      'test hashing': (err, recurrentHash, originalHash) ->
-        assert.strictEqual(recurrentHash, originalHash, "hashes does not match")
+      'test hashing': (valid) ->
+        assert.strictEqual(valid, true, "should pass a validation")
 #     temp code that used for populating a test user before the login page is ready.
 #    'save test user':
 #      topic: () ->
