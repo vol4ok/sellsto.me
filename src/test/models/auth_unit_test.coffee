@@ -47,7 +47,4 @@ vows.describe('Test standart functions').addBatch(
 #        return
 #      'saving': ->
 #        return
-).run((results) ->
-  console.log 'test finished'
-  JSON.stringify(results)
-)
+).export(module)

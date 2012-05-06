@@ -9,6 +9,7 @@ VIEW_DIR = __dirname + '/views'
 app = express.createServer()
 app.use(express.static(CFG.STATIC))
 app.use(express.bodyParser())
+app.use(express.cookieParser())
 app.use app.router
 
 app.register('.html', eco)

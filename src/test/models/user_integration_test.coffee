@@ -25,7 +25,4 @@ vows.describe('User Model').addBatch(
     teardown: (err, saved, original) ->
       console.log 'cleanup the db state'
       User.remove({email: "alex@gmail.com"}, (err) -> throw err if err? )
-).run((results) ->
-  console.log 'test finished'
-  JSON.stringify(results)
-)
+).export(module)
