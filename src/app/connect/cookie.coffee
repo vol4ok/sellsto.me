@@ -4,7 +4,7 @@
 * Taken from connect/lib/middleware/session/cookie.js
 * version of connect: 1.8.7
 ###
-{core} = require('core.js')
+$ = require('core.js')
 util = require('util')
 
 
@@ -48,7 +48,7 @@ class Cookie
       domain: @domain
       path: @path
     )
-    core.extend(this, options) if (options?)
+    $.extend(this, options) if (options?)
 
   ### @return a json representation of cookie ###
   toJSON: -> @data
