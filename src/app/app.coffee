@@ -1,5 +1,6 @@
 express = require('express')
 eco = require 'eco'
+{auth} = require('./connect/auth')
 #dev require
 require('colors')
 util = require('util')
@@ -10,7 +11,8 @@ app = express.createServer()
 app.use(express.static(CFG.STATIC))
 app.use(express.bodyParser())
 app.use(express.cookieParser())
-app.use app.router
+app.use(app.router)
+app.use(auth())
 
 app.register('.html', eco)
 app.set('view engine', 'html')
