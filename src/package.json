@@ -20,12 +20,14 @@
     "mongodb": ">=0.9.9",
     "mongoose": ">=2.5.13",
     "redis": ">=0.7.2",
-    "vows": ">=0.6.2",
-    "assert": ">=0.4.9"
+    "node-promise": ">=0.5.2"
   },
   "devDependencies": {
     "colors": ">=0.6",
-    "stylus": ">=0.25.0"
+    "stylus": ">=0.25.0",
+    "benchmark": "0.3.0",
+    "vows": ">=0.6.2",
+    "assert": ">=0.4.9"
   },
   "optionalDependencies": {}
 }
