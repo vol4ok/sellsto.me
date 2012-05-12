@@ -16,16 +16,17 @@ n.on('message', function(msg) {
     if ($.isUndefined(msg.type)) throw new Error('Received an invalid message from benchmark script');
     switch(msg.type) {
         case msgType.InitComplete:
+            console.log('Receive init complete. Starting benchmark.');
             startBench(); //init main benchmark
             break;
         case msgType.BenchComplete:
-            console.log('bench complete');
+            console.log('Bench complete in time: '+msg.time+' millis');
             break;
         case msgType.CleanupComplete:
-            console.log('cleanup complete');
+            console.log('Cleanup complete');
             break;
         case msgType.Err:
-            console.log('error occurred: '+msg.err);
+            console.log('Error occurred: '+msg.err);
             break;
         case msgType.Log:
             console.log(msg.log);
@@ -35,12 +36,20 @@ n.on('message', function(msg) {
     }
 });
 
-function startBench() {
-    for(var i = 0; i < 500001; i++) {
-        if (i != 500000) {
+var startBench = function() {
+    console.log('starting emulating requests');
+    var i = 0;
+    function sendRequest() {
+        if (i % 100 === 0) {
+            console.log('Sending requests: '+i);
+        }
+        if (i < 1000) {
             n.send({type: msgType.Tick, isFinal: false}); //here we simulate an external requests
+            process.nextTick(sendRequest); //unwind stack.
         } else {
             n.send({type: msgType.Tick, isFinal: true}); //indicate that this is a final request
         }
+        i++;
     }
-}
+    process.nextTick(sendRequest);
+};

@@ -6,10 +6,9 @@ var msgType = require('./message_types');
 var generator = require('./generator');
 var util = require('util');
 
-var entriesCount = 500000;
+var entriesCount = 50000;
 var executed = 0;
 var toDelete = new Array();
-var sessionIds = new Array();
 
 function log(msg) {
     process.send({type: msgType.Log, log: msg});
@@ -29,7 +28,6 @@ function populateDB(err, deferred) {
                 populateDB(err, deferred);
             } else {
                 toDelete.push(doc._id);
-                sessionIds.push(doc.sessionId);
                 populateDB(undefined, deferred); //continuation style
             }
         });
@@ -56,19 +54,27 @@ function populateDB(err, deferred) {
 var start = null;
 var end = null;
 var hasError = false;
-function bench() { //does the actual benchmarks
+function bench() {
     var deferred = defer();
-    function selectSession() {
-        var elementIndex = generator.nextInt(sessionIds.length);
-        return sessionIds[elementIndex];
+    function selectId() {
+        var elementIndex = generator.nextInt(toDelete.length);
+        return toDelete[elementIndex];
     }
     start = new Date().getTime();
 
+    var received = 0;
     process.on('message', function(msg) {
         if (msg.type && msg.type === msgType.Tick && !hasError) {
-            var isFinal = msg.isFinal === true;
-            var sessionId = selectSession();
-            User.find({sessionId: sessionId}, function(err, doc) {
+            var isFinal = msg.isFinal == true;
+            var id = selectId();
+            if (received % 100 == 0) {
+                log('received requests: '+received+'; isFinal='+isFinal);
+            }
+            User.findById(id , function(err, doc) {
+                if (received % 100 == 0) {
+                    log('processed requests: '+received+'; isFinal='+isFinal);
+                }
+
                 if (err) {
                     console.log('error during bench: '+util.inspect(err));
                     hasError = true;
@@ -76,12 +82,16 @@ function bench() { //does the actual benchmarks
                 }
 
                 if (isFinal) {
+                    log('receive a final message');
                     end = new Date().getTime();
+                    process.removeAllListeners('message');
+                    deferred.resolve();
                 }
             });
         } else {
             hasError = true;
         }
+        received++;
     });
 
     return deferred.promise;
@@ -115,11 +125,13 @@ function cleanUP(err, deferred) {
 
 populateDB(undefined, defer()).then(
 function() { //success callback
+    log('child: benchmark');
     process.send({type: msgType.InitComplete });
     return bench();
 }).then(
 function() { //success callback
-    process.send({type: msgType.BenchComplete});
+    log('child: cleanup');
+    process.send({type: msgType.BenchComplete, time: (end - start)});
     return cleanUP(undefined, defer());
 }).then(
 function() {
@@ -127,4 +139,8 @@ function() {
 },
 function(err) { //indicate that error occurred during executing a given request
     process.send({type: msgType.Err, err: JSON.stringify(err)});
+});
+
+process.on('uncaughtException', function(err) {
+    log('child process: error - '+util.inspect(err));
 });
