@@ -1,30 +1,49 @@
 express = require('express')
-eco = require 'eco'
+ejs = require 'ejs'
 {auth} = require('./connect/auth')
+fs = require('fs')
 #dev require
 require('colors')
 util = require('util')
 
-VIEW_DIR = __dirname + '/views'
+viewDir = __dirname + '/views'
 
+### configures a given app ###
+configureApp = (app, viewEngine, viewDir) ->
+  app.use(express.static(CFG.STATIC))
+  app.use(express.bodyParser())
+  app.use(express.cookieParser())
+  app.use(app.router)
+  app.use(auth())
+
+  app.register('.html', viewEngine)
+  app.set('view engine', 'html')
+  app.set('views', viewDir)
+
+
+httpsOptions =
+  key: fs.readFileSync("#{__dirname}/ssl/sellstome.key").toString()
+  cert: fs.readFileSync("#{__dirname}/ssl/sellstome.crt").toString()
+
+##create http server
 app = express.createServer()
-app.use(express.static(CFG.STATIC))
-app.use(express.bodyParser())
-app.use(express.cookieParser())
-app.use(app.router)
-app.use(auth())
+configureApp(app, ejs, viewDir)
 
-app.register('.html', eco)
-app.set('view engine', 'html')
-app.set('views', VIEW_DIR)
-  
 app.get '/', (req, res) ->
   res.render 'dashboard.wa', layout: no
 
-app.get '/register', (req, res) ->
+app.listen(CFG.PORT, CFG.INTERFACE)
+
+##create a secure server
+appSecure = express.createServer(httpsOptions)
+configureApp(appSecure, ejs, viewDir)
+
+appSecure.get '/register', (req, res) ->
   res.render 'register'
 
-app.get '/login', (req, res) ->
+appSecure.get '/login', (req, res) ->
+  stack = new Error().stack
+  console.log( stack )
   res.render 'login'
 
-app.listen(CFG.PORT, CFG.INTERFACE)
+appSecure.listen(CFG.SECURE_PORT, CFG.INTERFACE)

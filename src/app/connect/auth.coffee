@@ -17,6 +17,7 @@ exports.auth = () ->
           User.findById(id, (err, user) ->
             if not err?
               if validateSession(sessionId, user)
+                req.viewer = user ##set up a viewer
                 next() ## we finally pass the validation
               else
                 next(new Error('Validation check had failed'))
@@ -29,6 +30,9 @@ exports.auth = () ->
         return next(new Error("session cookie couldn't be found"))
     else
       return next(new Error('looks like you have not configured cookieParser middleware'))
+
+redirectToLogin = () ->
+  return
 
 ### parses a given value in a session cookie ###
 parseCookie = ( value ) ->
