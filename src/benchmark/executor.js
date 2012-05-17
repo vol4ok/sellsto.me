@@ -6,7 +6,7 @@ var util = require('util');
 var $ = require('core.js');
 var msgType = require('./message_types');
 
-var n = cp.fork(__dirname+'/mongoose_bench.js');
+var n = cp.fork(__dirname+'/redis_bench.js');
 n.on('exit', function(data) {
     console.log("exited from child process");
 });
