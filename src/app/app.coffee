@@ -15,7 +15,7 @@ configureApp = (app, viewEngine, viewDir) ->
   app.use(express.cookieParser())
   app.use(app.router)
   app.use(auth())
-
+  ## configure view engine
   app.register('.html', viewEngine)
   app.set('view engine', 'html')
   app.set('views', viewDir)
@@ -32,18 +32,19 @@ configureApp(app, ejs, viewDir)
 app.get '/', (req, res) ->
   res.render 'dashboard.wa', layout: no
 
+app.get '/login', (req, res) ->
+  res.redirect("https://#{CFG.DOMAIN}/login")
+
 app.listen(CFG.PORT, CFG.INTERFACE)
 
 ##create a secure server
 appSecure = express.createServer(httpsOptions)
 configureApp(appSecure, ejs, viewDir)
 
-appSecure.get '/register', (req, res) ->
-  res.render 'register'
+appSecure.get '/singup', (req, res) ->
+  res.render 'signup'
 
 appSecure.get '/login', (req, res) ->
-  stack = new Error().stack
-  console.log( stack )
   res.render 'login'
 
 appSecure.listen(CFG.SECURE_PORT, CFG.INTERFACE)
