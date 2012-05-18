@@ -33,8 +33,7 @@ exports.auth = () ->
       return next(new Error('looks like you have not configured cookieParser middleware'))
 
 redirectOrRouteToLogin = (req, res, next) ->
-  if ($.startsWith(req.uri, '/login') == 0)
-    console.log 'finally forward to login page'
+  if ($.startsWith(req.url, '/login') || $.startsWith(req.url, '/signup'))
     next()
   else
     res.redirect("https://#{CFG.DOMAIN}/login")

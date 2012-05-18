@@ -1,5 +1,6 @@
 #contains object that responsible for security
 crypto = require('crypto')
+{defer} = require("node-promise")
 
 ### Generates a derived key representations for a user password###
 class PassHasher
@@ -43,5 +44,25 @@ class PassHasher
     )
     return
 
+###
+* generates a random session token
+* uses a promise based api
+###
+class TokenGenerator
+  ###length of generated random sequence @type {Number} ###
+  length: 256
+
+  ### @return a promise for a given operation ###
+  generate: () ->
+    deferred = defer()
+    crypto.randomBytes(@length, (err, buf) ->
+      if (err?)
+        deferred.reject(err)
+      else
+        deferred.resolve(buf.toString('hex'))
+    )
+    return deferred.promise
+
 #singleton?
 exports.passHasher = new PassHasher()
+exports.tokenGenerator = new TokenGenerator()
