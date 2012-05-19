@@ -5,26 +5,28 @@ class LoginModule
     {@app, @appSecure, authModel, User, @Cookie, @defer} = platform
     {@passHasher, @tokenGenerator} = authModel
 
-    @app.get '/login', (req, res) ->
-      res.redirect("https://#{CFG.DOMAIN}/login")
+    @app.get '/login', (req, res) => @redirectToHttps(req, res)
+    @app.get '/signup', (req, res) => @redirectToHttps(req, res)
+    @app.get '/logout', (req, res) => @redirectToHttps(req, res)
 
-    @appSecure.get '/singup', (req, res) ->
+    @appSecure.get '/signup', (req, res) ->
         res.render 'signup'
 
     @appSecure.post '/signup', (req, res) =>
+      ## define possible handler outcomes
       success = (req, res) -> res.redirect("http://#{CFG.DOMAIN}/")
       error = (req, res, err) -> res.redirect("http://#{CFG.DOMAIN}/signup")
 
       user = new User()
       user.email = req.body.user.email
       user.name = req.body.user.name
-      user.password = @passHasher.hash(req.body.user.password, (err, hash) ->
+      user.password = @passHasher.hash(req.body.user.password, (err, hash) =>
         if (err?)
           error(req, res, err)
         else
           user.password = hash
           ##save a given user
-          user.save((err) ->
+          user.save((err) =>
             if (err?)
                error(req, res, err)
             else
@@ -37,10 +39,14 @@ class LoginModule
       res.render 'login'
 
     @appSecure.post '/login', (req, res) ->
-
+      ##do login operation
       return
 
     return
+
+  ### redirect a given request to a https endpoint with same url ###
+  redirectToHttps: (req, res) ->
+    res.redirect("https://#{CFG.DOMAIN}#{req.url}")
 
   ### @returns promise on success of a given operation ###
   doLogin: (req, res, user) ->

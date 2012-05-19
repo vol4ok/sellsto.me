@@ -16,14 +16,16 @@ exports.auth = () ->
         try
           {id, sessionId} = parseCookie(req.cookies.sic)
           User.findById(id, (err, user) ->
-            if not err?
+            if not err? and not $.isNull(user)
               if validateSession(sessionId, user)
                 req.viewer = user ##set up a viewer
                 next() ## we finally pass the validation
               else
                 redirectOrRouteToLogin(req, res, next)
-            else
+            else if not $.isNull(user)
               next(err)
+            else
+              redirectOrRouteToLogin(req, res, next)
           )
         catch e
           return next(e)
