@@ -66,7 +66,6 @@ class Project
 
   ### simply copy non compiled resources excluding the node-modules content ###
   copy: () ->
-    deferred = @defer()
     processDir = (src, dest) =>
       @fs.readdirSync(src)
          .filter((file) => @fs.statSync(@path.join(src, file)).isFile())
@@ -84,13 +83,26 @@ class Project
            processDir(@path.join(src, dir), @path.join(dest, dir)))
       return
 
-    @compile().then(() =>
+    return @compile().then(() =>
       try
         processDir(@srcDir, @buildDir)
-        deferred.resolve()
       catch err
-        deferred.reject(err)
+        console.log err
+      return @npm()
     ,(err) => deferred.reject(err))
+
+  ### install all dependencies in npm ###
+  npm: () ->
+    deferred = @defer()
+    @exec("npm install",
+      cwd: @buildDir
+    ,(err, stdout, stderr) =>
+      console.log "err: #{err}; stdout: #{stdout}; stderr: #{stderr}"
+      if err?
+        deferred.reject(err)
+      else
+        deferred.resolve()
+    )
     return deferred.promise
 
   copyFileSync: (srcFile, destFile) ->
