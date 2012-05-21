@@ -1,0 +1,133 @@
+fs = require('fs')
+util = require('util')
+{defer} = require('node-promise')
+{exec} = require('child_process')
+core = require('core.js')
+path = require('path')
+wrench = require('wrench')
+
+task 'build', 'Builds project from src/', ->
+  platform =
+    exec: exec
+    core: core
+    path: path
+    wrench: wrench
+    fs: fs
+    defer: defer
+    Buffer: Buffer
+  new Project(platform).copy()
+
+###
+* contains functions to compile the project
+* - initial version sucks as it could not support task dependencies resolution
+###
+class Project
+  ### base project directory @type {String} ###
+  baseDir: null
+  buildDir: null
+  srcDir: null
+
+  constructor: (platform) ->
+    {@exec, @core, @path, @wrench, @fs, @defer, @Buffer} = platform
+    @baseDir = @path.join(__dirname, '..')
+    @buildDir = @path.join(@baseDir, 'build')
+    @srcDir = @path.join(@baseDir, 'src')
+    return
+
+  ### cleanup of build directory ###
+  cleanup: () ->
+    @wrench.rmdirSyncRecursive(@buildDir, false)
+    @fs.mkdirSync(@buildDir)
+    return
+
+  ### compile coffee script project files ###
+  compile: () ->
+    @cleanup()
+    processDir = (src, build) =>
+      deferred = @defer()
+      dirs = @fs.readdirSync(src).filter((file) => @fs.statSync(@path.join(src, file)).isDirectory())
+      i = 0
+      iter = () =>
+        dir = dirs[i]
+        console.log "process directory: #{dir}; src: #{src}; build: #{build}"
+        @fs.mkdirSync(@path.join(build, dir))
+        @compileCoffeeInDir(@path.join(src, dir), @path.join(build, dir))
+        .then(() =>
+          i++
+          if i < dirs.length
+            iter()
+          else
+            deferred.resolve()
+        ,(err) => deferred.reject(err))
+        return
+      iter()
+      return deferred.promise
+    return processDir(@srcDir, @buildDir)
+
+  ### simply copy non compiled resources excluding the node-modules content ###
+  copy: () ->
+    deferred = @defer()
+    processDir = (src, dest) =>
+      @fs.readdirSync(src)
+         .filter((file) => @fs.statSync(@path.join(src, file)).isFile())
+         .filter((file) => not @core.endsWith(file, ".coffee"))
+         .forEach((file) => @copyFileSync(@path.join(src, file), @path.join(dest, file)))
+
+      @fs.readdirSync(src)
+         .filter((file) => @fs.statSync(@path.join(src, file)).isDirectory())
+         .filter((dir) => dir != 'node_modules') ##skip a node-modules directory
+         .forEach((dir) =>
+           try
+             @fs.statSync(@path.join(dest, dir))
+           catch err
+             @fs.mkdirSync(@path.join(dest, dir))
+           processDir(@path.join(src, dir), @path.join(dest, dir)))
+      return
+
+    @compile().then(() =>
+      try
+        processDir(@srcDir, @buildDir)
+        deferred.resolve()
+      catch err
+        deferred.reject(err)
+    ,(err) => deferred.reject(err))
+    return deferred.promise
+
+  copyFileSync: (srcFile, destFile) ->
+    BUF_LENGTH = 64*1024
+    buff = new @Buffer(BUF_LENGTH)
+    fdr = @fs.openSync(srcFile, 'r')
+    fdw = @fs.openSync(destFile, 'w')
+    bytesRead = 1
+    pos = 0
+    while bytesRead > 0
+      bytesRead = @fs.readSync(fdr, buff, 0, BUF_LENGTH, pos)
+      @fs.writeSync(fdw,buff,0,bytesRead)
+      pos += bytesRead
+    @fs.closeSync(fdr)
+    @fs.closeSync(fdw)
+
+
+  ### executes a given task with its dependencies ###
+  run: (taskName) ->
+
+    return
+
+  ###
+  * compile coffee in dir non-recursive
+  * a promises based api
+  * @src a path relative to basedir
+  * @dest a path relative to basedir
+  ###
+  compileCoffeeInDir: (srcFull, destFull) ->
+    deferred = @defer()
+    src = @path.relative(@baseDir, srcFull)
+    dest = @path.relative(@baseDir, destFull)
+    src += '/' unless @core.endsWith(src, '/')
+    dest += '/' unless @core.endsWith(dest, '/')
+    @exec("coffee --compile --output ../#{dest} ../#{src}", (err, stdout, stderr) ->
+      if err?
+        console.log stdout + stderr
+      deferred.resolve()
+    )
+    return deferred.promise

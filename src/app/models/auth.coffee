@@ -1,6 +1,6 @@
 #contains object that responsible for security
 crypto = require('crypto')
-{defer} = require("node-promise")
+{defer} = require('node-promise')
 
 ### Generates a derived key representations for a user password###
 class PassHasher
