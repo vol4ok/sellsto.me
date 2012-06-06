@@ -1,0 +1,20 @@
+{
+  "development": {
+    "port": "3000",
+    "interface": "127.0.0.1",
+    "db": {
+      "name": "sells2me_api_dev",
+      "host": "127.0.0.1",
+      "port": 27017
+    }
+  },
+  "production": {
+    "port": "3000",
+    "interface": "127.0.0.1",
+    "db": {
+      "name": "sells2me_api_dev",
+      "host": "127.0.0.1",
+      "port": 27017
+    }
+  }
+}
