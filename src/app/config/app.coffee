@@ -22,6 +22,8 @@ app.configure ->
   @db = mongoose
   
 app.configure 'development', ->
+  @use express.logger('short')
+  
 app.configure 'production', ->
   
 module.exports = app
